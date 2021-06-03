@@ -1,0 +1,17 @@
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\metadata\ExternalHistoricalTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\root\SimulatedHistoricalTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\MongoDbArchiveDatabasePluginTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\metadata\ExternalForecastingTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\root\SimulatedForecastingTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\utils\DateUtilTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\util\TestUtil.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\utils\DatabaseBucketsUtilTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\root\ExternalForecastingTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\utils\BucketUtilTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\root\ExternalHistoricalTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\runinfo\SimulatedForecastingTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\runinfo\ExternalHistoricalTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\timeseries\ExternalHistoricalTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\runinfo\SimulatedHistoricalTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\utils\DatabaseForecastUtilTest.java
+D:\MongoDB\trunk\archive-database\src\test\java\nl\fews\archivedatabase\mongodb\export\utils\TimeSeriesTypeUtilTest.java
