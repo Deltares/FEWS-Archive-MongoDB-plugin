@@ -1,8 +1,8 @@
 package nl.fews.archivedatabase.mongodb.export.timeseries;
 
 import nl.fews.archivedatabase.mongodb.export.interfaces.TimeSeries;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabaseTimeConverter;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabaseUnitConverter;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeConverter;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseUnitConverter;
 
 public class SimulatedHistorical extends ExternalForecasting implements TimeSeries {
 

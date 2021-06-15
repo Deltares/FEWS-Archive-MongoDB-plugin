@@ -1,11 +1,11 @@
 package nl.fews.archivedatabase.util;
 
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeConverter;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseUnitConverter;
 import nl.wldelft.util.LogUtils;
 import nl.wldelft.util.TimeSpan;
 import nl.wldelft.util.TimeUnit;
 import nl.wldelft.util.timeseries.*;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabaseTimeConverter;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabaseUnitConverter;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

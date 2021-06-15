@@ -1,8 +1,8 @@
 package nl.fews.archivedatabase.mongodb.export.metadata;
 
 import nl.fews.archivedatabase.mongodb.export.interfaces.MetaData;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabaseTimeConverter;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabaseUnitConverter;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeConverter;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseUnitConverter;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;
 public class ExternalForecasting extends ExternalHistorical implements MetaData {

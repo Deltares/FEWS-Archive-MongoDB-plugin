@@ -4,7 +4,7 @@ import nl.fews.archivedatabase.mongodb.export.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.export.interfaces.Root;
 import nl.fews.archivedatabase.mongodb.export.utils.DateUtil;
 import nl.fews.archivedatabase.mongodb.export.utils.TimeSeriesTypeUtil;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabaseTimeConverter;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeConverter;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;
 

@@ -2,8 +2,8 @@ package nl.fews.archivedatabase.mongodb.export.timeseries;
 
 import nl.fews.archivedatabase.mongodb.export.interfaces.TimeSeries;
 import nl.fews.archivedatabase.mongodb.export.utils.DateUtil;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabaseTimeConverter;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabaseUnitConverter;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeConverter;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseUnitConverter;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;

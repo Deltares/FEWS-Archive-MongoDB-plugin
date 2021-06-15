@@ -3,10 +3,7 @@ package nl.fews.archivedatabase.mongodb.export;
 import nl.fews.archivedatabase.mongodb.export.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.export.interfaces.*;
 import nl.fews.archivedatabase.mongodb.export.utils.TimeSeriesTypeUtil;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabase;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabaseTimeConverter;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.ArchiveDatabaseUnitConverter;
-import nl.wldelft.fews.system.data.externaldatasource.opendatabase.SimulatedExportConfigSettings;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.Properties;
 import nl.wldelft.util.timeseries.*;
 
@@ -127,6 +124,11 @@ public class MongoDbArchiveDatabasePlugin implements ArchiveDatabase {
 
     }
 
+    @Override
+    public void executeActivity(String s, String s1) {
+
+    }
+
     /**
      *
      * @param  archiveDatabaseTimeConverter archiveDatabaseTimeConverter
@@ -134,6 +136,11 @@ public class MongoDbArchiveDatabasePlugin implements ArchiveDatabase {
     @Override
     public void setTimeConverter(ArchiveDatabaseTimeConverter archiveDatabaseTimeConverter) {
         this.archiveDatabaseTimeConverter = archiveDatabaseTimeConverter;
+    }
+
+    @Override
+    public void setRegionConfigInfoProvider(ArchiveDatabaseRegionConfigInfoProvider archiveDatabaseRegionConfigInfoProvider) {
+
     }
 
     /**
