@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<runInfo xmlns="http://www.wldelft.nl/fews/archive">
+    <time0 date="2021-06-10" time="17:00:00"/>
+    <taskRunId>SA11024320_1</taskRunId>
+    <timeSeriesSource>
+        <taskRunId>ustetvamc00:011024082</taskRunId>
+        <workflowId>TVA_Forecast_ENS</workflowId>
+        <timeZero date="2021-06-10" time="11:00:00"/>
+    </timeSeriesSource>
+    <fewsVersion>2019.02</fewsVersion>
+    <buildNumber>102408</buildNumber>
+    <dispatchTime date="2021-06-10" time="18:13:20"/>
+    <workflowId>TVA_Forecast_ENS</workflowId>
+    <userId>Barber, Nathan Michael</userId>
+    <mcId>none</mcId>
+    <configRevisionId>ustetvamc00;1531</configRevisionId>
+</runInfo>
