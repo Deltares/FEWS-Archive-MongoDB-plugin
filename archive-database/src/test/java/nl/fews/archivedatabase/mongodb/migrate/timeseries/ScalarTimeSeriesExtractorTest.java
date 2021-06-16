@@ -5,7 +5,6 @@ import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.NetcdfUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.TimeSeriesSetsUtil;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
-import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import org.javatuples.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Map;
 
@@ -23,7 +21,6 @@ class ScalarTimeSeriesExtractorTest {
 	@BeforeAll
 	public static void setUpClass(){
 		TestSettings.setTestSettings();
-		Settings.put("archiveRootDataFolder", Paths.get("src", "test", "resources").toAbsolutePath().toString());
 	}
 
 	@Test

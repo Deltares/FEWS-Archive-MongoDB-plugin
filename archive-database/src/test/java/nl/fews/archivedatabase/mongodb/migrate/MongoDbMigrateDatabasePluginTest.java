@@ -27,7 +27,9 @@ class MongoDbMigrateDatabasePluginTest {
 		if(testSettings != null && InetAddress.getLocalHost().getHostName().equalsIgnoreCase(testSettings.getString("HostName"))) {
 			LogUtils.initConsole();
 			LogUtils.addAppender(MongoDbAppender.createAppender("databaseLogAppender",
-				testSettings.getString("ArchiveDatabaseUrl").replace("mongodb://", String.format("mongodb://%s:%s@", testSettings.getString("UserName"), testSettings.getString("Password"))), null));
+				testSettings.getString("UserName") != null ?
+					testSettings.getString("ArchiveDatabaseUrl").replace("mongodb://", String.format("mongodb://%s:%s@", testSettings.getString("UserName"), testSettings.getString("Password"))) :
+					testSettings.getString("ArchiveDatabaseUrl"), null));
 		}
 	}
 

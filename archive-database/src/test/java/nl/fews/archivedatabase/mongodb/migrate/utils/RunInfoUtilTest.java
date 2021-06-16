@@ -1,14 +1,12 @@
 package nl.fews.archivedatabase.mongodb.migrate.utils;
 
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
-import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Map;
 
@@ -17,7 +15,6 @@ class RunInfoUtilTest {
 	@BeforeAll
 	public static void setUpClass(){
 		TestSettings.setTestSettings();
-		Settings.put("archiveRootDataFolder", Paths.get("src", "test", "resources").toAbsolutePath().toString());
 	}
 
 	@Test

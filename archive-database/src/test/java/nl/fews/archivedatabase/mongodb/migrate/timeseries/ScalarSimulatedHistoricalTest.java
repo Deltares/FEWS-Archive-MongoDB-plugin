@@ -5,7 +5,6 @@ import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.NetcdfUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.RunInfoUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.TimeSeriesSetsUtil;
-import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import org.bson.Document;
 import org.javatuples.Pair;
 import org.json.JSONObject;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
@@ -24,7 +22,6 @@ class ScalarSimulatedHistoricalTest {
 	@BeforeAll
 	public static void setUpClass(){
 		TestSettings.setTestSettings();
-		Settings.put("archiveRootDataFolder", Paths.get("src", "test", "resources").toAbsolutePath().toString());
 	}
 
 	@Test

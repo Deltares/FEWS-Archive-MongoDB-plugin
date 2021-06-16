@@ -7,14 +7,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.nio.file.Paths;
 
 class PathUtilTest {
 
 	@BeforeAll
 	public static void setUpClass(){
 		TestSettings.setTestSettings();
-		Settings.put("archiveRootDataFolder", Paths.get("src", "test", "resources").toAbsolutePath().toString());
 	}
 
 	@Test
