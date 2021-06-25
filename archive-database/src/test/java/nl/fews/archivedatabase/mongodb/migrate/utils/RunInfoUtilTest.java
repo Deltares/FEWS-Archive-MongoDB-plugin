@@ -1,14 +1,16 @@
 package nl.fews.archivedatabase.mongodb.migrate.utils;
 
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
-import org.json.JSONObject;
-import org.junit.jupiter.api.Assertions;
+import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
+import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Date;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class RunInfoUtilTest {
 
@@ -18,32 +20,16 @@ class RunInfoUtilTest {
 	}
 
 	@Test
-	void getRunInfoFile(){
+	void getRunInfo() {
 		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs();
-		File runInfoFile = null;
-		for (File file: existingMetaDataFilesFs.keySet()) {
-			JSONObject metaData = MetaDataUtil.readMetaData(file);
-			runInfoFile = RunInfoUtil.getRunInfoFile(metaData);
-			if(runInfoFile != null){
+		ArchiveRunInfo archiveRunInfo = null;
+		for (File metaDataFile: existingMetaDataFilesFs.keySet()) {
+			NetcdfMetaData netcdfMetaData =MetaDataUtil.getNetcdfMetaData(metaDataFile);
+			archiveRunInfo = RunInfoUtil.getRunInfo(netcdfMetaData);
+			if(archiveRunInfo != null){
 				break;
 			}
 		}
-		Assertions.assertNotNull(runInfoFile);
-	}
-
-	@Test
-	void readRunInfo() {
-		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs();
-		File runInfoFile = null;
-		for (File file: existingMetaDataFilesFs.keySet()) {
-			JSONObject metaData = MetaDataUtil.readMetaData(file);
-			runInfoFile = RunInfoUtil.getRunInfoFile(metaData);
-			if(runInfoFile != null){
-				break;
-			}
-		}
-		Assertions.assertNotNull(runInfoFile);
-		JSONObject runInfo = RunInfoUtil.readRunInfo(runInfoFile);
-		Assertions.assertNotNull(runInfo);
+		assertNotNull(archiveRunInfo);
 	}
 }

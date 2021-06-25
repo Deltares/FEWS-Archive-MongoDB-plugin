@@ -5,7 +5,6 @@ import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import org.bson.Document;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -16,6 +15,9 @@ import org.testcontainers.utility.DockerImageName;
 import java.io.File;
 import java.util.Date;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @Testcontainers
 class UpdateTest {
@@ -32,7 +34,7 @@ class UpdateTest {
 	void updateMetaDatas() {
 		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
-		Assertions.assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
+		assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
 
 		Document old = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find().first();
 		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).updateMany(new Document(), new Document("$set", new Document("metaDataFileTime", new Date(0))));
@@ -40,6 +42,6 @@ class UpdateTest {
 		Update.updateMetaDatas(MetaDataUtil.getExistingMetaDataFilesFs(), MetaDataUtil.getExistingMetaDataFilesDb());
 
 		Document updated = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find().first();
-		Assertions.assertNotEquals(updated.getObjectId("_id"), old.getObjectId("_id"));
+		assertNotEquals(updated.getObjectId("_id"), old.getObjectId("_id"));
 	}
 }

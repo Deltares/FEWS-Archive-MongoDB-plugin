@@ -2,11 +2,12 @@ package nl.fews.archivedatabase.mongodb.shared.utils;
 
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class PathUtilTest {
 
@@ -17,16 +18,24 @@ class PathUtilTest {
 
 	@Test
 	void toRelativePathString() {
-		Assertions.assertEquals("/test", PathUtil.toRelativePathString(new File(Settings.get("archiveRootDataFolder", String.class), "test"), Settings.get("archiveRootDataFolder", String.class)));
+		assertEquals("/test", PathUtil.toRelativePathString(new File(Settings.get("baseDirectoryArchive", String.class), "test"), Settings.get("baseDirectoryArchive", String.class)));
 	}
 
 	@Test
 	void fromRelativePathString() {
-		Assertions.assertEquals(new File(Settings.get("archiveRootDataFolder", String.class), "test"), PathUtil.fromRelativePathString("/test", Settings.get("archiveRootDataFolder", String.class)));
+		assertEquals(new File(Settings.get("baseDirectoryArchive", String.class), "test"), PathUtil.fromRelativePathString("/test", Settings.get("baseDirectoryArchive", String.class)));
 	}
 
 	@Test
 	void normalize() {
-		Assertions.assertEquals(String.format("a%1$sa%1$sa", File.separatorChar), PathUtil.normalize(new File(String.format("a%1$sa%1$sa", File.separatorChar == '/' ? '\\' : '/'))).toString());
+		assertEquals(String.format("a%1$sa%1$sa", File.separatorChar), PathUtil.normalize(new File(String.format("a%1$sa%1$sa", File.separatorChar == '/' ? '\\' : '/'))).toString());
+	}
+
+	@Test
+	void containsSegment() {
+		assertTrue(PathUtil.containsSegment(new File("./path/to/scalar/data"), "scalar"));
+		assertFalse(PathUtil.containsSegment(new File("./path/to/gridded/data"), "scalar"));
+		assertFalse(PathUtil.containsSegment(new File("./path/to/scalar/data"), "Scalar"));
+		assertTrue(PathUtil.containsSegment(new File("./path/to/scalar/data"), "Scalar", true));
 	}
 }

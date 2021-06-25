@@ -32,7 +32,7 @@ public final class Update {
 	 */
 	public static void updateMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb){
 		try {
-			ForkJoinPool pool = new ForkJoinPool(Settings.get("dbThreads"));
+			ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
 			ArrayList<Callable<Void>> tasks = new ArrayList<>();
 			MetaDataUtil.getMetaDataFilesUpdate(existingMetaDataFilesFs, existingMetaDataFilesDb).forEach((file, date) -> tasks.add(() -> {
 				updateMetaData(file, date);
@@ -57,7 +57,7 @@ public final class Update {
 	 * @param metaDataDate metaDataDate
 	 */
 	private static void updateMetaData(File metaDataFile, Date metaDataDate) {
-		Document dbMetaData = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find(new Document("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("archiveRootDataFolder", String.class)))).first();
+		Document dbMetaData = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find(new Document("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class)))).first();
 		if(dbMetaData != null){
 			Delete.deleteMetaData(metaDataFile);
 			Insert.insertMetaData(metaDataFile, metaDataDate);

@@ -2,30 +2,24 @@ package nl.fews.archivedatabase.mongodb.export.operations;
 
 import nl.fews.archivedatabase.mongodb.export.interfaces.Synchronize;
 import nl.fews.archivedatabase.mongodb.export.utils.DatabaseSingletonUtil;
-import nl.fews.archivedatabase.mongodb.migrate.utils.TimeSeriesUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
-import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
-import nl.fews.archivedatabase.mongodb.shared.utils.BucketUtil;
-import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
+import org.javatuples.Triplet;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public final class SynchronizeSingletons implements Synchronize {
+public final class SynchronizeSingletons extends SynchronizeBase implements Synchronize {
 
 	/**
-	 * Inserts, updates or replaces data for forecast timeseries
-	 * @param timeSeries the entire list of all documents passed to this instance
-	 * @param timeSeriesType timeSeriesType
+	 *
+	 * @param timeSeries timeSeries
+	 * @param collection collection
+	 * @param keys keys
+	 * @return Triplet<List<Document>, List<Document>, List<Document>>
 	 */
-	public void synchronize(List<Document> timeSeries, TimeSeriesType timeSeriesType){
-		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
-		List<String> keys = Database.getCollectionKeys(collection);
-
+	@Override
+	protected Triplet<List<Document>, List<Document>, List<Document>> synchronize(List<Document> timeSeries, String collection, List<String> keys){
 		Map<String, Document> existingDocuments = getExistingDocuments(collection, getExistingQueries(timeSeries, keys), keys);
 
 		List<Document> insert = new ArrayList<>();
@@ -34,11 +28,7 @@ public final class SynchronizeSingletons implements Synchronize {
 
 		DatabaseSingletonUtil.getDocumentsByKey(timeSeries, keys).forEach((key, documents) -> {
 			Document document = documents.get(documents.size() - 1);
-			String existingQuery = new Document(keys.stream().collect(Collectors.toMap(k -> k, document::get))).toJson();
-
-			boolean collapse = BucketUtil.getBucket(document).getBoolean("collapse");
-			if(collapse)
-				document.append("timeseries", TimeSeriesUtil.getCollapsedTimeSeries(document.getList("timeseries", Document.class)));
+			String existingQuery = new Document(keys.stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new))).toJson();
 
 			Document existingDocument = existingDocuments.getOrDefault(existingQuery, null);
 			if (existingDocument == null) {
@@ -54,7 +44,7 @@ public final class SynchronizeSingletons implements Synchronize {
 					replace.add(document);
 			}
 		});
-		Database.synchronize(collection, insert, replace, remove);
+		return new Triplet<>(insert, replace, remove);
 	}
 
 	/**
@@ -64,11 +54,11 @@ public final class SynchronizeSingletons implements Synchronize {
 	 * @param keys keys
 	 * @return existingDocuments
 	 */
-	private Map<String, Document> getExistingDocuments(String collection, List<Document> existingQueries, List<String> keys){
+	private static Map<String, Document> getExistingDocuments(String collection, List<Document> existingQueries, List<String> keys){
 		Map<String, Document> existingDocuments = new HashMap<>();
 		if(!existingQueries.isEmpty()) {
 			for (Document document : Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).find(new Document("$or", existingQueries)).projection(new Document("timeseries", 0))) {
-				String key = new Document(keys.stream().collect(Collectors.toMap(k -> k, document::get))).toJson();
+				String key = new Document(keys.stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new))).toJson();
 				if(document.get("metaData", Document.class).getDate("archiveTime").compareTo(existingDocuments.getOrDefault(key, document).get("metaData", Document.class).getDate("archiveTime")) >= 0)
 					existingDocuments.put(key, document);
 			}
@@ -82,11 +72,11 @@ public final class SynchronizeSingletons implements Synchronize {
 	 * @param keys keys
 	 * @return existingQueries
 	 */
-	private List<Document> getExistingQueries(List<Document> timeSeries, List<String> keys){
+	private static List<Document> getExistingQueries(List<Document> timeSeries, List<String> keys){
 		List<Document> existingQueries = new ArrayList<>();
 		for (Map.Entry<String, List<Document>> key : DatabaseSingletonUtil.getDocumentsByKey(timeSeries, keys).entrySet()) {
 			Document document = key.getValue().get(key.getValue().size() - 1);
-			existingQueries.add(new Document(keys.stream().collect(Collectors.toMap(k -> k, document::get))));
+			existingQueries.add(new Document(keys.stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new))));
 		}
 		return existingQueries;
 	}

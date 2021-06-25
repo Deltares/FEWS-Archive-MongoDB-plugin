@@ -1,14 +1,12 @@
 package nl.fews.archivedatabase.mongodb.migrate.utils;
 
-import nl.fews.archivedatabase.mongodb.shared.utils.PathUtil;
-import org.json.JSONObject;
-import org.json.XML;
+import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
+import nl.wldelft.archive.util.metadata.simulation.SimulationMetaData;
+import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
+import nl.wldelft.archive.util.runinfo.ArchiveRunInfoReader;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 
 /**
  *
@@ -21,26 +19,24 @@ public final class RunInfoUtil {
 	private RunInfoUtil(){}
 
 	/**
-	 *
-	 * @param metaData metaData
-	 * @return RunInfoFile
-	 */
-	public static File getRunInfoFile(JSONObject metaData){
-		if(metaData.getJSONObject(metaData.getString("metaDataType")).has("runInfo")) {
-			return PathUtil.normalize(new File(metaData.getString("parentFilePath"), metaData.getJSONObject(metaData.getString("metaDataType")).getJSONObject("runInfo").getString("relativeFilePath")));
-		}
-		return null;
-	}
-
-	/**
-	 * @param runInfoFile runInfoFile
+	 * @param netcdfMetaData netcdfMetaData
 	 * @return JSONObject
 	 */
-	public static JSONObject readRunInfo(File runInfoFile) {
+	public static ArchiveRunInfo getRunInfo(NetcdfMetaData netcdfMetaData) {
+		if(!(netcdfMetaData instanceof SimulationMetaData))
+			return null;
 		try{
-			return runInfoFile != null ? XML.toJSONObject(new InputStreamReader(new FileInputStream(runInfoFile), StandardCharsets.UTF_8)) : new JSONObject();
+			File runInfoFile = ((SimulationMetaData)netcdfMetaData).getRunInfoFile();
+			if(runInfoFile.exists()){
+				try (ArchiveRunInfoReader archiveRunInfoReader = new ArchiveRunInfoReader(runInfoFile)) {
+					return archiveRunInfoReader.getRunInfo();
+				}
+			}
+			else {
+				return null;
+			}
 		}
-		catch (FileNotFoundException ex){
+		catch (IOException ex){
 			throw new RuntimeException(ex);
 		}
 	}

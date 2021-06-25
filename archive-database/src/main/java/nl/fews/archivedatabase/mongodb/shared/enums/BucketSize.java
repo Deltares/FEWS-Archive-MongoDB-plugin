@@ -1,8 +1,15 @@
 package nl.fews.archivedatabase.mongodb.shared.enums;
 
 public enum BucketSize{
+	AEON,
+	MEGANNUM,
+	MILLENNIA,
+	CENTURY,
 	DECADE,
-	YEARLY,
-	MONTHLY,
-	DAILY
+	YEAR,
+	MONTH,
+	DAY,
+	HOUR,
+	MINUTE,
+	SECOND
 }

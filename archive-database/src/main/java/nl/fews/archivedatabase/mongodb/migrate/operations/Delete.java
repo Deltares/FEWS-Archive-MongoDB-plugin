@@ -29,7 +29,7 @@ public final class Delete {
 	 */
 	public static void deleteMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb){
 		try {
-			ForkJoinPool pool = new ForkJoinPool(Settings.get("dbThreads"));
+			ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
 			ArrayList<Callable<Void>> tasks = new ArrayList<>();
 			MetaDataUtil.getMetaDataFilesDelete(existingMetaDataFilesFs, existingMetaDataFilesDb).forEach((file, date) -> tasks.add(() -> {
 				deleteMetaData(file);
@@ -53,7 +53,7 @@ public final class Delete {
 	 * @param metaDataFile metaDataFile
 	 */
 	public static void deleteMetaData(File metaDataFile){
-		Document metaData = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find(new Document("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("archiveRootDataFolder", String.class)))).first();
+		Document metaData = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find(new Document("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class)))).first();
 		if (metaData != null){
 			Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).updateOne(new Document("_id", metaData.getObjectId("_id")), new Document("$set", new Document("committed", false)));
 			metaData.getList("netcdfFiles", Document.class).parallelStream().forEach(Delete::deleteNetcdf);
@@ -79,7 +79,7 @@ public final class Delete {
 				s -> Database.create().getDatabase(Database.getDatabaseName()).getCollection(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(s)).deleteMany(new Document("committed", false)));
 
 		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find(new Document("committed", false)).projection(new Document("_id", 0).append("metaDataFileRelativePath", 1)).forEach(
-				s -> Delete.deleteMetaData(PathUtil.fromRelativePathString(s.getString("metaDataFileRelativePath"), Settings.get("archiveRootDataFolder", String.class))));
+				s -> Delete.deleteMetaData(PathUtil.fromRelativePathString(s.getString("metaDataFileRelativePath"), Settings.get("baseDirectoryArchive", String.class))));
 
 		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).deleteMany(new Document("committed", false));
 	}

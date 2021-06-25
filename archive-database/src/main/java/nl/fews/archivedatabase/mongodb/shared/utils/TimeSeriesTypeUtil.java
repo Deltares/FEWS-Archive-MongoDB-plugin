@@ -11,22 +11,9 @@ import java.util.Map;
 public final class TimeSeriesTypeUtil {
 
 	/**
-	 *
-	 */
-	public static final String SIMULATED_HISTORICAL = "simulated historical";
-
-	/**
-	 *
-	 */
-	public enum TimeSeriesTypeDetermination{
-		TimeSeriesType,
-		MetaDataType
-	}
-
-	/**
 	 * lookup for string representation of each timeseries type
 	 */
-	private static final Map<TimeSeriesType, String> timeSeriesTypeStrings = Map.of(
+	private static final Map<TimeSeriesType, String> timeSeriesTypeString = Map.of(
 			TimeSeriesType.SCALAR_EXTERNAL_FORECASTING, "external forecasting",
 			TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, "external historical",
 			TimeSeriesType.SCALAR_SIMULATED_FORECASTING, "simulated forecasting",
@@ -129,7 +116,16 @@ public final class TimeSeriesTypeUtil {
 	 * @return FEWS timeseries type string
 	 */
 	public static String getTimeSeriesTypeString(TimeSeriesType timeSeriesType) {
-		return timeSeriesTypeStrings.get(timeSeriesType);
+		return timeSeriesTypeString.get(timeSeriesType);
+	}
+
+	/**
+	 *
+	 * @param className className
+	 * @return collection name
+	 */
+	public static String getTimeSeriesTypeString(String className) {
+		return classNameTimeSeriesTypeString.get(className);
 	}
 
 	/**
@@ -157,15 +153,6 @@ public final class TimeSeriesTypeUtil {
 	 */
 	public static String getTimeSeriesTypeSyncType(TimeSeriesType timeSeriesType) {
 		return timeSeriesTypeSyncType.get(timeSeriesType);
-	}
-
-	/**
-	 *
-	 * @param className className
-	 * @return collection name
-	 */
-	public static String getTimeSeriesTypeString(String className) {
-		return classNameTimeSeriesTypeString.get(className);
 	}
 
 	/**

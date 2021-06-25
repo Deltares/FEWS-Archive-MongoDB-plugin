@@ -2,16 +2,15 @@ package nl.fews.archivedatabase.mongodb.export.utils;
 
 import nl.fews.archivedatabase.mongodb.TestUtil;
 import nl.fews.archivedatabase.mongodb.export.TestSettings;
-import nl.fews.archivedatabase.mongodb.export.interfaces.TimeSeries;
-import nl.fews.archivedatabase.mongodb.export.timeseries.ScalarExternalForecasting;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
+import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
+import nl.fews.archivedatabase.mongodb.shared.timeseries.ScalarExternalForecasting;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 class DatabaseSingletonUtilTest {
@@ -29,7 +30,7 @@ class DatabaseSingletonUtilTest {
 	}
 
 	@Test
-	void testGetDocumentsByKey() {
+	void getDocumentsByKey() {
 
 		String[] expected = new String[]{
 			"[\"moduleInstanceId0\",\"locationId0\",\"parameterId0\",\"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\",\"SETS360\",\"ensembleId0\",\"1\",\"Sun Jan 01 00:00:00 UTC 2012\"]",
@@ -78,15 +79,15 @@ class DatabaseSingletonUtilTest {
 		}
 		Map<String, List<Document>> documents = DatabaseSingletonUtil.getDocumentsByKey(ts, Database.getCollectionKeys(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING)));
 
-		Assertions.assertEquals(20, documents.size());
+		assertEquals(20, documents.size());
 
 		for (List<Document> documentList:documents.values()) {
-			Assertions.assertEquals(1, documentList.size());
+			assertEquals(1, documentList.size());
 		}
 
 		int index = 0;
 		for (String key :documents.keySet().stream().sorted().collect(Collectors.toList())) {
-			Assertions.assertEquals(expected[index++], key);
+			assertEquals(expected[index++], key);
 		}
 	}
 }

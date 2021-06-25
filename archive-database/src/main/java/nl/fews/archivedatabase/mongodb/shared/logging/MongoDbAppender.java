@@ -3,16 +3,21 @@ package nl.fews.archivedatabase.mongodb.shared.logging;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
-import org.apache.logging.log4j.core.*;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Core;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.plugins.*;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
+import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
+import org.apache.logging.log4j.core.config.plugins.PluginElement;
+import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.JsonLayout;
 import org.bson.Document;
 
 import java.net.InetAddress;
 import java.util.Date;
 
-@SuppressWarnings("unused")
 @Plugin(name = "MongoDbAppender", category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
 public class MongoDbAppender extends AbstractAppender {
 
@@ -72,24 +77,30 @@ public class MongoDbAppender extends AbstractAppender {
 		if(event.getLoggerName().startsWith("org.mongodb."))
 			return;
 		try{
-			Document document = Document.parse(jsonLayout.toSerializable(event));
-
-			try{
-				Document extra = Document.parse(document.getString("message"));
-				document.putAll(extra);
-				if(!extra.containsKey("message"))
-					document.remove("message");
-			}
-			catch (Exception ex){
-				//IGNORE
-			}
-
+			Document document = addExtraMessage(Document.parse(jsonLayout.toSerializable(event)));
 			document.append("date", new Date());
 			document.append("machineName", InetAddress.getLocalHost().getHostName());
 			mongoClient.getDatabase(databaseName).getCollection(collectionName).insertOne(document);
 		}
 		catch (Exception ex){
 			//IGNORE
+		}
+	}
+
+	/**
+	 *
+	 * @param document document
+	 */
+	private Document addExtraMessage(Document document){
+		try{
+			Document extra = Document.parse(document.getString("message"));
+			document.putAll(extra);
+			if(!extra.containsKey("message"))
+				document.remove("message");
+			return document;
+		}
+		catch (Exception ex){
+			return document;
 		}
 	}
 }

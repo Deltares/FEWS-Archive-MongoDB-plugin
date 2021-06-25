@@ -1,15 +1,17 @@
 package nl.fews.archivedatabase.mongodb.migrate.utils;
 
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
-import org.javatuples.Pair;
-import org.json.JSONObject;
-import org.junit.jupiter.api.Assertions;
+import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
+import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
+import nl.wldelft.archive.util.metadata.timeseries.TimeSeriesRecord;
+import nl.wldelft.util.timeseries.TimeSeriesArrays;
+import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.util.Date;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class NetcdfUtilTest {
 
@@ -20,23 +22,37 @@ class NetcdfUtilTest {
 
 	@Test
 	void getExistingNetcdfFilesFs(){
-		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs();
-		Map<File, Pair<Date, JSONObject>> existingNetcdfFilesFs = NetcdfUtil.getExistingNetcdfFilesFs(MetaDataUtil.readMetaData(existingMetaDataFilesFs.keySet().stream().findFirst().get()));
-		Assertions.assertNotNull(existingNetcdfFilesFs);
+		MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().limit(1).forEach(entry ->
+				assertNotNull(NetcdfUtil.getExistingNetcdfFilesFs(entry.getKey(), MetaDataUtil.getNetcdfMetaData(entry.getKey()))));
 	}
 
 	@Test
-	void getTimeSeriesDocuments() {
-		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs();
-		Map<File, Pair<Date, JSONObject>> existingNetcdfFilesFs = NetcdfUtil.getExistingNetcdfFilesFs(MetaDataUtil.readMetaData(existingMetaDataFilesFs.keySet().stream().findFirst().get()));
-		Assertions.assertNotNull(NetcdfUtil.getTimeSeriesDocuments(existingNetcdfFilesFs.keySet().stream().findFirst().get()));
-		//NetcdfUtil.getTimeSeriesDocuments(new File("C:\\_GIT\\FEWS\\archive-database\\src\\test\\resources\\2020\\11\\scalar\\observed\\externalhistorical_TWT_ImportEDS_1hour.nc"));
+	void getTimeSeriesArrayMerged() {
+		MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.toString().contains("scalar")).limit(1).forEach(metaDataFile ->
+				NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile.getKey(), MetaDataUtil.getNetcdfMetaData(metaDataFile.getKey())).entrySet().stream().limit(1).forEach(netcdfFile -> {
+					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile.getKey());
+					NetcdfContent netcdfContent = MetaDataUtil.getNetcdfContentMap(metaDataFile.getKey(), netcdfMetaData).get(netcdfFile.getKey());
+					TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = NetcdfUtil.getTimeSeriesArrays(netcdfFile.getKey());
+					Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = NetcdfUtil.getTimeSeriesRecordsMap(netcdfFile.getKey(), netcdfContent);
+					TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArrays.get(0).getHeader().getLocationId()).get(timeSeriesArrays.get(0).getHeader().getParameterId());
+					assertNotNull(NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArrays.get(0), timeSeriesRecord));
+		}));
 	}
 
 	@Test
-	void getTimeSeriesArraysAsDocuments() {
-		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs();
-		Map<File, Pair<Date, JSONObject>> existingNetcdfFilesFs = NetcdfUtil.getExistingNetcdfFilesFs(MetaDataUtil.readMetaData(existingMetaDataFilesFs.keySet().stream().findFirst().get()));
-		Assertions.assertNotNull(NetcdfUtil.getTimeSeriesArraysAsDocuments(existingNetcdfFilesFs.keySet().stream().findFirst().get()));
+	void getTimeSeriesRecordsMap() {
+		MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.toString().contains("scalar")).limit(1).forEach(metaDataFile ->
+				NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile.getKey(), MetaDataUtil.getNetcdfMetaData(metaDataFile.getKey())).entrySet().stream().limit(1).forEach(netcdfFile -> {
+					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile.getKey());
+					NetcdfContent netcdfContent = MetaDataUtil.getNetcdfContentMap(metaDataFile.getKey(), netcdfMetaData).get(netcdfFile.getKey());
+					assertNotNull(NetcdfUtil.getTimeSeriesRecordsMap(netcdfFile.getKey(), netcdfContent));
+		}));
+	}
+
+	@Test
+	void getTimeSeriesArrays() {
+		MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.toString().contains("scalar")).limit(1).forEach(metaDataFile ->
+				NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile.getKey(), MetaDataUtil.getNetcdfMetaData(metaDataFile.getKey())).entrySet().stream().limit(1).forEach(netcdfFile ->
+						assertNotNull(NetcdfUtil.getTimeSeriesArrays(netcdfFile.getKey()))));
 	}
 }

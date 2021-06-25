@@ -1,7 +1,7 @@
 package nl.fews.archivedatabase.mongodb.shared.utils;
 
 import com.mongodb.MongoWriteException;
-import org.json.JSONObject;
+import org.bson.Document;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -20,8 +20,8 @@ public final class LogUtil {
 	 * @param extra extra
 	 * @return String
 	 */
-	public static JSONObject getLogMessageJson(Exception ex, Map<String, Object> extra){
-		JSONObject message = new JSONObject(extra);
+	public static Document getLogMessageJson(Exception ex, Map<String, Object> extra){
+		Document message = new Document(extra);
 		message.put("errorMessage", ex.getMessage());
 		message.put("stackTrace", Arrays.stream(ex.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList()));
 		return message;
@@ -33,8 +33,8 @@ public final class LogUtil {
 	 * @param extra extra
 	 * @return String
 	 */
-	public static JSONObject getLogMessageJson(MongoWriteException ex, Map<String, Object> extra){
-		JSONObject message = new JSONObject(extra);
+	public static Document getLogMessageJson(MongoWriteException ex, Map<String, Object> extra){
+		Document message = new Document(extra);
 		message.put("errorMessage", ex.getError().getMessage());
 		message.put("errorDetails", ex.getError().getDetails());
 		message.put("errorCategory", ex.getError().getCategory().toString());

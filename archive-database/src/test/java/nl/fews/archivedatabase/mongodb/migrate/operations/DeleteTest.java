@@ -5,7 +5,6 @@ import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import org.bson.Document;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -17,6 +16,8 @@ import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Testcontainers
 class DeleteTest {
@@ -33,27 +34,27 @@ class DeleteTest {
 	void deleteMetaDatas() {
 		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
-		Assertions.assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
+		assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
 		Delete.deleteMetaDatas(new HashMap<>(), MetaDataUtil.getExistingMetaDataFilesDb());
-		Assertions.assertEquals(0, MetaDataUtil.getExistingMetaDataFilesDb().size());
+		assertEquals(0, MetaDataUtil.getExistingMetaDataFilesDb().size());
 	}
 
 	@Test
 	void deleteMetaData() {
 		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
-		Assertions.assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
+		assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
 		Delete.deleteMetaData(entry.getKey());
-		Assertions.assertEquals(0, MetaDataUtil.getExistingMetaDataFilesDb().size());
+		assertEquals(0, MetaDataUtil.getExistingMetaDataFilesDb().size());
 	}
 
 	@Test
 	void deleteUncommitted() {
 		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
-		Assertions.assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
+		assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
 		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).updateMany(new Document(), new Document("$set", new Document("committed", false)));
 		Delete.deleteUncommitted();
-		Assertions.assertEquals(0, MetaDataUtil.getExistingMetaDataFilesDb().size());
+		assertEquals(0, MetaDataUtil.getExistingMetaDataFilesDb().size());
 	}
 }

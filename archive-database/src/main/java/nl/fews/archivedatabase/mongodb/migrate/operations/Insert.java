@@ -1,34 +1,32 @@
 package nl.fews.archivedatabase.mongodb.migrate.operations;
 
-import com.mongodb.MongoBulkWriteException;
-import com.mongodb.MongoWriteException;
-import nl.fews.archivedatabase.mongodb.migrate.interfaces.TimeSeriesExtractor;
-import nl.fews.archivedatabase.mongodb.migrate.timeseries.ScalarTimeSeriesExtractor;
+import nl.fews.archivedatabase.mongodb.migrate.utils.DatabaseUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.NetcdfUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.RunInfoUtil;
-import nl.fews.archivedatabase.mongodb.migrate.utils.TimeSeriesSetsUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
+import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
-import nl.fews.archivedatabase.mongodb.shared.utils.LogUtil;
+import nl.fews.archivedatabase.mongodb.shared.utils.BucketUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.PathUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
-import nl.wldelft.util.Properties;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
+import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
+import nl.wldelft.archive.util.metadata.timeseries.TimeSeriesRecord;
+import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
+import nl.wldelft.util.timeseries.TimeSeriesArray;
+import nl.wldelft.util.timeseries.TimeSeriesArrays;
+import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.javatuples.Pair;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -39,7 +37,7 @@ public final class Insert {
 	/**
 	 *
 	 */
-	private static final Logger logger = LogManager.getLogger(Insert.class);
+	private static final String BASE_NAMESPACE = "nl.fews.archivedatabase.mongodb";
 
 	/**
 	 * Static Class
@@ -53,7 +51,7 @@ public final class Insert {
 	 */
 	public static void insertMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb){
 		try {
-			ForkJoinPool pool = new ForkJoinPool(Settings.get("dbThreads"));
+			ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
 			ArrayList<Callable<Void>> tasks = new ArrayList<>();
 			MetaDataUtil.getMetaDataFilesInsert(existingMetaDataFilesFs, existingMetaDataFilesDb).forEach((file, date) -> tasks.add(() -> {
 				insertMetaData(file, date);
@@ -78,43 +76,34 @@ public final class Insert {
 	 * @param metaDataValue metaDataValue
 	 */
 	public static void insertMetaData(File metaDataFile, Date metaDataValue){
-		JSONObject metaData = MetaDataUtil.readMetaData(metaDataFile);
-		JSONObject runInfo = RunInfoUtil.readRunInfo(RunInfoUtil.getRunInfoFile(metaData));
-		Map<File, Pair<Date, JSONObject>> netcdfFiles = NetcdfUtil.getExistingNetcdfFilesFs(metaData);
-
+		NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
+		ArchiveRunInfo archiveRunInfo = RunInfoUtil.getRunInfo(netcdfMetaData);
+		Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
+		Map<File, Pair<Date, NetcdfContent>> netcdfFiles = NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile, netcdfMetaData);
 		Map<String, List<ObjectId>> allInsertedIds = new HashMap<>();
 
 		Document metaDataDocument = new Document();
-		metaDataDocument.append("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("archiveRootDataFolder", String.class)));
+		metaDataDocument.append("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class)));
 		metaDataDocument.append("metaDataFileTime", metaDataValue);
 		metaDataDocument.append("netcdfFiles", new ArrayList<Document>());
 		metaDataDocument.append("committed", false);
 
 		netcdfFiles.forEach((netcdfFile, dateNetcdf) -> {
-			try {
-				Pair<String, List<ObjectId>> insertedIds = Insert.insertNetcdf(netcdfFile, dateNetcdf.getValue1(), metaData, runInfo);
-				if (insertedIds.getValue1() != null && !insertedIds.getValue1().isEmpty()) {
-					allInsertedIds.putIfAbsent(insertedIds.getValue0(), new ArrayList<>());
-					allInsertedIds.get(insertedIds.getValue0()).addAll(insertedIds.getValue1());
-					Document netcdfFileEntry = new Document();
-					netcdfFileEntry.append("netcdfFileRelativePath", PathUtil.toRelativePathString(netcdfFile, Settings.get("archiveRootDataFolder", String.class)));
-					netcdfFileEntry.append("netcdfFileTime", dateNetcdf.getValue0());
-					netcdfFileEntry.append("timeSeriesIds", insertedIds.getValue1());
-					netcdfFileEntry.append("collection", insertedIds.getValue0());
-					metaDataDocument.getList("netcdfFiles", Document.class).add(netcdfFileEntry);
-				}
-			}
-			catch (Exception ex){
-				throw ex;
+			NetcdfContent netcdfContent = netcdfContentMap.get(netcdfFile);
+			Pair<String, List<ObjectId>> insertedIds = Insert.insertNetcdfs(netcdfFile, netcdfContent, archiveRunInfo);
+			if (insertedIds.getValue1() != null && !insertedIds.getValue1().isEmpty()) {
+				allInsertedIds.putIfAbsent(insertedIds.getValue0(), new ArrayList<>());
+				allInsertedIds.get(insertedIds.getValue0()).addAll(insertedIds.getValue1());
+				Document netcdfFileEntry = new Document();
+				netcdfFileEntry.append("netcdfFileRelativePath", PathUtil.toRelativePathString(netcdfFile, Settings.get("baseDirectoryArchive", String.class)));
+				netcdfFileEntry.append("netcdfFileTime", dateNetcdf.getValue0());
+				netcdfFileEntry.append("timeSeriesIds", insertedIds.getValue1());
+				netcdfFileEntry.append("collection", insertedIds.getValue0());
+				metaDataDocument.getList("netcdfFiles", Document.class).add(netcdfFileEntry);
 			}
 		});
-		try {
-			ObjectId insertedId = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).insertOne(metaDataDocument).getInsertedId().asObjectId().getValue();
-			commitInserted(insertedId, allInsertedIds);
-		}
-		catch (Exception ex){
-			throw ex;
-		}
+		ObjectId insertedId = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).insertOne(metaDataDocument).getInsertedId().asObjectId().getValue();
+		commitInserted(insertedId, allInsertedIds);
 	}
 
 	/**
@@ -124,16 +113,8 @@ public final class Insert {
 	 */
 	private static void commitInserted(ObjectId metaDataInsertedId, Map<String, List<ObjectId>> allInsertedIds){
 		allInsertedIds.forEach((collection, insertedIds) -> {
-			if(collection != null && !insertedIds.isEmpty()) {
-				try{
-					Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).updateMany(new Document("_id", new Document("$in", insertedIds)), new Document("$set", new Document("committed", true)));
-				}
-				catch (Exception ex){
-					throw ex;
-				}
-			}
-			else
-				System.out.println();
+			if(collection != null && !insertedIds.isEmpty())
+				Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).updateMany(new Document("_id", new Document("$in", insertedIds)), new Document("$set", new Document("committed", true)));
 		});
 		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).updateOne(new Document("_id", metaDataInsertedId), new Document("$set", new Document("committed", true)));
 	}
@@ -141,79 +122,94 @@ public final class Insert {
 	/**
 	 *
 	 * @param netcdfFile netcdfFile
-	 * @param netcdfMetaData netcdfMetaData
-	 * @param metaData metaData
-	 * @param runInfo runInfo
+	 * @param netcdfContent netcdfContent
+	 * @param archiveRunInfo archiveRunInfo
 	 * @return List<ObjectId>
 	 */
-	private static Pair<String, List<ObjectId>> insertNetcdf(File netcdfFile, JSONObject netcdfMetaData, JSONObject metaData, JSONObject runInfo) {
-		List<ObjectId> insertedIds = new ArrayList<>();
-		if(netcdfFile == null)
-			return new Pair<>(null, insertedIds);
+	private static Pair<String, List<ObjectId>> insertNetcdfs(File netcdfFile, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo) {
 
-		JSONArray timeSeriesSets = TimeSeriesSetsUtil.getDecomposedTimeSeriesSets(netcdfFile);
+		if(netcdfFile == null || !netcdfFile.exists())
+			return new Pair<>(null, new ArrayList<>());
 
-		TimeSeriesType timeSeriesType = getTimeSeriesType(metaData, timeSeriesSets);
+		Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = NetcdfUtil.getTimeSeriesRecordsMap(netcdfFile, netcdfContent);
+		TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.values().stream().findFirst().orElse(new HashMap<>()).values().stream().findFirst().orElse(null);
+		if(timeSeriesRecord == null)
+			return new Pair<>(null, new ArrayList<>());
+
+		TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByTypeString(new Pair<>(netcdfContent.getValueType().toString(), nl.wldelft.fews.system.data.timeseries.TimeSeriesType.getByIntId(timeSeriesRecord.getTimeSeriesType()).getName()));
 		if(timeSeriesType == null)
-			return new Pair<>(null, insertedIds);
+			return new Pair<>(null, new ArrayList<>());
 
 		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 		if(TimeSeriesTypeUtil.getTimeSeriesTypeClassName(timeSeriesType) == null)
-			return new Pair<>(null, insertedIds);
+			return new Pair<>(null, new ArrayList<>());
 
-		TimeSeriesExtractor timeSeriesExtractor = new ScalarTimeSeriesExtractor();
-		List<Document> timeSeries = timeSeriesExtractor.extract(timeSeriesType, netcdfFile, timeSeriesSets, netcdfMetaData, runInfo);
-		if(!timeSeries.isEmpty()) {
-			try {
-				Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).insertMany(timeSeries);
-				insertedIds.addAll(timeSeries.stream().map(s -> s.getObjectId("_id")).collect(Collectors.toList()));
-			}
-			catch (MongoBulkWriteException ex) {
-				insertedIds.addAll(ex.getWriteResult().getInserts().stream().map(s -> s.getId().asObjectId().getValue()).collect(Collectors.toList()));
-				for (Document ts : timeSeries) {
-					try {
-						Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).insertOne(ts);
-						insertedIds.add(ts.getObjectId("_id"));
-					}
-					catch (MongoWriteException wex) {
-						JSONObject message = LogUtil.getLogMessageJson(wex, Map.of("netcdfFile", netcdfFile.toString(), "netcdfMetaData", netcdfMetaData, "metaData", metaData, "runInfo", runInfo));
-						logger.warn(message.toString(), wex);
-					}
-				}
-			}
-			catch(Exception ex){
-				throw ex;
-			}
+		List<Document> timeSeries = extract(timeSeriesType, timeSeriesRecordsMap, netcdfFile, netcdfContent, archiveRunInfo);
+		if (timeSeries.isEmpty())
+			return new Pair<>(collection, new ArrayList<>());
+
+		if(timeSeries.stream().filter(s -> s.getString("encodedTimeStepId").equals("nonequidistant")).anyMatch(s -> s.getList("timeseries", Document.class).size() > BucketUtil.TIME_SERIES_MAX_ENTRY_COUNT)){
+			timeSeries.forEach(ts -> BucketUtil.ensureBucketSize(timeSeriesType, ts));
+			timeSeries = extract(timeSeriesType, timeSeriesRecordsMap, netcdfFile, netcdfContent, archiveRunInfo);
 		}
-		return new Pair<>(collection, insertedIds);
+
+		if(timeSeries.stream().filter(s -> s.getString("encodedTimeStepId").equals("nonequidistant")).anyMatch(s -> s.getList("timeseries", Document.class).size() > BucketUtil.TIME_SERIES_MAX_ENTRY_COUNT))
+			throw new IllegalStateException("Cannot resolve nonequidistant bucket size.");
+
+		return DatabaseUtil.synchronize(collection, timeSeries, netcdfFile);
 	}
 
 	/**
 	 *
-	 * @param metaData metaData
-	 * @param timeSeriesSets timeSeriesSets
-	 * @return TimeSeriesType
+	 * @param timeSeriesType timeSeriesType
+	 * @param timeSeriesRecordsMap timeSeriesRecordsMap
+	 * @param netcdfFile netcdfFile
+	 * @param netcdfContent netcdfContent
+	 * @param archiveRunInfo archiveRunInfo
+	 * @return List<Document>
 	 */
-	private static TimeSeriesType getTimeSeriesType(JSONObject metaData, JSONArray timeSeriesSets){
+	private static List<Document> extract(TimeSeriesType timeSeriesType, Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap, File netcdfFile, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo){
+		List<Document> timeSeries = new ArrayList<>();
+
+		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = NetcdfUtil.getTimeSeriesArrays(netcdfFile);
+		for (int i = 0; i < timeSeriesArrays.size(); i++) {
+			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
+			TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
+
+			timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
+
+			Document ts = getTimeSeries(timeSeriesType, timeSeriesArray, netcdfContent, archiveRunInfo);
+			if (ts.containsKey("timeseries"))
+				timeSeries.add(ts);
+		}
+		return timeSeries;
+	}
+
+	/**
+	 *
+	 * @param timeSeriesType timeSeriesType
+	 * @param timeSeriesArray timeSeriesArray
+	 * @param netcdfContent netcdfContent
+	 * @param archiveRunInfo archiveRunInfo
+	 * @return Document
+	 */
+	private static Document getTimeSeries(TimeSeriesType timeSeriesType, TimeSeriesArray<TimeSeriesHeader> timeSeriesArray, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo){
 		try {
-			TimeSeriesType timeSeriesType = null;
+			TimeSeries timeSeries = (TimeSeries) Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "shared.timeseries", TimeSeriesTypeUtil.getTimeSeriesTypeClassName(timeSeriesType))).getConstructor().newInstance();
 
-			String timeSeriesSetTypeString = !timeSeriesSets.isEmpty() && timeSeriesSets.getJSONObject(0).has("timeSeriesType") ? timeSeriesSets.getJSONObject(0).getString("timeSeriesType") : null;
-			TimeSeriesTypeUtil.TimeSeriesTypeDetermination timeSeriesTypeDetermination = Settings.get("properties") != null ? TimeSeriesTypeUtil.TimeSeriesTypeDetermination.valueOf(Settings.get("properties", Properties.class).getString("TimeSeriesTypeDetermination", "TimeSeriesType")) : TimeSeriesTypeUtil.TimeSeriesTypeDetermination.TimeSeriesType;
+			List<Document> eventDocuments = timeSeries.getEvents(timeSeriesArray);
+			Document metaDataDocument = timeSeries.getMetaData(timeSeriesArray.getHeader(), netcdfContent.getAreaId(), netcdfContent.getSourceId());
+			Document runInfoDocument = timeSeries.getRunInfo(archiveRunInfo);
+			Document rootDocument = timeSeries.getRoot(timeSeriesArray.getHeader(), eventDocuments, runInfoDocument).append("committed", false);
 
-			if (timeSeriesTypeDetermination == TimeSeriesTypeUtil.TimeSeriesTypeDetermination.TimeSeriesType) {
-				timeSeriesType = timeSeriesSetTypeString != null ? TimeSeriesTypeUtil.getTimeSeriesTypeByTypeString(new Pair<>(metaData.getString("valueType"), timeSeriesSetTypeString)) : null;
-				timeSeriesType = timeSeriesType == null ? TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>(metaData.getString("valueType"), metaData.getString("metaDataType"))) : timeSeriesType;
-			}
-			else if (timeSeriesTypeDetermination == TimeSeriesTypeUtil.TimeSeriesTypeDetermination.MetaDataType) {
-				timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>(metaData.getString("valueType"), metaData.getString("metaDataType")));
-				timeSeriesType = timeSeriesType == TimeSeriesType.SCALAR_SIMULATED_FORECASTING && TimeSeriesTypeUtil.SIMULATED_HISTORICAL.equals(timeSeriesSetTypeString) ? TimeSeriesType.SCALAR_SIMULATED_HISTORICAL : timeSeriesType;
-			}
+			if(!metaDataDocument.isEmpty()) rootDocument.append("metaData", metaDataDocument);
+			if(!runInfoDocument.isEmpty()) rootDocument.append("runInfo", runInfoDocument);
+			if(!eventDocuments.isEmpty()) rootDocument.append("timeseries", eventDocuments);
 
-			return timeSeriesType;
+			return rootDocument;
 		}
 		catch (Exception ex){
-			throw ex;
+			throw new RuntimeException(ex);
 		}
 	}
 }

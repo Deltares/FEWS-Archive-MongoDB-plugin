@@ -2,8 +2,8 @@ package nl.fews.archivedatabase.mongodb.migrate.utils;
 
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
-import org.json.JSONObject;
-import org.junit.jupiter.api.Assertions;
+import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
+import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -14,6 +14,9 @@ import org.testcontainers.utility.DockerImageName;
 import java.io.File;
 import java.util.Date;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Testcontainers
 class MetaDataUtilTest {
@@ -30,37 +33,47 @@ class MetaDataUtilTest {
 	@Test
 	void getExistingMetaDataFilesFs() {
 		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs();
-		Assertions.assertEquals(9, existingMetaDataFilesFs.size());
+		assertEquals(9, existingMetaDataFilesFs.size());
 	}
 
 	@Test
 	void getExistingMetaDataFilesDb(){
 		Map<File, Date> existingMetaDataFilesDb = MetaDataUtil.getExistingMetaDataFilesDb();
-		Assertions.assertEquals(0, existingMetaDataFilesDb.size());
+		assertEquals(0, existingMetaDataFilesDb.size());
 	}
 
 	@Test
 	void getMetaDataFilesInsert() {
 		Map<File, Date> metaDataFilesInsert = MetaDataUtil.getMetaDataFilesInsert(MetaDataUtil.getExistingMetaDataFilesFs(), MetaDataUtil.getExistingMetaDataFilesDb());
-		Assertions.assertEquals(9, metaDataFilesInsert.size());
+		assertEquals(9, metaDataFilesInsert.size());
 	}
 
 	@Test
 	void getMetaDataFilesUpdate(){
 		Map<File, Date> metaDataFilesUpdate = MetaDataUtil.getMetaDataFilesUpdate(MetaDataUtil.getExistingMetaDataFilesFs(), MetaDataUtil.getExistingMetaDataFilesDb());
-		Assertions.assertEquals(0, metaDataFilesUpdate.size());
+		assertEquals(0, metaDataFilesUpdate.size());
 	}
 
 	@Test
 	void getMetaDataFilesDelete(){
 		Map<File, Date> metaDataFilesDelete = MetaDataUtil.getMetaDataFilesDelete(MetaDataUtil.getExistingMetaDataFilesFs(), MetaDataUtil.getExistingMetaDataFilesDb());
-		Assertions.assertEquals(0, metaDataFilesDelete.size());
+		assertEquals(0, metaDataFilesDelete.size());
 	}
 
 	@Test
-	void readMetaData() {
+	void getNetcdfMetaData() {
 		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs();
-		JSONObject metaData = MetaDataUtil.readMetaData(existingMetaDataFilesFs.keySet().stream().findFirst().orElse(null));
-		Assertions.assertNotNull(metaData);
+		File metaDataFile = existingMetaDataFilesFs.keySet().stream().findFirst().orElse(null);
+		NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
+		assertNotNull(netcdfMetaData);
+	}
+
+	@Test
+	void getNetcdfContentMap() {
+		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs();
+		File metaDataFile = existingMetaDataFilesFs.keySet().stream().findFirst().orElse(null);
+		NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
+		Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
+		assertNotNull(netcdfContentMap);
 	}
 }

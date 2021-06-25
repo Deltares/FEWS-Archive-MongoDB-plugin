@@ -1,7 +1,6 @@
 package nl.fews.archivedatabase.mongodb;
 
-import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeConverter;
-import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseUnitConverter;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.LogUtils;
 import nl.wldelft.util.TimeSpan;
 import nl.wldelft.util.TimeUnit;
@@ -80,5 +79,21 @@ public class TestUtil {
 
         @Override
         public TimeZone getLocalTimeZone() { return TimeZone.getTimeZone("UTC"); }
+    }
+
+    /**
+     * ArchiveDatabaseRegionConfigInfoProviderTestImplementation
+     */
+    public static class ArchiveDatabaseRegionConfigInfoProviderTestImplementation implements ArchiveDatabaseRegionConfigInfoProvider {
+
+        @Override
+        public LocationInfo getLocationInfo(String locationId) {
+            return new LocationInfo(locationId, locationId, locationId);
+        }
+
+        @Override
+        public ParameterInfo getParameterInfo(String parameterId) {
+            return new ParameterInfo(parameterId, parameterId, parameterId);
+        }
     }
 }

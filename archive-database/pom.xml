@@ -40,10 +40,25 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>4.5.13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>7.13.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.4.2</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+            <version>2.7.2</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -162,6 +177,33 @@
             <version>1.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/Delft_FEWS_Common.jar</systemPath>
+            <type>jar</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>nl.deltares</groupId>
+            <artifactId>Delft_Archive_Util</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/Delft_Archive_Util.jar</systemPath>
+            <type>jar</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>nl.deltares</groupId>
+            <artifactId>Delft_Archive_Server</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/Delft_Archive_Server.jar</systemPath>
+            <type>jar</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>nl.deltares</groupId>
+            <artifactId>Delft_ARCHIVE_castor</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/Delft_ARCHIVE_castor.jar</systemPath>
             <type>jar</type>
             <optional>true</optional>
         </dependency>
