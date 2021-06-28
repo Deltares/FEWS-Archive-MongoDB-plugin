@@ -9,7 +9,7 @@ import java.util.List;
 /**
  *
  */
-public class ScalarSimulatedHistoricalStitched extends ScalarExternalHistorical implements TimeSeries {
+public final class ScalarSimulatedHistoricalStitched extends ScalarTimeSeries implements TimeSeries {
 	/**
 	 *
 	 * @param header FEWS timeseries header

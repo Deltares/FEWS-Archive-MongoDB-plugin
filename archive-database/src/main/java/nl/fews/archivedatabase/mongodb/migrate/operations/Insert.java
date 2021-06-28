@@ -5,10 +5,12 @@ import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.NetcdfUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.RunInfoUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
+import nl.fews.archivedatabase.mongodb.shared.enums.BucketSize;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.BucketUtil;
+import nl.fews.archivedatabase.mongodb.shared.utils.LogUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.PathUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
@@ -18,6 +20,8 @@ import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.javatuples.Pair;
@@ -26,13 +30,17 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
 
 /**
  *
  */
 @SuppressWarnings({"ConstantConditions"})
 public final class Insert {
+
+	/**
+	 *
+	 */
+	private static final Logger logger = LogManager.getLogger(Insert.class);
 
 	/**
 	 *
@@ -50,24 +58,14 @@ public final class Insert {
 	 * @param existingMetaDataFilesDb existingMetaDataFilesDb
 	 */
 	public static void insertMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb){
-		try {
-			ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
-			ArrayList<Callable<Void>> tasks = new ArrayList<>();
-			MetaDataUtil.getMetaDataFilesInsert(existingMetaDataFilesFs, existingMetaDataFilesDb).forEach((file, date) -> tasks.add(() -> {
-				insertMetaData(file, date);
-				return null;
-			}));
-			List<Future<Void>> results = pool.invokeAll(tasks);
-
-			for (Future<Void> x : results) {
-				x.get();
-			}
-			pool.shutdown();
-		}
-		catch (Exception ex){
-			Thread.currentThread().interrupt();
-			throw new RuntimeException(ex);
-		}
+		ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
+		ArrayList<Callable<Void>> tasks = new ArrayList<>();
+		MetaDataUtil.getMetaDataFilesInsert(existingMetaDataFilesFs, existingMetaDataFilesDb).forEach((file, date) -> tasks.add(() -> {
+			insertMetaData(file, date);
+			return null;
+		}));
+		pool.invokeAll(tasks);
+		pool.shutdown();
 	}
 
 	/**
@@ -76,34 +74,41 @@ public final class Insert {
 	 * @param metaDataValue metaDataValue
 	 */
 	public static void insertMetaData(File metaDataFile, Date metaDataValue){
-		NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
-		ArchiveRunInfo archiveRunInfo = RunInfoUtil.getRunInfo(netcdfMetaData);
-		Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
-		Map<File, Pair<Date, NetcdfContent>> netcdfFiles = NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile, netcdfMetaData);
-		Map<String, List<ObjectId>> allInsertedIds = new HashMap<>();
+		try{
+			NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
+			if (netcdfMetaData == null)
+				return;
+			ArchiveRunInfo archiveRunInfo = RunInfoUtil.getRunInfo(netcdfMetaData);
+			Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
+			Map<File, Pair<Date, NetcdfContent>> netcdfFiles = NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile, netcdfMetaData);
+			Map<String, List<ObjectId>> allInsertedIds = new HashMap<>();
 
-		Document metaDataDocument = new Document();
-		metaDataDocument.append("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class)));
-		metaDataDocument.append("metaDataFileTime", metaDataValue);
-		metaDataDocument.append("netcdfFiles", new ArrayList<Document>());
-		metaDataDocument.append("committed", false);
+			Document metaDataDocument = new Document();
+			metaDataDocument.append("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class)));
+			metaDataDocument.append("metaDataFileTime", metaDataValue);
+			metaDataDocument.append("netcdfFiles", new ArrayList<Document>());
+			metaDataDocument.append("committed", false);
 
-		netcdfFiles.forEach((netcdfFile, dateNetcdf) -> {
-			NetcdfContent netcdfContent = netcdfContentMap.get(netcdfFile);
-			Pair<String, List<ObjectId>> insertedIds = Insert.insertNetcdfs(netcdfFile, netcdfContent, archiveRunInfo);
-			if (insertedIds.getValue1() != null && !insertedIds.getValue1().isEmpty()) {
-				allInsertedIds.putIfAbsent(insertedIds.getValue0(), new ArrayList<>());
-				allInsertedIds.get(insertedIds.getValue0()).addAll(insertedIds.getValue1());
-				Document netcdfFileEntry = new Document();
-				netcdfFileEntry.append("netcdfFileRelativePath", PathUtil.toRelativePathString(netcdfFile, Settings.get("baseDirectoryArchive", String.class)));
-				netcdfFileEntry.append("netcdfFileTime", dateNetcdf.getValue0());
-				netcdfFileEntry.append("timeSeriesIds", insertedIds.getValue1());
-				netcdfFileEntry.append("collection", insertedIds.getValue0());
-				metaDataDocument.getList("netcdfFiles", Document.class).add(netcdfFileEntry);
-			}
-		});
-		ObjectId insertedId = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).insertOne(metaDataDocument).getInsertedId().asObjectId().getValue();
-		commitInserted(insertedId, allInsertedIds);
+			netcdfFiles.forEach((netcdfFile, dateNetcdf) -> {
+				NetcdfContent netcdfContent = netcdfContentMap.get(netcdfFile);
+				Pair<String, List<ObjectId>> insertedIds = Insert.insertNetcdfs(netcdfFile, netcdfContent, archiveRunInfo);
+				if (insertedIds.getValue1() != null && !insertedIds.getValue1().isEmpty()) {
+					allInsertedIds.putIfAbsent(insertedIds.getValue0(), new ArrayList<>());
+					allInsertedIds.get(insertedIds.getValue0()).addAll(insertedIds.getValue1());
+					Document netcdfFileEntry = new Document();
+					netcdfFileEntry.append("netcdfFileRelativePath", PathUtil.toRelativePathString(netcdfFile, Settings.get("baseDirectoryArchive", String.class)));
+					netcdfFileEntry.append("netcdfFileTime", dateNetcdf.getValue0());
+					netcdfFileEntry.append("timeSeriesIds", insertedIds.getValue1());
+					netcdfFileEntry.append("collection", insertedIds.getValue0());
+					metaDataDocument.getList("netcdfFiles", Document.class).add(netcdfFileEntry);
+				}
+			});
+			ObjectId insertedId = Database.insertOne(Settings.get("metaDataCollection"), metaDataDocument).getInsertedId().asObjectId().getValue();
+			commitInserted(insertedId, allInsertedIds);
+		}
+		catch (Exception ex){
+			logger.warn(LogUtil.getLogMessageJson(ex, Map.of("metaDataFile", metaDataFile.toString())).toJson(), ex);
+		}
 	}
 
 	/**
@@ -114,9 +119,9 @@ public final class Insert {
 	private static void commitInserted(ObjectId metaDataInsertedId, Map<String, List<ObjectId>> allInsertedIds){
 		allInsertedIds.forEach((collection, insertedIds) -> {
 			if(collection != null && !insertedIds.isEmpty())
-				Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).updateMany(new Document("_id", new Document("$in", insertedIds)), new Document("$set", new Document("committed", true)));
+				Database.updateMany(collection, new Document("_id", new Document("$in", insertedIds)), new Document("$set", new Document("committed", true)));
 		});
-		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).updateOne(new Document("_id", metaDataInsertedId), new Document("$set", new Document("committed", true)));
+		Database.updateOne(Settings.get("metaDataCollection"), new Document("_id", metaDataInsertedId), new Document("$set", new Document("committed", true)));
 	}
 
 	/**
@@ -196,11 +201,22 @@ public final class Insert {
 	private static Document getTimeSeries(TimeSeriesType timeSeriesType, TimeSeriesArray<TimeSeriesHeader> timeSeriesArray, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo){
 		try {
 			TimeSeries timeSeries = (TimeSeries) Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "shared.timeseries", TimeSeriesTypeUtil.getTimeSeriesTypeClassName(timeSeriesType))).getConstructor().newInstance();
+			TimeSeriesHeader header = timeSeriesArray.getHeader();
 
 			List<Document> eventDocuments = timeSeries.getEvents(timeSeriesArray);
-			Document metaDataDocument = timeSeries.getMetaData(timeSeriesArray.getHeader(), netcdfContent.getAreaId(), netcdfContent.getSourceId());
+			Document metaDataDocument = timeSeries.getMetaData(header, netcdfContent.getAreaId(), netcdfContent.getSourceId());
 			Document runInfoDocument = timeSeries.getRunInfo(archiveRunInfo);
-			Document rootDocument = timeSeries.getRoot(timeSeriesArray.getHeader(), eventDocuments, runInfoDocument).append("committed", false);
+			Document rootDocument = timeSeries.getRoot(header, eventDocuments, runInfoDocument).append("committed", false);
+
+			if(!eventDocuments.isEmpty() && TimeSeriesTypeUtil.getTimeSeriesTypeBucket(timeSeriesType)){
+				Date startTime = rootDocument.getDate("startTime");
+				Date endTime = rootDocument.getDate("endTime");
+
+				BucketSize bucketSize = BucketUtil.getArchiveInferredBucketSize(startTime, endTime);
+				long bucketValue = BucketUtil.getBucketValue(startTime, bucketSize);
+				rootDocument.append("bucketSize", bucketSize.toString());
+				rootDocument.append("bucket", bucketValue);
+			}
 
 			if(!metaDataDocument.isEmpty()) rootDocument.append("metaData", metaDataDocument);
 			if(!runInfoDocument.isEmpty()) rootDocument.append("runInfo", runInfoDocument);

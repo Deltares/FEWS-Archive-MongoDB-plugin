@@ -55,15 +55,15 @@ public abstract class SynchronizeBase implements Synchronize {
 	 */
 	private static void synchronize(String collection, List<Document> insert, List<Document> replace, List<Document> remove){
 		if(!insert.isEmpty())
-			Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).insertMany(insert);
+			Database.insertMany(collection, insert);
 
 		if(!replace.isEmpty()) {
-			Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).deleteMany(new Document("_id", new Document("$in", replace.stream().map(s -> s.get("_id")).collect(Collectors.toList()))));
-			Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).insertMany(replace);
+			Database.deleteMany(collection, new Document("_id", new Document("$in", replace.stream().map(s -> s.get("_id")).collect(Collectors.toList()))));
+			Database.insertMany(collection, replace);
 		}
 
 		if (!remove.isEmpty())
-			Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).deleteMany(new Document("_id", new Document("$in", remove.stream().map(s -> s.get("_id")).collect(Collectors.toList()))));
+			Database.deleteMany(collection, new Document("_id", new Document("$in", remove.stream().map(s -> s.get("_id")).collect(Collectors.toList()))));
 	}
 
 	/**

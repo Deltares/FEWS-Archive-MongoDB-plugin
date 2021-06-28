@@ -57,7 +57,7 @@ public final class SynchronizeSingletons extends SynchronizeBase implements Sync
 	private static Map<String, Document> getExistingDocuments(String collection, List<Document> existingQueries, List<String> keys){
 		Map<String, Document> existingDocuments = new HashMap<>();
 		if(!existingQueries.isEmpty()) {
-			for (Document document : Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).find(new Document("$or", existingQueries)).projection(new Document("timeseries", 0))) {
+			for (Document document : Database.find(collection, new Document("$or", existingQueries), new Document("timeseries", 0))) {
 				String key = new Document(keys.stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new))).toJson();
 				if(document.get("metaData", Document.class).getDate("archiveTime").compareTo(existingDocuments.getOrDefault(key, document).get("metaData", Document.class).getDate("archiveTime")) >= 0)
 					existingDocuments.put(key, document);

@@ -56,6 +56,7 @@ public final class NetcdfUtil {
 		timeSeriesHeader.setUnit(timeSeriesArray.getHeader().getUnit());
 		timeSeriesHeader.setEnsembleMemberId(timeSeriesArray.getHeader().getEnsembleMemberId());
 		timeSeriesHeader.setEnsembleMemberIndex(timeSeriesArray.getHeader().getEnsembleMemberIndex());
+		timeSeriesHeader.setForecastTime(timeSeriesArray.getHeader().getForecastTime());
 
 		timeSeriesHeader.setLocationId(timeSeriesRecord.getLocationId());
 		timeSeriesHeader.setParameterId(timeSeriesRecord.getParameterId());
@@ -85,7 +86,7 @@ public final class NetcdfUtil {
 	public static Map<String, Map<String, TimeSeriesRecord>> getTimeSeriesRecordsMap(File netcdfFile, NetcdfContent netcdfContent){
 		try {
 			Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = new HashMap<>();
-			try (var dataSet = NetcdfFile.open(netcdfFile.getAbsolutePath())) {
+			try (NetcdfFile dataSet = NetcdfFile.openInMemory(netcdfFile.getAbsolutePath())) {
 				for (TimeSeriesRecord timeSeriesRecord : ElasticSearchIndexUtil.createTimeSeries(dataSet, netcdfContent, false).getObject0()) {
 					timeSeriesRecordsMap.putIfAbsent(timeSeriesRecord.getArchiveLocationId(), new HashMap<>());
 					timeSeriesRecordsMap.get(timeSeriesRecord.getArchiveLocationId()).putIfAbsent(timeSeriesRecord.getArchiveParameterId(), timeSeriesRecord);

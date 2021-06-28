@@ -26,7 +26,7 @@ public final class TimeSeriesUtil {
 		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 		List<String> keys = Database.getCollectionKeys(collection);
 		List<Document> timeSeriesGroups = new ArrayList<>();
-		Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).aggregate(List.of(
+		Database.aggregate(collection, List.of(
 				new Document("$sort", new Document(keys.stream().filter(s -> !s.equals("bucketSize") && !s.equals("bucket")).collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))),
 				new Document("$group", new Document("_id", new Document(keys.stream().filter(s -> !s.equals("bucketSize") && !s.equals("bucket")).collect(Collectors.toMap(s -> s, s -> String.format("$%s", s), (k, v) -> v, LinkedHashMap::new)))).
 						append("moduleInstanceId", new Document("$first", "moduleInstanceId")).
@@ -50,7 +50,7 @@ public final class TimeSeriesUtil {
 	 * @param collection collection
 	 */
 	public static void removeTimeSeriesDocuments(Document timeSeriesGroup, String collection){
-		Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).deleteMany(timeSeriesGroup);
+		Database.deleteMany(collection, timeSeriesGroup);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public final class TimeSeriesUtil {
 	 */
 	public static List<Document> getTimeSeriesDocuments(Document timeSeriesGroup, Map<Long, List<Document>> timeSeriesBuckets, BucketSize bucketSize, String collection){
 		List<Document> timeSeriesDocuments = new ArrayList<>();
-		Document baseDocument = Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).find(timeSeriesGroup).projection(new Document("timeseries", 0).append("_id", 0).append("localStartTime", 0).append("localEndTime", 0)).limit(1).first();
+		Document baseDocument = Database.findOne(collection, timeSeriesGroup, new Document("timeseries", 0).append("_id", 0).append("localStartTime", 0).append("localEndTime", 0));
 		if(baseDocument != null){
 			String baseDocumentJson = baseDocument.toJson();
 			timeSeriesBuckets.forEach((bucketValue, timeSeries) -> {
@@ -86,7 +86,7 @@ public final class TimeSeriesUtil {
 	 * @param collection collection
 	 */
 	public static void saveTimeSeriesDocuments(List<Document> timeSeriesDocuments, String collection){
-		Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).insertMany(timeSeriesDocuments);
+		Database.insertMany(collection, timeSeriesDocuments);
 	}
 
 	/**
@@ -97,7 +97,7 @@ public final class TimeSeriesUtil {
 	 */
 	public static List<Document> getTimeSeries(Document timeSeriesGroup, String collection){
 		List<Document> timeSeries = new ArrayList<>();
-		AggregateIterable<Document> results = Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).aggregate(List.of(
+		AggregateIterable<Document> results = Database.aggregate(collection, List.of(
 				new Document("$match", timeSeriesGroup),
 				new Document("$unwind", "$timeseries"),
 				new Document("$sort", new Document("timeseries.t", 1)),

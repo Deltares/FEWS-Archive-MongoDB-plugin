@@ -5,6 +5,6 @@ import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 /**
  *
  */
-public class ScalarExternalHistorical extends ScalarTimeSeries implements TimeSeries {
+public final class ScalarExternalHistorical extends ScalarTimeSeries implements TimeSeries {
 
 }

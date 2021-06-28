@@ -51,7 +51,7 @@ class ScalarSimulatedForecastingTest {
 		MetaDataUtil.getExistingMetaDataFilesFs().keySet().stream().filter(s -> s.toString().contains("simulated") && s.toString().contains("scalar")).limit(1).forEach(metaDataFile ->
 				NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile, MetaDataUtil.getNetcdfMetaData(metaDataFile)).entrySet().stream().limit(1).forEach(netcdfFile -> {
 					TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = NetcdfUtil.getTimeSeriesArrays(netcdfFile.getKey()).get(0);
-					TimeSeries ts = new ScalarExternalForecasting();
+					TimeSeries ts = new ScalarSimulatedForecasting();
 
 					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
 					Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
@@ -59,7 +59,9 @@ class ScalarSimulatedForecastingTest {
 					Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = NetcdfUtil.getTimeSeriesRecordsMap(netcdfFile.getKey(), netcdfContent);
 					TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
 					timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
-					assertNotNull(ts.getRoot(timeSeriesArray.getHeader(), ts.getEvents(timeSeriesArray), new Document()));
+					SimulationMetaData simulationMetaData = (SimulationMetaData) MetaDataUtil.getNetcdfMetaData(metaDataFile);
+					ArchiveRunInfo archiveRunInfo = RunInfoUtil.getRunInfo(simulationMetaData);
+					assertNotNull(ts.getRoot(timeSeriesArray.getHeader(), ts.getEvents(timeSeriesArray), ts.getRunInfo(archiveRunInfo)));
 				}));
 	}
 
@@ -72,7 +74,7 @@ class ScalarSimulatedForecastingTest {
 
 		MetaDataUtil.getExistingMetaDataFilesFs().keySet().stream().filter(s -> s.toString().contains("simulated") && s.toString().contains("scalar")).limit(1).forEach(metaDataFile ->
 				NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile, MetaDataUtil.getNetcdfMetaData(metaDataFile)).entrySet().stream().limit(1).forEach(netcdfFile -> {
-					TimeSeries ts = new ScalarExternalForecasting();
+					TimeSeries ts = new ScalarSimulatedForecasting();
 					SimulationMetaData simulationMetaData = (SimulationMetaData) MetaDataUtil.getNetcdfMetaData(metaDataFile);
 					ArchiveRunInfo archiveRunInfo = RunInfoUtil.getRunInfo(simulationMetaData);
 					assertNotNull(ts.getRunInfo(archiveRunInfo));

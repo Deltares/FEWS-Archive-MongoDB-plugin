@@ -1,6 +1,5 @@
 package nl.fews.archivedatabase.mongodb.export;
 
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.Sorts;
 import nl.fews.archivedatabase.mongodb.TestUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
@@ -63,12 +62,11 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = MongoDbArchiveDatabaseTimeSeriesExporter.create();
 		mongoDbArchiveDatabaseTimeSeriesExporter.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertExternalHistoricalTimeSeries(timeSeriesArrays, "areaId", "sourceId");
-
-		MongoClient mongoClient = Database.create();
+		
 		int index = 0;
-		List<Document> documents = StreamSupport.stream(mongoClient.getDatabase(Database.getDatabaseName()).getCollection("ExternalHistoricalScalarTimeSeries").find().sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
+		List<Document> documents = StreamSupport.stream(Database.find("ExternalHistoricalScalarTimeSeries", new Document()).sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
 		assertEquals(expected.length, documents.size());
-		for (Document d : mongoClient.getDatabase(Database.getDatabaseName()).getCollection("ExternalHistoricalScalarTimeSeries").find().sort(new Document("moduleInstanceId", 1).append("locationId", 1).append("parameterId", 1).append("qualifierId", 1).append("encodedTimeStepId", 1).append("startTime", 1))) {
+		for (Document d : Database.find("ExternalHistoricalScalarTimeSeries", new Document()).sort(new Document("moduleInstanceId", 1).append("locationId", 1).append("parameterId", 1).append("qualifierId", 1).append("encodedTimeStepId", 1).append("startTime", 1))) {
 			assertEquals(d.get("metaData", Document.class).getDate("archiveTime"), d.get("metaData", Document.class).getDate("modifiedTime"));
 			d.get("metaData", Document.class).remove("archiveTime");
 			d.get("metaData", Document.class).remove("modifiedTime");
@@ -79,9 +77,9 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertExternalForecastingTimeSeries(timeSeriesArrays, "areaId", "sourceId");
 
 		index = 0;
-		documents = StreamSupport.stream(mongoClient.getDatabase(Database.getDatabaseName()).getCollection("ExternalHistoricalScalarTimeSeries").find().sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
+		documents = StreamSupport.stream(Database.find("ExternalHistoricalScalarTimeSeries", new Document()).sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
 		assertEquals(expected.length, documents.size());
-		for (Document d : mongoClient.getDatabase(Database.getDatabaseName()).getCollection("ExternalHistoricalScalarTimeSeries").find().sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime"))) {
+		for (Document d : Database.find("ExternalHistoricalScalarTimeSeries", new Document()).sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime"))) {
 			assertNotSame(d.get("metaData", Document.class).getDate("archiveTime"), d.get("metaData", Document.class).getDate("modifiedTime"));
 			d.get("metaData", Document.class).remove("archiveTime");
 			d.get("metaData", Document.class).remove("modifiedTime");
@@ -120,10 +118,9 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = MongoDbArchiveDatabaseTimeSeriesExporter.create();
 		mongoDbArchiveDatabaseTimeSeriesExporter.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertExternalForecastingTimeSeries(timeSeriesArrays, "areaId", "sourceId");
-
-		MongoClient mongoClient = Database.create();
+		
 		int index = 0;
-		List<Document> documents = StreamSupport.stream(mongoClient.getDatabase(Database.getDatabaseName()).getCollection("ExternalForecastingScalarTimeSeries").find().sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
+		List<Document> documents = StreamSupport.stream(Database.find("ExternalForecastingScalarTimeSeries", new Document()).sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
 		assertEquals(expected.length, documents.size());
 		for (Document d : documents) {
 			assertEquals(d.get("metaData", Document.class).getDate("archiveTime"), d.get("metaData", Document.class).getDate("modifiedTime"));
@@ -136,7 +133,7 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertExternalForecastingTimeSeries(timeSeriesArrays, "areaId", "sourceId");
 
 		index = 0;
-		documents = StreamSupport.stream(mongoClient.getDatabase(Database.getDatabaseName()).getCollection("ExternalForecastingScalarTimeSeries").find().sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
+		documents = StreamSupport.stream(Database.find("ExternalForecastingScalarTimeSeries", new Document()).sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
 		assertEquals(expected.length, documents.size());
 		for (Document d : documents) {
 			assertNotSame(d.get("metaData", Document.class).getDate("archiveTime"), d.get("metaData", Document.class).getDate("modifiedTime"));
@@ -177,9 +174,8 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		mongoDbArchiveDatabaseTimeSeriesExporter.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertSimulatedForecastingTimeSeries(timeSeriesArrays, "areaId", "sourceId");
 
-		MongoClient mongoClient = Database.create();
 		int index = 0;
-		List<Document> documents = StreamSupport.stream(mongoClient.getDatabase(Database.getDatabaseName()).getCollection("SimulatedForecastingScalarTimeSeries").find().sort(new Document("moduleInstanceId", 1).append("locationId", 1).append("parameterId", 1).append("qualifierId", 1).append("encodedTimeStepId", 1).append("startTime", 1)).spliterator(), false).collect(Collectors.toList());
+		List<Document> documents = StreamSupport.stream(Database.find("SimulatedForecastingScalarTimeSeries", new Document()).sort(new Document("moduleInstanceId", 1).append("locationId", 1).append("parameterId", 1).append("qualifierId", 1).append("encodedTimeStepId", 1).append("startTime", 1)).spliterator(), false).collect(Collectors.toList());
 		assertEquals(expected.length, documents.size());
 		for (Document d : documents) {
 			assertEquals(d.get("metaData", Document.class).getDate("archiveTime"), d.get("metaData", Document.class).getDate("modifiedTime"));
@@ -192,7 +188,7 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertSimulatedForecastingTimeSeries(timeSeriesArrays, "areaId", "sourceId");
 
 		index = 0;
-		documents = StreamSupport.stream(mongoClient.getDatabase(Database.getDatabaseName()).getCollection("SimulatedForecastingScalarTimeSeries").find().sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
+		documents = StreamSupport.stream(Database.find("SimulatedForecastingScalarTimeSeries", new Document()).sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
 		assertEquals(expected.length, documents.size());
 		for (Document d : documents) {
 			assertNotSame(d.get("metaData", Document.class).getDate("archiveTime"), d.get("metaData", Document.class).getDate("modifiedTime"));
@@ -258,9 +254,8 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		mongoDbArchiveDatabaseTimeSeriesExporter.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertSimulatedHistoricalTimeSeries(timeSeriesArrays, "areaId", "sourceId");
 
-		MongoClient mongoClient = Database.create();
 		int index = 0;
-		List<Document> documents = StreamSupport.stream(mongoClient.getDatabase(Database.getDatabaseName()).getCollection("SimulatedHistoricalScalarTimeSeries").find().sort(new Document("moduleInstanceId", 1).append("locationId", 1).append("parameterId", 1).append("qualifierId", 1).append("encodedTimeStepId", 1).append("startTime", 1)).spliterator(), false).collect(Collectors.toList());
+		List<Document> documents = StreamSupport.stream(Database.find("SimulatedHistoricalScalarTimeSeries", new Document()).sort(new Document("moduleInstanceId", 1).append("locationId", 1).append("parameterId", 1).append("qualifierId", 1).append("encodedTimeStepId", 1).append("startTime", 1)).spliterator(), false).collect(Collectors.toList());
 		assertEquals(expected.length, documents.size());
 		for (Document d : documents) {
 			assertEquals(d.get("metaData", Document.class).getDate("archiveTime"), d.get("metaData", Document.class).getDate("modifiedTime"));
@@ -271,7 +266,7 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		}
 
 		index = 0;
-		documents = StreamSupport.stream(mongoClient.getDatabase(Database.getDatabaseName()).getCollection("SimulatedHistoricalScalarTimeSeriesStitched").find().sort(new Document("moduleInstanceId", 1).append("locationId", 1).append("parameterId", 1).append("qualifierId", 1).append("encodedTimeStepId", 1).append("startTime", 1)).spliterator(), false).collect(Collectors.toList());
+		documents = StreamSupport.stream(Database.find("SimulatedHistoricalScalarTimeSeriesStitched", new Document()).sort(new Document("moduleInstanceId", 1).append("locationId", 1).append("parameterId", 1).append("qualifierId", 1).append("encodedTimeStepId", 1).append("startTime", 1)).spliterator(), false).collect(Collectors.toList());
 		assertEquals(expected.length, documents.size());
 		for (Document d : documents) {
 			assertEquals(d.get("metaData", Document.class).getDate("archiveTime"), d.get("metaData", Document.class).getDate("modifiedTime"));
@@ -284,7 +279,7 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertSimulatedHistoricalTimeSeries(timeSeriesArrays, "areaId", "sourceId");
 
 		index = 0;
-		documents = StreamSupport.stream(mongoClient.getDatabase(Database.getDatabaseName()).getCollection("SimulatedHistoricalScalarTimeSeries").find().sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
+		documents = StreamSupport.stream(Database.find("SimulatedHistoricalScalarTimeSeries", new Document()).sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
 		assertEquals(expected.length, documents.size());
 		for (Document d : documents) {
 			assertNotSame(d.get("metaData", Document.class).getDate("archiveTime"), d.get("metaData", Document.class).getDate("modifiedTime"));
@@ -295,7 +290,7 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		}
 
 		index = 0;
-		documents = StreamSupport.stream(mongoClient.getDatabase(Database.getDatabaseName()).getCollection("SimulatedHistoricalScalarTimeSeriesStitched").find().sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
+		documents = StreamSupport.stream(Database.find("SimulatedHistoricalScalarTimeSeriesStitched", new Document()).sort(Sorts.ascending("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime")).spliterator(), false).collect(Collectors.toList());
 		assertEquals(expected.length, documents.size());
 		for (Document d : documents) {
 			assertNotSame(d.get("metaData", Document.class).getDate("archiveTime"), d.get("metaData", Document.class).getDate("modifiedTime"));

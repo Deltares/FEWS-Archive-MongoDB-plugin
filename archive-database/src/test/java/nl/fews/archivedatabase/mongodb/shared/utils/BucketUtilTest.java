@@ -29,11 +29,6 @@ class BucketUtilTest {
 	}
 
 	@Test
-	void resizeBuckets() {
-
-	}
-
-	@Test
 	void getEstimatedBucketSize() throws Exception {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		assertEquals(BucketSize.YEAR, BucketUtil.getEstimatedBucketSize(simpleDateFormat.parse("2020-01-01"), simpleDateFormat.parse("2020-01-02"), 23));
@@ -42,7 +37,10 @@ class BucketUtilTest {
 	}
 
 	@Test
-	void ensureBucketSize() {
-
+	void getInferredBucketSize() throws Exception {
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		assertEquals(BucketSize.DAY, BucketUtil.getInferredBucketSize(simpleDateFormat.parse("2020-01-01T00:00:00"), simpleDateFormat.parse("2020-01-01T23:59:59")));
+		assertEquals(BucketSize.MONTH, BucketUtil.getInferredBucketSize(simpleDateFormat.parse("2020-01-01T00:00:00"), simpleDateFormat.parse("2020-01-31T23:59:59")));
+		assertEquals(BucketSize.YEAR, BucketUtil.getInferredBucketSize(simpleDateFormat.parse("2020-01-01T00:00:00"), simpleDateFormat.parse("2020-12-31T23:59:59")));
 	}
 }

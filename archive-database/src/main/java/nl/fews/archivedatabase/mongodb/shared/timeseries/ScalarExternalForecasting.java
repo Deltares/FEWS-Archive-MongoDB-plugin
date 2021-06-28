@@ -13,23 +13,7 @@ import java.util.List;
 /**
  *
  */
-public class ScalarExternalForecasting extends ScalarExternalHistorical implements TimeSeries {
-
-	/**
-	 * @param header FEWS timeseries header
-	 * @param areaId areaId
-	 * @param sourceId sourceId
-	 * @return bson document representing the meta data of this timeseries
-	 */
-	@Override
-	public Document getMetaData(TimeSeriesHeader header, String areaId, String sourceId){
-		Document document = super.getMetaData(header, areaId, sourceId);
-
-		int ensembleMemberIndex = header.getEnsembleMemberIndex();
-		document.append("ensembleMemberIndex", ensembleMemberIndex);
-
-		return document;
-	}
+public class ScalarExternalForecasting extends ScalarTimeSeries implements TimeSeries {
 
 	/**
 	 *
@@ -47,13 +31,29 @@ public class ScalarExternalForecasting extends ScalarExternalHistorical implemen
 		Date forecastTime = new Date(header.getForecastTime());
 		Date localForecastTime = Settings.get("archiveDatabaseTimeConverter") == null ? null : DateUtil.getDates(Settings.get("archiveDatabaseTimeConverter", ArchiveDatabaseTimeConverter.class).convert(new long[]{header.getForecastTime()}))[0];
 
-		if (forecastTime.equals(new Date(0)))
+		if (header.getForecastTime() == Long.MIN_VALUE)
 			throw new IllegalArgumentException("header.getForecastTime() cannot be null or default");
 
 		document.append("ensembleId", ensembleId);
 		document.append("ensembleMemberId", ensembleMemberId);
 		document.append("forecastTime", forecastTime);
 		if(localForecastTime != null) document.append("localForecastTime", localForecastTime);
+
+		return document;
+	}
+
+	/**
+	 * @param header FEWS timeseries header
+	 * @param areaId areaId
+	 * @param sourceId sourceId
+	 * @return bson document representing the meta data of this timeseries
+	 */
+	@Override
+	public Document getMetaData(TimeSeriesHeader header, String areaId, String sourceId){
+		Document document = super.getMetaData(header, areaId, sourceId);
+
+		int ensembleMemberIndex = header.getEnsembleMemberIndex();
+		document.append("ensembleMemberIndex", ensembleMemberIndex);
 
 		return document;
 	}

@@ -4,18 +4,28 @@ import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
+import nl.fews.archivedatabase.mongodb.shared.utils.LogUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.PathUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
 
 public final class Delete {
+
+	/**
+	 *
+	 */
+	private static final Logger logger = LogManager.getLogger(Delete.class);
 
 	/**
 	 * Static Class
@@ -28,24 +38,14 @@ public final class Delete {
 	 * @param existingMetaDataFilesDb existingMetaDataFilesDb
 	 */
 	public static void deleteMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb){
-		try {
-			ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
-			ArrayList<Callable<Void>> tasks = new ArrayList<>();
-			MetaDataUtil.getMetaDataFilesDelete(existingMetaDataFilesFs, existingMetaDataFilesDb).forEach((file, date) -> tasks.add(() -> {
-				deleteMetaData(file);
-				return null;
-			}));
-			List<Future<Void>> results = pool.invokeAll(tasks);
-
-			for (Future<Void> x : results) {
-				x.get();
-			}
-			pool.shutdown();
-		}
-		catch (Exception ex){
-			Thread.currentThread().interrupt();
-			throw new RuntimeException(ex);
-		}
+		ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
+		ArrayList<Callable<Void>> tasks = new ArrayList<>();
+		MetaDataUtil.getMetaDataFilesDelete(existingMetaDataFilesFs, existingMetaDataFilesDb).forEach((file, date) -> tasks.add(() -> {
+			deleteMetaData(file);
+			return null;
+		}));
+		pool.invokeAll(tasks);
+		pool.shutdown();
 	}
 
 	/**
@@ -53,11 +53,16 @@ public final class Delete {
 	 * @param metaDataFile metaDataFile
 	 */
 	public static void deleteMetaData(File metaDataFile){
-		Document metaData = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find(new Document("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class)))).first();
-		if (metaData != null){
-			Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).updateOne(new Document("_id", metaData.getObjectId("_id")), new Document("$set", new Document("committed", false)));
-			metaData.getList("netcdfFiles", Document.class).parallelStream().forEach(Delete::deleteNetcdf);
-			Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).deleteOne(new Document("_id", metaData.getObjectId("_id")));
+		try {
+			Document metaData = Database.findOne(Settings.get("metaDataCollection"), new Document("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class))));
+			if (metaData != null) {
+				Database.updateOne(Settings.get("metaDataCollection"), new Document("_id", metaData.getObjectId("_id")), new Document("$set", new Document("committed", false)));
+				metaData.getList("netcdfFiles", Document.class).parallelStream().forEach(Delete::deleteNetcdf);
+				Database.deleteOne(Settings.get("metaDataCollection"), new Document("_id", metaData.getObjectId("_id")));
+			}
+		}
+		catch (Exception ex){
+			logger.warn(LogUtil.getLogMessageJson(ex, Map.of("metaDataFile", metaDataFile.toString())).toJson(), ex);
 		}
 	}
 
@@ -67,7 +72,7 @@ public final class Delete {
 	 */
 	private static void deleteNetcdf(Document netcdfFile){
 		if(netcdfFile != null && netcdfFile.getString("collection") != null && !netcdfFile.getList("timeSeriesIds", ObjectId.class).isEmpty()){
-			Database.create().getDatabase(Database.getDatabaseName()).getCollection(netcdfFile.getString("collection")).deleteMany(new Document("_id", new Document("$in", netcdfFile.getList("timeSeriesIds", ObjectId.class))));
+			Database.deleteMany(netcdfFile.getString("collection"), new Document("_id", new Document("$in", netcdfFile.getList("timeSeriesIds", ObjectId.class))));
 		}
 	}
 
@@ -76,11 +81,11 @@ public final class Delete {
 	 */
 	public static void deleteUncommitted(){
 		Arrays.stream(TimeSeriesType.values()).filter(s -> TimeSeriesTypeUtil.getTimeSeriesTypeCollection(s) != null).parallel().forEach(
-				s -> Database.create().getDatabase(Database.getDatabaseName()).getCollection(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(s)).deleteMany(new Document("committed", false)));
+				s -> Database.deleteMany(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(s), new Document("committed", false)));
 
-		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find(new Document("committed", false)).projection(new Document("_id", 0).append("metaDataFileRelativePath", 1)).forEach(
+		Database.find(Settings.get("metaDataCollection"), new Document("committed", false), new Document("_id", 0).append("metaDataFileRelativePath", 1)).forEach(
 				s -> Delete.deleteMetaData(PathUtil.fromRelativePathString(s.getString("metaDataFileRelativePath"), Settings.get("baseDirectoryArchive", String.class))));
 
-		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).deleteMany(new Document("committed", false));
+		Database.deleteMany(Settings.get("metaDataCollection"), new Document("committed", false));
 	}
 }

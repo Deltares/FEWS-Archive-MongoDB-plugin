@@ -9,6 +9,7 @@ import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
 import nl.wldelft.archive.util.metadata.observed.MetaDataReader;
 import nl.wldelft.archive.util.metadata.simulation.SimulationMetaDataReader;
 import org.bson.Document;
+import org.json.JSONObject;
 import org.json.XML;
 
 import java.io.File;
@@ -117,7 +118,7 @@ public final class MetaDataUtil {
 	 */
 	public static Map<File, Date> getExistingMetaDataFilesDb (String areaId) {
 		Map<File, Date> existingMetaDataDb = new HashMap<>();
-		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).aggregate(List.of(
+		Database.aggregate(Settings.get("metaDataCollection"), List.of(
 				new Document("$project", new Document("_id", 0).append("metaDataFileRelativePath", 1).append("metaDataFileTime", 1)))).
 				forEach(e -> {
 					File file = PathUtil.normalize(new File(Settings.get("baseDirectoryArchive", String.class), e.getString("metaDataFileRelativePath")));
@@ -134,7 +135,10 @@ public final class MetaDataUtil {
 	 */
 	public static NetcdfMetaData getNetcdfMetaData(File metaDataFile){
 		try {
-			String metaDataType = XML.toJSONObject(new InputStreamReader(new FileInputStream(metaDataFile), StandardCharsets.UTF_8)).keySet().toArray()[0].toString();
+			JSONObject document = XML.toJSONObject(new InputStreamReader(new FileInputStream(metaDataFile), StandardCharsets.UTF_8));
+			String metaDataType = document.keySet().toArray()[0].toString();
+			if(!document.getJSONObject(metaDataType).has("netcdf"))
+				return null;
 			switch (metaDataType) {
 				case "externalForecastMetaData":
 					return ExternalForecastMetaDataReader.readMetaData(metaDataFile);
@@ -143,7 +147,7 @@ public final class MetaDataUtil {
 				case "simulationMetaData":
 					return SimulationMetaDataReader.readMetaData(metaDataFile);
 				default:
-					throw new IllegalArgumentException(metaDataType);
+					return null;
 			}
 		}
 		catch (Exception ex){
@@ -158,7 +162,10 @@ public final class MetaDataUtil {
 	 * @return Map<File, NetcdfContent>
 	 */
 	public static Map<File, NetcdfContent> getNetcdfContentMap(File metaDataFile, NetcdfMetaData netcdfMetaData){
-		return IntStream.range(0, netcdfMetaData.netcdfFileCount()).boxed().collect(Collectors.toMap(
-				i -> PathUtil.normalize(new File(metaDataFile.getParentFile(), netcdfMetaData.getNetcdf(i).getUrl())), netcdfMetaData::getNetcdf));
+		Map<File, NetcdfContent> netcdfContentMap = new HashMap<>();
+		for (int i = 0; i < netcdfMetaData.netcdfFileCount(); i++) {
+			netcdfContentMap.put(PathUtil.normalize(new File(metaDataFile.getParentFile(), netcdfMetaData.getNetcdf(i).getUrl())), netcdfMetaData.getNetcdf(i));
+		}
+		return netcdfContentMap;
 	}
 }

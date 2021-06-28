@@ -5,6 +5,6 @@ import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 /**
  *
  */
-public class ScalarSimulatedHistorical extends ScalarSimulatedForecasting implements TimeSeries {
+public final class ScalarSimulatedHistorical extends ScalarSimulatedForecasting implements TimeSeries {
 
 }

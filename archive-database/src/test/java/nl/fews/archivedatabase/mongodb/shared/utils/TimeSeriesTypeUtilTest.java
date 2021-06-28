@@ -4,8 +4,7 @@ import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import org.javatuples.Pair;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class TimeSeriesTypeUtilTest {
 
@@ -56,5 +55,25 @@ class TimeSeriesTypeUtilTest {
 
 	@Test
 	void getTimeSeriesTypeSyncType() {
+		assertEquals("SynchronizeSingletons", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING));
+		assertEquals("SynchronizeBuckets", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
+		assertEquals("SynchronizeSingletons", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_SIMULATED_FORECASTING));
+		assertEquals("SynchronizeSingletons", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL));
+		assertEquals("SynchronizeBuckets", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET));
+		assertEquals("SynchronizeBuckets", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED));
+		assertEquals("SynchronizeSingletons", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_SIMULATED_FORECASTING_OVERWRITE));
+		assertEquals("SynchronizeSingletons", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_OVERWRITE));
+	}
+
+	@Test
+	void getTimeSeriesTypeBucket() {
+		assertFalse(TimeSeriesTypeUtil.getTimeSeriesTypeBucket(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING));
+		assertTrue(TimeSeriesTypeUtil.getTimeSeriesTypeBucket(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
+		assertFalse(TimeSeriesTypeUtil.getTimeSeriesTypeBucket(TimeSeriesType.SCALAR_SIMULATED_FORECASTING));
+		assertFalse(TimeSeriesTypeUtil.getTimeSeriesTypeBucket(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL));
+		assertTrue(TimeSeriesTypeUtil.getTimeSeriesTypeBucket(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET));
+		assertTrue(TimeSeriesTypeUtil.getTimeSeriesTypeBucket(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED));
+		assertFalse(TimeSeriesTypeUtil.getTimeSeriesTypeBucket(TimeSeriesType.SCALAR_SIMULATED_FORECASTING_OVERWRITE));
+		assertFalse(TimeSeriesTypeUtil.getTimeSeriesTypeBucket(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_OVERWRITE));
 	}
 }

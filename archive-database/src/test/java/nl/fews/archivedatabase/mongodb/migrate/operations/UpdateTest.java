@@ -36,12 +36,12 @@ class UpdateTest {
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
 		assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
 
-		Document old = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find().first();
-		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).updateMany(new Document(), new Document("$set", new Document("metaDataFileTime", new Date(0))));
+		Document old = Database.findOne(Settings.get("metaDataCollection"), new Document());
+		Database.updateMany(Settings.get("metaDataCollection"), new Document(), new Document("$set", new Document("metaDataFileTime", new Date(0))));
 
 		Update.updateMetaDatas(MetaDataUtil.getExistingMetaDataFilesFs(), MetaDataUtil.getExistingMetaDataFilesDb());
 
-		Document updated = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find().first();
+		Document updated = Database.findOne(Settings.get("metaDataCollection"), new Document());
 		assertNotEquals(updated.getObjectId("_id"), old.getObjectId("_id"));
 	}
 }

@@ -11,6 +11,20 @@ import java.util.Map;
 public final class TimeSeriesTypeUtil {
 
 	/**
+	 * timeSeriesTypeBucket
+	 */
+	private static final Map<TimeSeriesType, Boolean> timeSeriesTypeBucket = Map.of(
+			TimeSeriesType.SCALAR_EXTERNAL_FORECASTING, false,
+			TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, true,
+			TimeSeriesType.SCALAR_SIMULATED_FORECASTING, false,
+			TimeSeriesType.SCALAR_SIMULATED_HISTORICAL, false,
+			TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET, true,
+			TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED, true,
+			TimeSeriesType.SCALAR_SIMULATED_FORECASTING_OVERWRITE, false,
+			TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_OVERWRITE, false
+	);
+
+	/**
 	 * lookup for string representation of each timeseries type
 	 */
 	private static final Map<TimeSeriesType, String> timeSeriesTypeString = Map.of(
@@ -81,7 +95,7 @@ public final class TimeSeriesTypeUtil {
 	/**
 	 * lookup by valueType + metaDataType
 	 */
-	private static final Map<Pair<String, String>, TimeSeriesType> timeSeriesTypes = Map.of(
+	private static final Map<Pair<String, String>, TimeSeriesType> timeSeriesType = Map.of(
 			new Pair<>("scalar", "netcdfMetaData"), TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL,
 			new Pair<>("scalar", "externalForecastMetaData"), TimeSeriesType.SCALAR_EXTERNAL_FORECASTING,
 			new Pair<>("scalar", "simulationMetaData"), TimeSeriesType.SCALAR_SIMULATED_FORECASTING,
@@ -96,7 +110,7 @@ public final class TimeSeriesTypeUtil {
 	/**
 	 * lookup by valueType + timeSeriesTypeString
 	 */
-	private static final Map<Pair<String, String>, TimeSeriesType> timeSeriesTypesByTypeString = Map.of(
+	private static final Map<Pair<String, String>, TimeSeriesType> timeSeriesTypeByTypeString = Map.of(
 			new Pair<>("scalar", "external historical"), TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL,
 			new Pair<>("scalar", "external forecasting"), TimeSeriesType.SCALAR_EXTERNAL_FORECASTING,
 			new Pair<>("scalar", "simulated forecasting"), TimeSeriesType.SCALAR_SIMULATED_FORECASTING,
@@ -161,7 +175,16 @@ public final class TimeSeriesTypeUtil {
 	 * @return TimeSeriesType
 	 */
 	public static TimeSeriesType getTimeSeriesType(Pair<String, String> valueTypeTimeSeriesType){
-		return timeSeriesTypes.get(valueTypeTimeSeriesType);
+		return timeSeriesType.get(valueTypeTimeSeriesType);
+	}
+
+	/**
+	 *
+	 * @param timeSeriesType timeSeriesType
+	 * @return TimeSeriesType
+	 */
+	public static boolean getTimeSeriesTypeBucket(TimeSeriesType timeSeriesType){
+		return timeSeriesTypeBucket.get(timeSeriesType);
 	}
 
 	/**
@@ -170,6 +193,6 @@ public final class TimeSeriesTypeUtil {
 	 * @return TimeSeriesType
 	 */
 	public static TimeSeriesType getTimeSeriesTypeByTypeString(Pair<String, String> valueTypeTimeSeriesType){
-		return timeSeriesTypesByTypeString.get(valueTypeTimeSeriesType);
+		return timeSeriesTypeByTypeString.get(valueTypeTimeSeriesType);
 	}
 }

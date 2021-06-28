@@ -50,7 +50,9 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 			migrateDatabase.setUnitConverter(new TestUtil.ArchiveDatabaseUnitConverterTestImplementation());
 			migrateDatabase.setRegionConfigInfoProvider(new TestUtil.ArchiveDatabaseRegionConfigInfoProviderTestImplementation());
 			migrateDatabase.setUserNamePassword(testSettings.isNull("userName") ? "" : testSettings.getString("userName"), testSettings.isNull("password") ? "" : testSettings.getString("password"));
-			migrateDatabase.migrate(testSettings.getString("areaId"), testSettings.getString("sourceId"));
+			migrateDatabase.migrate(
+					testSettings.get("areaId") != JSONObject.NULL ? testSettings.getString("areaId") : null,
+					testSettings.get("sourceId") != JSONObject.NULL ? testSettings.getString("sourceId") : null);
 		}
 	}
 }

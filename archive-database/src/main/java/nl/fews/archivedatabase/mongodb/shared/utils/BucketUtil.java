@@ -63,7 +63,7 @@ public final class BucketUtil {
 	 * @return BucketSize
 	 */
 	public static BucketSize getBucketSize(Document timeSeriesGroup){
-		Document bucketSize = Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("bucketSizeCollection")).find(timeSeriesGroup).projection(new Document("bucketSize", 1)).first();
+		Document bucketSize = Database.findOne(Settings.get("bucketSizeCollection"), timeSeriesGroup, new Document("bucketSize", 1));
 		if (bucketSize != null)
 			return BucketSize.valueOf(bucketSize.getString("bucketSize"));
 		return DEFAULT_BUCKET_SIZE;
@@ -145,6 +145,63 @@ public final class BucketUtil {
 
 	/**
 	 *
+	 * @param startTime startTime
+	 * @param endTime endTime
+	 * @return BucketSize
+	 */
+	public static BucketSize getArchiveInferredBucketSize(Date startTime, Date endTime){
+		LocalDateTime s = DateUtil.getLocalDateTime(startTime);
+		LocalDateTime e = DateUtil.getLocalDateTime(endTime);
+
+		if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue() && s.getDayOfMonth() == e.getDayOfMonth())
+			return BucketSize.DAY;
+		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue())
+			return BucketSize.MONTH;
+		else
+			return BucketSize.DAY;
+	}
+
+	/**
+	 *
+	 * @param startTime startTime
+	 * @param endTime endTime
+	 * @return int
+	 */
+	public static BucketSize getInferredBucketSize(Date startTime, Date endTime){
+
+		LocalDateTime s = DateUtil.getLocalDateTime(startTime);
+		LocalDateTime e = DateUtil.getLocalDateTime(endTime);
+
+		if(e.compareTo(s) <= 0)
+			throw new IllegalArgumentException(String.format("startTime: [%s] endTime: [%s]. startTime must be greater than end time.", startTime, endTime));
+		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue() && s.getDayOfMonth() == e.getDayOfMonth() && s.getHour() == e.getHour() && s.getMinute() == e.getMinute() && s.getSecond() == e.getSecond())
+			return BucketSize.SECOND;
+		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue() && s.getDayOfMonth() == e.getDayOfMonth() && s.getHour() == e.getHour() && s.getMinute() == e.getMinute())
+			return BucketSize.MINUTE;
+		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue() && s.getDayOfMonth() == e.getDayOfMonth() && s.getHour() == e.getHour())
+			return BucketSize.HOUR;
+		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue() && s.getDayOfMonth() == e.getDayOfMonth())
+			return BucketSize.DAY;
+		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue())
+			return BucketSize.MONTH;
+		else if(s.getYear() == e.getYear())
+			return BucketSize.YEAR;
+		else if(e.getYear() - s.getYear() > 1000000)
+			return BucketSize.AEON;
+		else if(e.getYear() - s.getYear() > 1000)
+			return BucketSize.MEGANNUM;
+		else if(e.getYear() - s.getYear() > 100)
+			return BucketSize.MILLENNIA;
+		else if(e.getYear() - s.getYear() > 10)
+			return BucketSize.CENTURY;
+		else if(e.getYear() - s.getYear() > 0)
+			return BucketSize.DECADE;
+		else
+			throw new IllegalArgumentException(String.format("[%s] - [%s]", startTime, endTime));
+	}
+
+	/**
+	 *
 	 * @param date date
 	 * @param bucketSize bucketSize
 	 * @return int
@@ -185,8 +242,8 @@ public final class BucketUtil {
 	 * @param timeSeriesGroup timeSeriesGroup
 	 */
 	public static void resizeBuckets(TimeSeriesType timeSeriesType, Document timeSeriesGroup, BucketSize bucketSize){
-		if(timeSeriesType != TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL && timeSeriesType != TimeSeriesType.SCALAR_SIMULATED_HISTORICAL)
-			throw new IllegalArgumentException(String.format("[%s] Only [%s] and [%s] support bucketing", timeSeriesType, TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL));
+		if(!TimeSeriesTypeUtil.getTimeSeriesTypeBucket(timeSeriesType))
+			throw new IllegalArgumentException(String.format("[%s] Only [%s] and [%s] support bucketing", timeSeriesType, TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED));
 
 		List<Document> timeSeries = TimeSeriesUtil.getTimeSeries(timeSeriesGroup, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType));
 		Map<Long, List<Document>> timeSeriesBuckets = TimeSeriesUtil.getTimeSeriesBuckets(timeSeries, bucketSize);
@@ -195,7 +252,7 @@ public final class BucketUtil {
 		TimeSeriesUtil.removeTimeSeriesDocuments(timeSeriesGroup, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType));
 		TimeSeriesUtil.saveTimeSeriesDocuments(timeSeriesDocuments, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType));
 
-		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("bucketSizeCollection")).updateOne(timeSeriesGroup, new Document("bucketSize", bucketSize.toString()), new UpdateOptions().upsert(true));
+		Database.updateOne(Settings.get("bucketSizeCollection"), timeSeriesGroup, new Document("bucketSize", bucketSize.toString()), new UpdateOptions().upsert(true));
 	}
 
 	/**

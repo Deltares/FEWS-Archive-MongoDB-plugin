@@ -46,11 +46,11 @@ public final class DatabaseUtil {
 	public static Pair<String,List<ObjectId>> synchronize(String collection, List<Document> timeSeries, File netcdfFile){
 		List<ObjectId> insertedIds = new ArrayList<>();
 		try {
-			Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).insertMany(timeSeries);
+			Database.insertMany(collection, timeSeries);
 			insertedIds.addAll(timeSeries.stream().map(s -> s.getObjectId("_id")).collect(Collectors.toList()));
 		}
 		catch (MongoBulkWriteException ex) {
-			Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).deleteMany(new Document("_id", new Document("$in", timeSeries.stream().filter(s -> s.containsKey("_id") && s.getObjectId("_id") != null).map(s -> s.getObjectId("_id")).collect(Collectors.toList()))));
+			Database.deleteMany(collection, new Document("_id", new Document("$in", timeSeries.stream().filter(s -> s.containsKey("_id") && s.getObjectId("_id") != null).map(s -> s.getObjectId("_id")).collect(Collectors.toList()))));
 			for (Document ts : timeSeries)
 				insertNetcdf(collection, ts, insertedIds, netcdfFile);
 		}
@@ -66,7 +66,7 @@ public final class DatabaseUtil {
 	 */
 	private static void insertNetcdf(String collection, Document timeSeries, List<ObjectId> insertedIds, File netcdfFile){
 		try {
-			Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).insertOne(timeSeries);
+			Database.insertOne(collection, timeSeries);
 			insertedIds.add(timeSeries.getObjectId("_id"));
 		}
 		catch (MongoWriteException wex) {
@@ -75,10 +75,10 @@ public final class DatabaseUtil {
 			Matcher matcher = dupKeyPattern.matcher(wex.getError().getMessage());
 			Document dupKey = matcher.find() ? Document.parse(matcher.group(1).replace("\",\"", "\\\",\\\"").replace("\"[\"", "\"[\\\"").replace("\"]\"", "\\\"]\"")) : new Document();
 
-			Document existingTimeseries = !dupKey.isEmpty() ? Database.create().getDatabase(Database.getDatabaseName()).getCollection(collection).find(dupKey).projection(new Document("timeseries", 0)).first() : null;
+			Document existingTimeseries = !dupKey.isEmpty() ? Database.findOne(collection, dupKey, new Document("timeseries", 0)) : null;
 			existingTimeseries = existingTimeseries != null ? existingTimeseries : new Document();
 
-			Document existingMetaData = !existingTimeseries.isEmpty() ? Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).find(new Document("netcdfFiles.timeSeriesIds", existingTimeseries.getObjectId("_id"))).first() : null;
+			Document existingMetaData = !existingTimeseries.isEmpty() ? Database.findOne(Settings.get("metaDataCollection"), new Document("netcdfFiles.timeSeriesIds", existingTimeseries.getObjectId("_id"))) : null;
 			existingMetaData = existingMetaData != null ? existingMetaData : new Document();
 
 			Document message = LogUtil.getLogMessageJson(wex, Map.of(

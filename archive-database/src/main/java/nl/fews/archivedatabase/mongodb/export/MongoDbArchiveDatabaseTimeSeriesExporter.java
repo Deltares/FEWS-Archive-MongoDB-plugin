@@ -1,7 +1,6 @@
 package nl.fews.archivedatabase.mongodb.export;
 
 import nl.fews.archivedatabase.mongodb.export.interfaces.Synchronize;
-import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
@@ -220,7 +219,6 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 					Settings.get("archiveDatabaseUrl") :
 					Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
 			Settings.put("connectionString", connectionString);
-			Settings.put("database", Database.getDatabaseName());
 
 			Synchronize synchronize = (Synchronize)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "export.operations", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(timeSeriesType))).getConstructor().newInstance();
 			synchronize.synchronize(ts, timeSeriesType);

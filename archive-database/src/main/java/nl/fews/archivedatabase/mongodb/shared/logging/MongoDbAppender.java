@@ -1,5 +1,6 @@
 package nl.fews.archivedatabase.mongodb.shared.logging;
 
+import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
@@ -63,7 +64,7 @@ public class MongoDbAppender extends AbstractAppender {
 			@PluginAttribute("connectionString") String connectionString,
 			@PluginElement("Filter") Filter filter) {
 		MongoDbAppender.collectionName = Database.Collection.MigrateLog.toString();
-		MongoDbAppender.databaseName = Database.getDatabaseName(connectionString);
+		MongoDbAppender.databaseName = new ConnectionString(connectionString).getDatabase();
 		MongoDbAppender.mongoClient = MongoClients.create(connectionString);
 		return new MongoDbAppender(name, filter);
 	}

@@ -133,6 +133,9 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 		Database.dropCollection(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED));
 		Database.ensureCollection(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED));
 		StitchScalarSimulatedHistorical.stitchGroups();
+
+		if(false)
+			BucketScalarExternalHistorical.replaceTimeSeriesWithBucketCollection();
 	}
 
 	/**

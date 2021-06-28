@@ -16,6 +16,7 @@ import java.util.List;
  *
  */
 public class ScalarSimulatedForecasting extends ScalarExternalForecasting implements TimeSeries {
+
 	/**
 	 *
 	 * @param header FEWS timeseries header

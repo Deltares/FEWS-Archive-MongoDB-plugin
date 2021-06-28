@@ -49,7 +49,7 @@ class ScalarExternalHistoricalTest {
 		MetaDataUtil.getExistingMetaDataFilesFs().keySet().stream().filter(s -> s.toString().contains("observed") && s.toString().contains("scalar")).limit(1).forEach(metaDataFile ->
 				NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile, MetaDataUtil.getNetcdfMetaData(metaDataFile)).entrySet().stream().limit(1).forEach(netcdfFile -> {
 					TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = NetcdfUtil.getTimeSeriesArrays(netcdfFile.getKey()).get(0);
-					TimeSeries ts = new ScalarExternalForecasting();
+					TimeSeries ts = new ScalarExternalHistorical();
 
 					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
 					Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
@@ -74,7 +74,7 @@ class ScalarExternalHistoricalTest {
 		MetaDataUtil.getExistingMetaDataFilesFs().keySet().stream().filter(s -> s.toString().contains("observed") && s.toString().contains("scalar")).limit(1).forEach(metaDataFile ->
 				NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile, MetaDataUtil.getNetcdfMetaData(metaDataFile)).entrySet().stream().limit(1).forEach(netcdfFile -> {
 					TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = NetcdfUtil.getTimeSeriesArrays(netcdfFile.getKey()).get(0);
-					TimeSeries ts = new ScalarExternalForecasting();
+					TimeSeries ts = new ScalarExternalHistorical();
 
 					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
 					Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
@@ -96,7 +96,7 @@ class ScalarExternalHistoricalTest {
 		MetaDataUtil.getExistingMetaDataFilesFs().keySet().stream().filter(s -> s.toString().contains("observed") && s.toString().contains("scalar")).limit(1).forEach(metaDataFile ->
 				NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile, MetaDataUtil.getNetcdfMetaData(metaDataFile)).entrySet().stream().limit(1).forEach(netcdfFile -> {
 					TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = NetcdfUtil.getTimeSeriesArrays(netcdfFile.getKey()).get(0);
-					TimeSeries ts = new ScalarExternalForecasting();
+					TimeSeries ts = new ScalarExternalHistorical();
 
 					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
 					Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
@@ -117,7 +117,7 @@ class ScalarExternalHistoricalTest {
 
 		MetaDataUtil.getExistingMetaDataFilesFs().keySet().stream().filter(s -> s.toString().contains("observed") && s.toString().contains("scalar")).limit(1).forEach(metaDataFile ->
 				NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile, MetaDataUtil.getNetcdfMetaData(metaDataFile)).entrySet().stream().limit(1).forEach(netcdfFile -> {
-					TimeSeries ts = new ScalarExternalForecasting();
+					TimeSeries ts = new ScalarExternalHistorical();
 					assertNotNull(ts.getRunInfo((ArchiveRunInfo) null));
 				}));
 	}

@@ -53,7 +53,7 @@ class DeleteTest {
 		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
 		assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
-		Database.create().getDatabase(Database.getDatabaseName()).getCollection(Settings.get("metaDataCollection")).updateMany(new Document(), new Document("$set", new Document("committed", false)));
+		Database.updateMany(Settings.get("metaDataCollection"), new Document(), new Document("$set", new Document("committed", false)));
 		Delete.deleteUncommitted();
 		assertEquals(0, MetaDataUtil.getExistingMetaDataFilesDb().size());
 	}
