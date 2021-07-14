@@ -90,17 +90,22 @@ public final class Insert {
 			metaDataDocument.append("committed", false);
 
 			netcdfFiles.forEach((netcdfFile, dateNetcdf) -> {
-				NetcdfContent netcdfContent = netcdfContentMap.get(netcdfFile);
-				Pair<String, List<ObjectId>> insertedIds = Insert.insertNetcdfs(netcdfFile, netcdfContent, archiveRunInfo);
-				if (insertedIds.getValue1() != null && !insertedIds.getValue1().isEmpty()) {
-					allInsertedIds.putIfAbsent(insertedIds.getValue0(), new ArrayList<>());
-					allInsertedIds.get(insertedIds.getValue0()).addAll(insertedIds.getValue1());
-					Document netcdfFileEntry = new Document();
-					netcdfFileEntry.append("netcdfFileRelativePath", PathUtil.toRelativePathString(netcdfFile, Settings.get("baseDirectoryArchive", String.class)));
-					netcdfFileEntry.append("netcdfFileTime", dateNetcdf.getValue0());
-					netcdfFileEntry.append("timeSeriesIds", insertedIds.getValue1());
-					netcdfFileEntry.append("collection", insertedIds.getValue0());
-					metaDataDocument.getList("netcdfFiles", Document.class).add(netcdfFileEntry);
+				try {
+					NetcdfContent netcdfContent = netcdfContentMap.get(netcdfFile);
+					Pair<String, List<ObjectId>> insertedIds = Insert.insertNetcdfs(netcdfFile, netcdfContent, archiveRunInfo);
+					if (insertedIds.getValue1() != null && !insertedIds.getValue1().isEmpty()) {
+						allInsertedIds.putIfAbsent(insertedIds.getValue0(), new ArrayList<>());
+						allInsertedIds.get(insertedIds.getValue0()).addAll(insertedIds.getValue1());
+						Document netcdfFileEntry = new Document();
+						netcdfFileEntry.append("netcdfFileRelativePath", PathUtil.toRelativePathString(netcdfFile, Settings.get("baseDirectoryArchive", String.class)));
+						netcdfFileEntry.append("netcdfFileTime", dateNetcdf.getValue0());
+						netcdfFileEntry.append("timeSeriesIds", insertedIds.getValue1());
+						netcdfFileEntry.append("collection", insertedIds.getValue0());
+						metaDataDocument.getList("netcdfFiles", Document.class).add(netcdfFileEntry);
+					}
+				}
+				catch (Exception ex){
+					logger.warn(LogUtil.getLogMessageJson(ex, Map.of("netcdfFile", netcdfFile.toString())).toJson(), ex);
 				}
 			});
 			ObjectId insertedId = Database.insertOne(Settings.get("metaDataCollection"), metaDataDocument).getInsertedId().asObjectId().getValue();

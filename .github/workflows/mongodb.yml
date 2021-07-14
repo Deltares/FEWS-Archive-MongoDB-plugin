@@ -22,8 +22,10 @@ jobs:
         java-version: 11
     - name: Build with Maven
       run: mvn -B package --file archive-database/pom.xml
-    - name: Archive code coverage results
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: mongodb.jar
-        path: target/*.jar
+        name: mongodb
+        path: |
+          ./archive-database/target/archive-database*.jar
+          ./archive-database/target/Delft_Archive_Server.jar

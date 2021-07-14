@@ -8,13 +8,46 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.OpenArchiv
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 
 public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader> {
+
+	/**
+	 *
+	 */
+	private static MongoDbArchiveDatabase mongoDbArchiveDatabase = null;
+
+	/**
+	 *
+	 */
+	private static MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = null;
+
+	/**
+	 *
+	 */
+	private static MongoDbOpenArchiveToArchiveDatabaseMigrator mongoDbOpenArchiveToArchiveDatabaseMigrator = null;
+
+	/**
+	 *
+	 */
+	private MongoDbArchiveDatabase(){}
+
+	/**
+	 *
+	 * @return MongoDbArchiveDatabase
+	 */
+	public static MongoDbArchiveDatabase create(){
+		if(mongoDbArchiveDatabase == null)
+			mongoDbArchiveDatabase = new MongoDbArchiveDatabase();
+		return mongoDbArchiveDatabase;
+	}
+
 	/**
 	 *
 	 * @return MongoDbArchiveDatabaseTimeSeriesExporter
 	 */
 	@Override
 	public ArchiveDatabaseTimeSeriesExporter<TimeSeriesHeader> getArchiveTimeSeriesExporter() {
-		return MongoDbArchiveDatabaseTimeSeriesExporter.create();
+		if(mongoDbArchiveDatabaseTimeSeriesExporter == null)
+			mongoDbArchiveDatabaseTimeSeriesExporter = MongoDbArchiveDatabaseTimeSeriesExporter.create();
+		return mongoDbArchiveDatabaseTimeSeriesExporter;
 	}
 
 	/**
@@ -23,6 +56,8 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 	 */
 	@Override
 	public OpenArchiveToArchiveDatabaseMigrator getOpenArchiveToArchiveDatabaseMigrator() {
-		return MongoDbOpenArchiveToArchiveDatabaseMigrator.create();
+		if(mongoDbOpenArchiveToArchiveDatabaseMigrator == null)
+			mongoDbOpenArchiveToArchiveDatabaseMigrator = MongoDbOpenArchiveToArchiveDatabaseMigrator.create();
+		return mongoDbOpenArchiveToArchiveDatabaseMigrator;
 	}
 }

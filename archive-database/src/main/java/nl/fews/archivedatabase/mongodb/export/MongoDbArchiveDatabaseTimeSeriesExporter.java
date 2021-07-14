@@ -49,21 +49,26 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 	/**
 	 *
 	 */
+	private static MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = null;
+
+	/**
+	 *
+	 */
 	private static final String BASE_NAMESPACE = "nl.fews.archivedatabase.mongodb";
 
 	/**
 	 * Creates a new instance of this interface implementation
 	 */
 	public static MongoDbArchiveDatabaseTimeSeriesExporter create() {
-		return new MongoDbArchiveDatabaseTimeSeriesExporter();
+		if(mongoDbArchiveDatabaseTimeSeriesExporter == null)
+			mongoDbArchiveDatabaseTimeSeriesExporter = new MongoDbArchiveDatabaseTimeSeriesExporter();
+		return mongoDbArchiveDatabaseTimeSeriesExporter;
 	}
 
 	/**
 	 * block direct instantiation; use static create() method
 	 */
-	private MongoDbArchiveDatabaseTimeSeriesExporter(){
-
-	}
+	private MongoDbArchiveDatabaseTimeSeriesExporter(){}
 
 	/**
 	 *

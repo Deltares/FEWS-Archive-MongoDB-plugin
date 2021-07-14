@@ -10,6 +10,7 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.Properties;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Map;
 
@@ -28,11 +29,15 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 		Settings.put("runInfoFileName", "runInfo.xml");
 	}
 
+	private static MongoDbOpenArchiveToArchiveDatabaseMigrator mongoDbOpenArchiveToArchiveDatabaseMigrator = null;
+
 	/**
 	 * Creates a new instance of this interface implementation
 	 */
 	public static MongoDbOpenArchiveToArchiveDatabaseMigrator create() {
-		return new MongoDbOpenArchiveToArchiveDatabaseMigrator();
+		if(mongoDbOpenArchiveToArchiveDatabaseMigrator == null)
+			mongoDbOpenArchiveToArchiveDatabaseMigrator = new MongoDbOpenArchiveToArchiveDatabaseMigrator();
+		return mongoDbOpenArchiveToArchiveDatabaseMigrator;
 	}
 
 
@@ -144,7 +149,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void setOpenArchiveToDatabaseSettings(OpenArchiveToArchiveDatabaseMigrationSettings openArchiveToArchiveDatabaseMigrationSettings) {
-		Settings.put("baseDirectoryArchive", openArchiveToArchiveDatabaseMigrationSettings.getBaseDirectoryArchive());
+		Settings.put("baseDirectoryArchive", Paths.get(openArchiveToArchiveDatabaseMigrationSettings.getBaseDirectoryArchive()).toString());
 		Settings.put("databaseBaseThreads", openArchiveToArchiveDatabaseMigrationSettings.getDatabaseBaseThreads());
 		Settings.put("netcdfReadThreads", openArchiveToArchiveDatabaseMigrationSettings.getNetcdfReadThreads());
 	}

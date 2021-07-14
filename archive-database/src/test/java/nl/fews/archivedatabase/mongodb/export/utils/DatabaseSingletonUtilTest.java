@@ -33,26 +33,26 @@ class DatabaseSingletonUtilTest {
 	void getDocumentsByKey() {
 
 		String[] expected = new String[]{
-			"[\"moduleInstanceId0\",\"locationId0\",\"parameterId0\",\"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\",\"SETS360\",\"ensembleId0\",\"1\",\"Sun Jan 01 00:00:00 UTC 2012\"]",
-			"[\"moduleInstanceId0\",\"locationId0\",\"parameterId0\",\"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\",\"SETS360\",\"ensembleId0\",\"1\",\"Tue Jan 01 00:00:00 UTC 2013\"]",
-			"[\"moduleInstanceId1\",\"locationId1\",\"parameterId1\",\"[\\\"qualifierId1\\\",\\\"qualifierId1\\\"]\",\"SETS360\",\"ensembleId1\",\"1\",\"Sun Jan 01 00:00:00 UTC 2012\"]",
-			"[\"moduleInstanceId1\",\"locationId1\",\"parameterId1\",\"[\\\"qualifierId1\\\",\\\"qualifierId1\\\"]\",\"SETS360\",\"ensembleId1\",\"1\",\"Tue Jan 01 00:00:00 UTC 2013\"]",
-			"[\"moduleInstanceId2\",\"locationId2\",\"parameterId2\",\"[\\\"qualifierId2\\\",\\\"qualifierId2\\\"]\",\"SETS360\",\"ensembleId2\",\"1\",\"Sun Jan 01 00:00:00 UTC 2012\"]",
-			"[\"moduleInstanceId2\",\"locationId2\",\"parameterId2\",\"[\\\"qualifierId2\\\",\\\"qualifierId2\\\"]\",\"SETS360\",\"ensembleId2\",\"1\",\"Tue Jan 01 00:00:00 UTC 2013\"]",
-			"[\"moduleInstanceId3\",\"locationId3\",\"parameterId3\",\"[\\\"qualifierId3\\\",\\\"qualifierId3\\\"]\",\"SETS360\",\"ensembleId3\",\"1\",\"Sun Jan 01 00:00:00 UTC 2012\"]",
-			"[\"moduleInstanceId3\",\"locationId3\",\"parameterId3\",\"[\\\"qualifierId3\\\",\\\"qualifierId3\\\"]\",\"SETS360\",\"ensembleId3\",\"1\",\"Tue Jan 01 00:00:00 UTC 2013\"]",
-			"[\"moduleInstanceId4\",\"locationId4\",\"parameterId4\",\"[\\\"qualifierId4\\\",\\\"qualifierId4\\\"]\",\"SETS360\",\"ensembleId4\",\"1\",\"Sun Jan 01 00:00:00 UTC 2012\"]",
-			"[\"moduleInstanceId4\",\"locationId4\",\"parameterId4\",\"[\\\"qualifierId4\\\",\\\"qualifierId4\\\"]\",\"SETS360\",\"ensembleId4\",\"1\",\"Tue Jan 01 00:00:00 UTC 2013\"]",
-			"[\"moduleInstanceId5\",\"locationId5\",\"parameterId5\",\"[\\\"qualifierId5\\\",\\\"qualifierId5\\\"]\",\"SETS360\",\"ensembleId5\",\"1\",\"Sun Jan 01 00:00:00 UTC 2012\"]",
-			"[\"moduleInstanceId5\",\"locationId5\",\"parameterId5\",\"[\\\"qualifierId5\\\",\\\"qualifierId5\\\"]\",\"SETS360\",\"ensembleId5\",\"1\",\"Tue Jan 01 00:00:00 UTC 2013\"]",
-			"[\"moduleInstanceId6\",\"locationId6\",\"parameterId6\",\"[\\\"qualifierId6\\\",\\\"qualifierId6\\\"]\",\"SETS360\",\"ensembleId6\",\"1\",\"Sun Jan 01 00:00:00 UTC 2012\"]",
-			"[\"moduleInstanceId6\",\"locationId6\",\"parameterId6\",\"[\\\"qualifierId6\\\",\\\"qualifierId6\\\"]\",\"SETS360\",\"ensembleId6\",\"1\",\"Tue Jan 01 00:00:00 UTC 2013\"]",
-			"[\"moduleInstanceId7\",\"locationId7\",\"parameterId7\",\"[\\\"qualifierId7\\\",\\\"qualifierId7\\\"]\",\"SETS360\",\"ensembleId7\",\"1\",\"Sun Jan 01 00:00:00 UTC 2012\"]",
-			"[\"moduleInstanceId7\",\"locationId7\",\"parameterId7\",\"[\\\"qualifierId7\\\",\\\"qualifierId7\\\"]\",\"SETS360\",\"ensembleId7\",\"1\",\"Tue Jan 01 00:00:00 UTC 2013\"]",
-			"[\"moduleInstanceId8\",\"locationId8\",\"parameterId8\",\"[\\\"qualifierId8\\\",\\\"qualifierId8\\\"]\",\"SETS360\",\"ensembleId8\",\"1\",\"Sun Jan 01 00:00:00 UTC 2012\"]",
-			"[\"moduleInstanceId8\",\"locationId8\",\"parameterId8\",\"[\\\"qualifierId8\\\",\\\"qualifierId8\\\"]\",\"SETS360\",\"ensembleId8\",\"1\",\"Tue Jan 01 00:00:00 UTC 2013\"]",
-			"[\"moduleInstanceId9\",\"locationId9\",\"parameterId9\",\"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\",\"SETS360\",\"ensembleId9\",\"1\",\"Sun Jan 01 00:00:00 UTC 2012\"]",
-			"[\"moduleInstanceId9\",\"locationId9\",\"parameterId9\",\"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\",\"SETS360\",\"ensembleId9\",\"1\",\"Tue Jan 01 00:00:00 UTC 2013\"]"
+			"[\"moduleInstanceId0\",\"locationId0\",\"parameterId0\",\"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\",\"SETS360\",\"ensembleId0\",\"1\",\"2012-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId0\",\"locationId0\",\"parameterId0\",\"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\",\"SETS360\",\"ensembleId0\",\"1\",\"2013-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId1\",\"locationId1\",\"parameterId1\",\"[\\\"qualifierId1\\\",\\\"qualifierId1\\\"]\",\"SETS360\",\"ensembleId1\",\"1\",\"2012-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId1\",\"locationId1\",\"parameterId1\",\"[\\\"qualifierId1\\\",\\\"qualifierId1\\\"]\",\"SETS360\",\"ensembleId1\",\"1\",\"2013-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId2\",\"locationId2\",\"parameterId2\",\"[\\\"qualifierId2\\\",\\\"qualifierId2\\\"]\",\"SETS360\",\"ensembleId2\",\"1\",\"2012-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId2\",\"locationId2\",\"parameterId2\",\"[\\\"qualifierId2\\\",\\\"qualifierId2\\\"]\",\"SETS360\",\"ensembleId2\",\"1\",\"2013-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId3\",\"locationId3\",\"parameterId3\",\"[\\\"qualifierId3\\\",\\\"qualifierId3\\\"]\",\"SETS360\",\"ensembleId3\",\"1\",\"2012-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId3\",\"locationId3\",\"parameterId3\",\"[\\\"qualifierId3\\\",\\\"qualifierId3\\\"]\",\"SETS360\",\"ensembleId3\",\"1\",\"2013-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId4\",\"locationId4\",\"parameterId4\",\"[\\\"qualifierId4\\\",\\\"qualifierId4\\\"]\",\"SETS360\",\"ensembleId4\",\"1\",\"2012-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId4\",\"locationId4\",\"parameterId4\",\"[\\\"qualifierId4\\\",\\\"qualifierId4\\\"]\",\"SETS360\",\"ensembleId4\",\"1\",\"2013-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId5\",\"locationId5\",\"parameterId5\",\"[\\\"qualifierId5\\\",\\\"qualifierId5\\\"]\",\"SETS360\",\"ensembleId5\",\"1\",\"2012-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId5\",\"locationId5\",\"parameterId5\",\"[\\\"qualifierId5\\\",\\\"qualifierId5\\\"]\",\"SETS360\",\"ensembleId5\",\"1\",\"2013-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId6\",\"locationId6\",\"parameterId6\",\"[\\\"qualifierId6\\\",\\\"qualifierId6\\\"]\",\"SETS360\",\"ensembleId6\",\"1\",\"2012-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId6\",\"locationId6\",\"parameterId6\",\"[\\\"qualifierId6\\\",\\\"qualifierId6\\\"]\",\"SETS360\",\"ensembleId6\",\"1\",\"2013-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId7\",\"locationId7\",\"parameterId7\",\"[\\\"qualifierId7\\\",\\\"qualifierId7\\\"]\",\"SETS360\",\"ensembleId7\",\"1\",\"2012-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId7\",\"locationId7\",\"parameterId7\",\"[\\\"qualifierId7\\\",\\\"qualifierId7\\\"]\",\"SETS360\",\"ensembleId7\",\"1\",\"2013-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId8\",\"locationId8\",\"parameterId8\",\"[\\\"qualifierId8\\\",\\\"qualifierId8\\\"]\",\"SETS360\",\"ensembleId8\",\"1\",\"2012-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId8\",\"locationId8\",\"parameterId8\",\"[\\\"qualifierId8\\\",\\\"qualifierId8\\\"]\",\"SETS360\",\"ensembleId8\",\"1\",\"2013-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId9\",\"locationId9\",\"parameterId9\",\"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\",\"SETS360\",\"ensembleId9\",\"1\",\"2012-01-01T00:00:00Z\"]",
+			"[\"moduleInstanceId9\",\"locationId9\",\"parameterId9\",\"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\",\"SETS360\",\"ensembleId9\",\"1\",\"2013-01-01T00:00:00Z\"]"
 		};
 
 		TimeSeriesArrays timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();

@@ -43,7 +43,7 @@ class StitchScalarSimulatedHistoricalTest {
 	}
 
 	@Test
-	void stitchGroup() {
+	void stitchGroup() throws InterruptedException{
 		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar") && s.getKey().toString().contains("TVA_UpdateStates")).findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
 		List<Document> timeSeriesGroups = TimeSeriesUtil.getTimeSeriesGroups(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL);

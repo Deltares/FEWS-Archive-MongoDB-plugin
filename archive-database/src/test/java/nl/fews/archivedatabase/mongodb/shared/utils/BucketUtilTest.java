@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,6 +32,7 @@ class BucketUtilTest {
 	@Test
 	void getEstimatedBucketSize() throws Exception {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 		assertEquals(BucketSize.YEAR, BucketUtil.getEstimatedBucketSize(simpleDateFormat.parse("2020-01-01"), simpleDateFormat.parse("2020-01-02"), 23));
 		assertEquals(BucketSize.YEAR, BucketUtil.getEstimatedBucketSize(simpleDateFormat.parse("2020-01-01"), simpleDateFormat.parse("2020-01-02"), 24));
 		assertEquals(BucketSize.MONTH, BucketUtil.getEstimatedBucketSize(simpleDateFormat.parse("2020-01-01"), simpleDateFormat.parse("2020-01-02"), 25));
@@ -39,6 +41,7 @@ class BucketUtilTest {
 	@Test
 	void getInferredBucketSize() throws Exception {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 		assertEquals(BucketSize.DAY, BucketUtil.getInferredBucketSize(simpleDateFormat.parse("2020-01-01T00:00:00"), simpleDateFormat.parse("2020-01-01T23:59:59")));
 		assertEquals(BucketSize.MONTH, BucketUtil.getInferredBucketSize(simpleDateFormat.parse("2020-01-01T00:00:00"), simpleDateFormat.parse("2020-01-31T23:59:59")));
 		assertEquals(BucketSize.YEAR, BucketUtil.getInferredBucketSize(simpleDateFormat.parse("2020-01-01T00:00:00"), simpleDateFormat.parse("2020-12-31T23:59:59")));

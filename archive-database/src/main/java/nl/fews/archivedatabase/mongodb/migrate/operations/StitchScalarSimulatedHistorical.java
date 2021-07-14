@@ -15,6 +15,7 @@ import org.bson.Document;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 public final class StitchScalarSimulatedHistorical {
@@ -33,14 +34,23 @@ public final class StitchScalarSimulatedHistorical {
 	 *
 	 */
 	public static void stitchGroups(){
-		ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
-		ArrayList<Callable<Void>> tasks = new ArrayList<>();
-		TimeSeriesUtil.getTimeSeriesGroups(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL).forEach(timeSeriesGroup -> tasks.add(() -> {
-			stitchGroup(timeSeriesGroup.get("timeSeriesGroup", Document.class), BucketSize.valueOf(timeSeriesGroup.getString("bucketSize")));
-			return null;
-		}));
-		pool.invokeAll(tasks);
-		pool.shutdown();
+		try {
+			ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
+			ArrayList<Callable<Void>> tasks = new ArrayList<>();
+			TimeSeriesUtil.getTimeSeriesGroups(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL).forEach(timeSeriesGroup -> tasks.add(() -> {
+				stitchGroup(timeSeriesGroup.get("timeSeriesGroup", Document.class), BucketSize.valueOf(timeSeriesGroup.getString("bucketSize")));
+				return null;
+			}));
+			List<Future<Void>> results = pool.invokeAll(tasks);
+			for (Future<Void> x : results) {
+				x.get();
+			}
+			pool.shutdown();
+		}
+		catch (Exception ex){
+			Thread.currentThread().interrupt();
+			throw new RuntimeException(ex);
+		}
 	}
 
 	/**
@@ -49,7 +59,7 @@ public final class StitchScalarSimulatedHistorical {
 	 * @param timeSeriesGroup timeSeriesGroup
 	 */
 	public static void stitchGroup(Document timeSeriesGroup, BucketSize bucketSize){
-		try {
+		try{
 			List<Document> stitchedTimeSeries = getStitchedTimeSeries(timeSeriesGroup, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL));
 
 			Map<Long, List<Document>> timeSeriesBuckets = TimeSeriesUtil.getTimeSeriesBuckets(stitchedTimeSeries, bucketSize);
@@ -61,7 +71,6 @@ public final class StitchScalarSimulatedHistorical {
 				d.remove("forecastTime");
 				d.remove("localForecastTime");
 			}
-
 			TimeSeriesUtil.removeTimeSeriesDocuments(timeSeriesGroup, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED));
 			TimeSeriesUtil.saveTimeSeriesDocuments(timeSeriesDocuments, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED));
 		}

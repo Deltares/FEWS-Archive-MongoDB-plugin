@@ -5,9 +5,7 @@ import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.DateUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
-import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseRegionConfigInfoProvider;
-import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeConverter;
-import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseUnitConverter;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;
@@ -87,11 +85,31 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 		int min = (int)(header.getTimeStep().getMinimumStepMillis() / 1000 / 60);
 		int max = (int)(header.getTimeStep().getMaximumStepMillis() / 1000 / 60);
 		int timeStepMinutes = min == max ? min : (min / 60) % 2 == 0 ? min : max;
+		areaId = areaId != null ? areaId : "";
+		sourceId = sourceId != null ? sourceId : "";
 		String unit = header.getUnit() != null ? header.getUnit(): "";
-		String parameterName = Settings.get("archiveDatabaseRegionConfigInfoProvider") != null ? Settings.get("archiveDatabaseRegionConfigInfoProvider", ArchiveDatabaseRegionConfigInfoProvider.class).getParameterInfo(header.getParameterId()).getName() : "";
+
+		ParameterInfo parameterInfo = null;
+		try{
+			parameterInfo = Settings.get("archiveDatabaseRegionConfigInfoProvider") != null ? Settings.get("archiveDatabaseRegionConfigInfoProvider", ArchiveDatabaseRegionConfigInfoProvider.class).getParameterInfo(header.getParameterId()) : null;
+		}
+		catch (NullPointerException ex){
+			//IGNORE
+		}
+		String parameterName = parameterInfo != null ? parameterInfo.getName() : "";
+
 		String parameterType = header.getParameterType() != null && header.getParameterType().getName() != null ? header.getParameterType().getName() : "";
 		String timeStepLabel = header.getTimeStep() != null && header.getTimeStep().toString() != null ? header.getTimeStep().toString() : "";
-		String locationName = Settings.get("archiveDatabaseRegionConfigInfoProvider") != null ? Settings.get("archiveDatabaseRegionConfigInfoProvider", ArchiveDatabaseRegionConfigInfoProvider.class).getLocationInfo(header.getLocationId()).getName() : "";
+
+		LocationInfo locationInfo = null;
+		try{
+			locationInfo = Settings.get("archiveDatabaseRegionConfigInfoProvider") != null ? Settings.get("archiveDatabaseRegionConfigInfoProvider", ArchiveDatabaseRegionConfigInfoProvider.class).getLocationInfo(header.getLocationId()) : null;
+		}
+		catch (NullPointerException ex){
+			//IGNORE
+		}
+		String locationName = locationInfo != null ? locationInfo.getName() : "";
+
 		String displayUnit = Settings.get("archiveDatabaseUnitConverter") != null ? Settings.get("archiveDatabaseUnitConverter", ArchiveDatabaseUnitConverter.class).getOutputUnitType(unit) : null;
 		String localTimeZone = Settings.get("archiveDatabaseTimeConverter") != null ? Settings.get("archiveDatabaseTimeConverter", ArchiveDatabaseTimeConverter.class).getLocalTimeZone().getID() : null;
 		Date now = new Date();
@@ -121,7 +139,7 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 		List<Document> documents = new ArrayList<>();
 
 		Date[] localTimes = Settings.get("archiveDatabaseTimeConverter") != null ? DateUtil.getDates(Settings.get("archiveDatabaseTimeConverter", ArchiveDatabaseTimeConverter.class).convert(timeSeriesArray.toTimesArray())) : null;
-		float[] displayValues = Settings.get("archiveDatabaseUnitConverter") != null ? Settings.get("archiveDatabaseUnitConverter", ArchiveDatabaseUnitConverter.class).convert(timeSeriesArray.getHeader().getParameterId(), timeSeriesArray.toFloatArray()) : null;
+		float[] displayValues = Settings.get("archiveDatabaseUnitConverter") != null ? Settings.get("archiveDatabaseUnitConverter", ArchiveDatabaseUnitConverter.class).convert(timeSeriesArray.getHeader().getUnit(), timeSeriesArray.toFloatArray()) : null;
 
 		for (int i = 0; i < timeSeriesArray.size(); i++) {
 			Object value = !Float.isNaN(timeSeriesArray.getValue(i)) ? timeSeriesArray.getValue(i) : null;

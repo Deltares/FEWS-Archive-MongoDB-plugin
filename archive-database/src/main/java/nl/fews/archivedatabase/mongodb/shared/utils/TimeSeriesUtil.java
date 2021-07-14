@@ -100,10 +100,10 @@ public final class TimeSeriesUtil {
 		AggregateIterable<Document> results = Database.aggregate(collection, List.of(
 				new Document("$match", timeSeriesGroup),
 				new Document("$unwind", "$timeseries"),
-				new Document("$sort", new Document("timeseries.t", 1)),
-				new Document("$replaceRoot", new Document("newRoot", "$timeseries")))).allowDiskUse(true);
+				new Document("$replaceRoot", new Document("newRoot", "$timeseries"))));
 		for (Document result: results)
 			timeSeries.add(result);
+		timeSeries.sort(Comparator.comparing(c -> c.getDate("t")));
 		return timeSeries;
 	}
 

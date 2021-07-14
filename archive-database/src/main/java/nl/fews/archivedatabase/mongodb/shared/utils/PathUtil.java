@@ -29,7 +29,9 @@ public final class PathUtil {
 	 * @return String
 	 */
 	public static String toRelativePathString(File file, String baseDirectoryArchive){
-		String relativePath = file.toString().replace(baseDirectoryArchive, "").replace("\\", "/");
+		String fileNormalized = normalize(file).toString();
+		String baseDirectoryArchiveNormalized = normalize(new File(baseDirectoryArchive)).toString();
+		String relativePath = fileNormalized.replace(baseDirectoryArchiveNormalized, "").replace("\\", "/");
 		if(!relativePath.startsWith("/")){
 			relativePath = String.format("/%s", relativePath);
 		}

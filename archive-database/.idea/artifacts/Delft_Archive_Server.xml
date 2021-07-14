@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact name="Delft_Archive_Server">
+    <output-path>$PROJECT_DIR$/out/artifacts</output-path>
+    <root id="root">
+      <element id="library" level="module" name="Maven: nl.deltares:Delft_Archive_Server:1.0" module-name="archive-database" />
+    </root>
+  </artifact>
+</component>

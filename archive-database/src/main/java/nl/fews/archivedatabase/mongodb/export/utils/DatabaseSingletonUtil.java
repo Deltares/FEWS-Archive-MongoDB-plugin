@@ -3,10 +3,7 @@ package nl.fews.archivedatabase.mongodb.export.utils;
 import org.bson.Document;
 import org.json.JSONArray;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DatabaseSingletonUtil {
@@ -25,7 +22,7 @@ public class DatabaseSingletonUtil {
 	public static Map<String, List<Document>> getDocumentsByKey(List<Document> timeSeries, List<String> keys){
 		Map<String, List<Document>> keyBucketDocuments = new HashMap<>();
 		for (Document document:timeSeries) {
-			String key = new JSONArray(keys.stream().map(document::get).collect(Collectors.toList())).toString();
+			String key = new JSONArray(keys.stream().map(s -> document.get(s) instanceof Date ? document.getDate(s).toInstant() : document.get(s)).collect(Collectors.toList())).toString();
 			keyBucketDocuments.putIfAbsent(key, new ArrayList<>());
 			keyBucketDocuments.get(key).add(document);
 		}

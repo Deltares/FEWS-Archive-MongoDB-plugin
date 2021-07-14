@@ -46,7 +46,7 @@ class BucketScalarExternalHistoricalTest {
 	}
 
 	@Test
-	void bucketGroup() {
+	void bucketGroup() throws InterruptedException {
 		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("observed") && s.getKey().toString().contains("scalar")).findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
 		List<Document> timeSeriesGroups = TimeSeriesUtil.getTimeSeriesGroups(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
@@ -58,7 +58,7 @@ class BucketScalarExternalHistoricalTest {
 	}
 
 	@Test
-	void replaceTimeSeriesWithBucketCollection() {
+	void replaceTimeSeriesWithBucketCollection() throws InterruptedException {
 		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("observed") && s.getKey().toString().contains("scalar")).findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
 		List<Document> timeSeriesGroups = TimeSeriesUtil.getTimeSeriesGroups(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);

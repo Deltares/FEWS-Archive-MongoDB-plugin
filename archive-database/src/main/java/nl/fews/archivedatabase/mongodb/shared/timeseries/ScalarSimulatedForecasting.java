@@ -77,10 +77,10 @@ public class ScalarSimulatedForecasting extends ScalarExternalForecasting implem
 			TaskDescriptor taskDescriptor = taskRun.getTaskDescriptor();
 
 			String taskRunId = taskRun.getId();
-			Date dispatchTime = taskRun.getDispatchTime() != 0 ? new Date(taskRun.getDispatchTime()) : null;
+			Date dispatchTime = new Date(taskRun.getDispatchTime());
 			String mcId = taskRun.getMasterControllerId();
 			String userId = taskDescriptor.getTaskProperties().getUserId();
-			Date time0 = taskRun.getTime0() != 0 ? new Date(taskRun.getTime0()) : null;
+			Date time0 = new Date(taskRun.getTime0());
 			String workflowId = taskDescriptor.getWorkflowId();
 			String configRevisionNumber = Settings.get("configRevision");
 

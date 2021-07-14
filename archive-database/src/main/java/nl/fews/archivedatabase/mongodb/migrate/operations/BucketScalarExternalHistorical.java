@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 public final class BucketScalarExternalHistorical {
 
@@ -33,14 +34,23 @@ public final class BucketScalarExternalHistorical {
 	 *
 	 */
 	public static void bucketGroups(){
-		ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
-		ArrayList<Callable<Void>> tasks = new ArrayList<>();
-		TimeSeriesUtil.getTimeSeriesGroups(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL).forEach(timeSeriesGroup -> tasks.add(() -> {
-			bucketGroup(timeSeriesGroup.get("timeSeriesGroup", Document.class), BucketSize.valueOf(timeSeriesGroup.getString("bucketSize")));
-			return null;
-		}));
-		pool.invokeAll(tasks);
-		pool.shutdown();
+		try {
+			ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
+			ArrayList<Callable<Void>> tasks = new ArrayList<>();
+			TimeSeriesUtil.getTimeSeriesGroups(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL).forEach(timeSeriesGroup -> tasks.add(() -> {
+				bucketGroup(timeSeriesGroup.get("timeSeriesGroup", Document.class), BucketSize.valueOf(timeSeriesGroup.getString("bucketSize")));
+				return null;
+			}));
+			List<Future<Void>> results = pool.invokeAll(tasks);
+			for (Future<Void> x : results) {
+				x.get();
+			}
+			pool.shutdown();
+		}
+		catch (Exception ex){
+			Thread.currentThread().interrupt();
+			throw new RuntimeException(ex);
+		}
 	}
 
 	/**
@@ -49,7 +59,7 @@ public final class BucketScalarExternalHistorical {
 	 * @param timeSeriesGroup timeSeriesGroup
 	 */
 	public static void bucketGroup(Document timeSeriesGroup, BucketSize bucketSize){
-		try {
+		try{
 			List<Document> timeSeries = TimeSeriesUtil.getTimeSeries(timeSeriesGroup, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
 			Map<Long, List<Document>> timeSeriesBuckets = TimeSeriesUtil.getTimeSeriesBuckets(timeSeries, bucketSize);
 			List<Document> timeSeriesDocuments = TimeSeriesUtil.getTimeSeriesDocuments(timeSeriesGroup, timeSeriesBuckets, bucketSize, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
@@ -57,7 +67,7 @@ public final class BucketScalarExternalHistorical {
 			TimeSeriesUtil.saveTimeSeriesDocuments(timeSeriesDocuments, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET));
 		}
 		catch (Exception ex){
-			logger.warn(LogUtil.getLogMessageJson(ex, Map.of("timeSeriesGroup", timeSeriesGroup, "bucketSize", bucketSize.toString())).toJson(), ex);
+			logger.error(LogUtil.getLogMessageJson(ex, Map.of("timeSeriesGroup", timeSeriesGroup, "bucketSize", bucketSize.toString())).toJson(), ex);
 		}
 	}
 
