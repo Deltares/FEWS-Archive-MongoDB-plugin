@@ -4,6 +4,7 @@ import nl.fews.archivedatabase.mongodb.export.MongoDbArchiveDatabaseTimeSeriesEx
 import nl.fews.archivedatabase.mongodb.migrate.MongoDbOpenArchiveToArchiveDatabaseMigrator;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabase;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeSeriesExporter;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeSeriesReader;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.OpenArchiveToArchiveDatabaseMigrator;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 
@@ -59,5 +60,10 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 		if(mongoDbOpenArchiveToArchiveDatabaseMigrator == null)
 			mongoDbOpenArchiveToArchiveDatabaseMigrator = MongoDbOpenArchiveToArchiveDatabaseMigrator.create();
 		return mongoDbOpenArchiveToArchiveDatabaseMigrator;
+	}
+
+	@Override
+	public ArchiveDatabaseTimeSeriesReader getArchiveDataBaseTimeSeriesReader() {
+		return null;
 	}
 }
