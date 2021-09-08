@@ -35,8 +35,8 @@ class TimeSeriesTypeUtilTest {
 		assertEquals(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>("scalar", "netcdfMetaData")));
 		assertEquals(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING, TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>("scalar", "externalForecastMetaData")));
 		assertEquals(TimeSeriesType.SCALAR_SIMULATED_FORECASTING, TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>("scalar", "simulationMetaData")));
-		assertEquals(TimeSeriesType.GRID_EXTERNAL_HISTORICAL, TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>("gridded", "netcdfMetaData")));
-		assertEquals(TimeSeriesType.GRID_EXTERNAL_FORECASTING, TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>("gridded", "externalForecastMetaData")));
+		assertEquals(TimeSeriesType.GRID_EXTERNAL_HISTORICAL, TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>("grid", "netcdfMetaData")));
+		assertEquals(TimeSeriesType.GRID_EXTERNAL_FORECASTING, TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>("grid", "externalForecastMetaData")));
 		assertEquals(TimeSeriesType.RATING_CURVES, TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>("", "ratingCurvesMetaData")));
 		assertEquals(TimeSeriesType.CONFIGURATION, TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>("", "configMetaData")));
 		assertEquals(TimeSeriesType.PRODUCTS, TimeSeriesTypeUtil.getTimeSeriesType(new Pair<>("", "productsMetaData")));
@@ -49,8 +49,8 @@ class TimeSeriesTypeUtilTest {
 		assertEquals(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING, TimeSeriesTypeUtil.getTimeSeriesTypeByTypeString(new Pair<>("scalar", "external forecasting")));
 		assertEquals(TimeSeriesType.SCALAR_SIMULATED_FORECASTING, TimeSeriesTypeUtil.getTimeSeriesTypeByTypeString(new Pair<>("scalar", "simulated forecasting")));
 		assertEquals(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL, TimeSeriesTypeUtil.getTimeSeriesTypeByTypeString(new Pair<>("scalar", "simulated historical")));
-		assertEquals(TimeSeriesType.GRID_EXTERNAL_HISTORICAL, TimeSeriesTypeUtil.getTimeSeriesTypeByTypeString(new Pair<>("gridded", "external historical")));
-		assertEquals(TimeSeriesType.GRID_EXTERNAL_FORECASTING, TimeSeriesTypeUtil.getTimeSeriesTypeByTypeString(new Pair<>("gridded", "external forecasting")));
+		assertEquals(TimeSeriesType.GRID_EXTERNAL_HISTORICAL, TimeSeriesTypeUtil.getTimeSeriesTypeByTypeString(new Pair<>("grid", "external historical")));
+		assertEquals(TimeSeriesType.GRID_EXTERNAL_FORECASTING, TimeSeriesTypeUtil.getTimeSeriesTypeByTypeString(new Pair<>("grid", "external forecasting")));
 	}
 
 	@Test

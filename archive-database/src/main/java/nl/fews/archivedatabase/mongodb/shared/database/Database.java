@@ -105,7 +105,6 @@ public final class Database {
 	 *
 	 */
 	private static void ensureCollections(){
-		logger.info("ensureCollections");
 		for (String collection: collectionIndex.keySet()) {
 			if(getCollectionIndexes(collection).length > 0)
 				ensureCollection(collection);
@@ -138,7 +137,6 @@ public final class Database {
 	 * @param collection collection
 	 */
 	public static void dropCollection(String collection){
-		logger.info("dropCollection");
 		Database.create().getDatabase(database).getCollection(collection).drop();
 	}
 

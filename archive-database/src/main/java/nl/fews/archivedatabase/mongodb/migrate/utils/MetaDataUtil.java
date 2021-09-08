@@ -67,15 +67,6 @@ public final class MetaDataUtil {
 	 * @return Map<File, Date>
 	 */
 	public static Map<File, Date> getExistingMetaDataFilesFs () {
-		return getExistingMetaDataFilesFs(null);
-	}
-
-	/**
-	 *
-	 * @param areaId areaId
-	 * @return Map<File, Date>
-	 */
-	public static Map<File, Date> getExistingMetaDataFilesFs (String areaId) {
 		Map<File, Date> existingMetaDataFilesFs = new HashMap<>();
 		Path start = Paths.get(Settings.get("baseDirectoryArchive", String.class));
 		int rootDepth = start.getNameCount();
@@ -85,7 +76,7 @@ public final class MetaDataUtil {
 		try {
 			ForkJoinPool pool = new ForkJoinPool(Settings.get("netcdfReadThreads"));
 			ArrayList<Callable<Map<File, Date>>> tasks = new ArrayList<>();
-			Files.find(start, folderMaxDepth, (p, a) -> a.isDirectory() && p.getNameCount()-rootDepth == folderMaxDepth).filter(f -> areaId == null || PathUtil.containsSegment(f, areaId)).forEach(folder -> tasks.add(() ->
+			Files.find(start, folderMaxDepth, (p, a) -> a.isDirectory() && p.getNameCount()-rootDepth == folderMaxDepth).forEach(folder -> tasks.add(() ->
 				Files.find(folder, Integer.MAX_VALUE, (p, a) -> a.isRegularFile() && p.endsWith(metadataFileName)).collect(Collectors.toMap(Path::toFile, s -> new Date(s.toFile().lastModified())))
 			));
 			List<Future<Map<File, Date>>> results = pool.invokeAll(tasks);
@@ -106,22 +97,12 @@ public final class MetaDataUtil {
 	 * @return Map<File, Date>
 	 */
 	public static Map<File, Date> getExistingMetaDataFilesDb () {
-		return getExistingMetaDataFilesDb(null);
-	}
-
-	/**
-	 *
-	 * @param areaId areaId
-	 * @return Map<File, Date>
-	 */
-	public static Map<File, Date> getExistingMetaDataFilesDb (String areaId) {
 		Map<File, Date> existingMetaDataDb = new HashMap<>();
 		Database.aggregate(Settings.get("metaDataCollection"), List.of(
 				new Document("$project", new Document("_id", 0).append("metaDataFileRelativePath", 1).append("metaDataFileTime", 1)))).
 				forEach(e -> {
 					File file = PathUtil.normalize(new File(Settings.get("baseDirectoryArchive", String.class), e.getString("metaDataFileRelativePath")));
-					if(areaId == null || PathUtil.containsSegment(file, areaId))
-						existingMetaDataDb.put(file, e.getDate("metaDataFileTime"));
+					existingMetaDataDb.put(file, e.getDate("metaDataFileTime"));
 				});
 		return existingMetaDataDb;
 	}

@@ -11,6 +11,7 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.common.collect.List;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -35,6 +36,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 		Settings.put("folderMaxDepth", 4);
 		Settings.put("metadataFileName", "metaData.xml");
 		Settings.put("runInfoFileName", "runInfo.xml");
+		Settings.put("valueTypes", List.of("scalar"));
 	}
 
 	/**
@@ -62,7 +64,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void setUnitConverter(ArchiveDatabaseUnitConverter archiveDatabaseUnitConverter) {
-		logger.info("setUnitConverter");
 		Settings.put("archiveDatabaseUnitConverter", archiveDatabaseUnitConverter);
 	}
 
@@ -72,7 +73,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void setTimeConverter(ArchiveDatabaseTimeConverter archiveDatabaseTimeConverter) {
-		logger.info("setTimeConverter");
 		Settings.put("archiveDatabaseTimeConverter", archiveDatabaseTimeConverter);
 	}
 
@@ -82,7 +82,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void setRegionConfigInfoProvider(ArchiveDatabaseRegionConfigInfoProvider archiveDatabaseRegionConfigInfoProvider) {
-		logger.info("setRegionConfigInfoProvider");
 		Settings.put("archiveDatabaseRegionConfigInfoProvider", archiveDatabaseRegionConfigInfoProvider);
 	}
 
@@ -92,7 +91,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void setProperties(Properties properties) {
-		logger.info("setProperties");
 		Settings.put("properties", properties);
 	}
 
@@ -102,7 +100,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void setArchiveDatabaseUrl(String archiveDatabaseUrl) {
-		logger.info("setArchiveDatabaseUrl");
 		Settings.put("archiveDatabaseUrl", archiveDatabaseUrl);
 	}
 
@@ -113,7 +110,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void setUserNamePassword(String archiveDatabaseUserName, String archiveDatabasePassword) {
-		logger.info("setUserNamePassword");
 		Settings.put("archiveDatabaseUserName", archiveDatabaseUserName);
 		Settings.put("archiveDatabasePassword", archiveDatabasePassword);
 	}
@@ -124,7 +120,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void setConfigRevision(String configRevision) {
-		logger.info("setConfigRevision");
 		Settings.put("configRevision", configRevision);
 	}
 
@@ -135,7 +130,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void migrate(String areaId, String sourceId) {
-		logger.info("migrate");
 		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
 				Settings.get("archiveDatabaseUrl") :
 				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
@@ -143,8 +137,8 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 
 		Delete.deleteUncommitted();
 
-		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs(areaId);
-		Map<File, Date> existingMetaDataFilesDb = MetaDataUtil.getExistingMetaDataFilesDb(areaId);
+		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs();
+		Map<File, Date> existingMetaDataFilesDb = MetaDataUtil.getExistingMetaDataFilesDb();
 		Insert.insertMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
 		Update.updateMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
 		Delete.deleteMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
@@ -154,7 +148,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 *
 	 */
 	public void replaceScalarExternalHistoricalWithBucketedCollection(){
-		logger.info("replaceScalarExternalHistoricalWithBucketedCollection");
 		Database.replaceCollection(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET), TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
 	}
 
@@ -162,7 +155,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 *
 	 */
 	public void bucketScalarExternalHistorical(){
-		logger.info("bucketScalarExternalHistorical");
 		String singletonCollection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
 		String bucketCollection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET);
 
@@ -176,7 +168,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 *
 	 */
 	public void bucketScalarSimulatedHistorical(){
-		logger.info("bucketScalarSimulatedHistorical");
 		String singletonCollection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL);
 		String bucketCollection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED);
 
@@ -192,7 +183,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void setOpenArchiveToDatabaseSettings(OpenArchiveToArchiveDatabaseMigrationSettings openArchiveToArchiveDatabaseMigrationSettings) {
-		logger.info("setOpenArchiveToDatabaseSettings");
 		Settings.put("baseDirectoryArchive", Paths.get(openArchiveToArchiveDatabaseMigrationSettings.getBaseDirectoryArchive()).toString());
 		Settings.put("databaseBaseThreads", openArchiveToArchiveDatabaseMigrationSettings.getDatabaseBaseThreads());
 		Settings.put("netcdfReadThreads", openArchiveToArchiveDatabaseMigrationSettings.getNetcdfReadThreads());
@@ -204,7 +194,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void finalizeMigration(boolean finalize) {
-		logger.info("finalizeMigration");
 		if(finalize) {
 			String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
 					Settings.get("archiveDatabaseUrl") :

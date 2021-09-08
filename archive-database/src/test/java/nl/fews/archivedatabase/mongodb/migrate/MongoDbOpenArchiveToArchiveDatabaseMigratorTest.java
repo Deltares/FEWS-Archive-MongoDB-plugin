@@ -32,7 +32,7 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 	@Test
 	void migrate() throws IOException {
 		String hostName = InetAddress.getLocalHost().getHostName();
-		if(testSettings != null && hostName.equalsIgnoreCase(testSettings.getString("hostName")) && hostName.equalsIgnoreCase("CHADWHH01")) {
+		if(testSettings != null && hostName.equalsIgnoreCase(testSettings.getString("hostName"))) {
 			MongoDbOpenArchiveToArchiveDatabaseMigrator migrateDatabase = MongoDbOpenArchiveToArchiveDatabaseMigrator.create();
 			migrateDatabase.setArchiveDatabaseUrl(testSettings.getString("archiveDatabaseUrl"));
 			OpenArchiveToArchiveDatabaseMigrationSettings openArchiveToArchiveDatabaseMigrationSettings = new OpenArchiveToArchiveDatabaseMigrationSettings(

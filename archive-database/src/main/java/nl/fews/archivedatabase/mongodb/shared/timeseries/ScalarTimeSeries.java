@@ -1,6 +1,5 @@
 package nl.fews.archivedatabase.mongodb.shared.timeseries;
 
-import nl.fews.archivedatabase.mongodb.migrate.operations.Insert;
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.DateUtil;
@@ -27,7 +26,7 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 	/**
 	 *
 	 */
-	private static final Logger logger = LogManager.getLogger(Insert.class);
+	private static final Logger logger = LogManager.getLogger(ScalarTimeSeries.class);
 
 	/**
 	 *
@@ -104,7 +103,7 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 		if(headerUnit != null && parameterUnit != null && !headerUnit.equals(parameterUnit) && !parameterUnit.equals(header.getParameterId())){
 			Exception ex = new IllegalArgumentException(String.format("Units for header.getParameterId() -> %3$s not equal: header.getUnit() -> %1$s, parameterInfo.getUnit() -> %2$s. Using header.getUnit() -> %1$s.",
 					header.getUnit(), parameterInfo.getUnit(), header.getParameterId()));
-			logger.warn(LogUtil.getLogMessageJson(ex, Map.of("parameterId", header.getParameterId())).toJson(), ex);
+			logger.debug(LogUtil.getLogMessageJson(ex, Map.of("parameterId", header.getParameterId())).toJson(), ex);
 		}
 
 		String parameterType = header.getParameterType() != null && header.getParameterType().getName() != null ? header.getParameterType().getName() : "";

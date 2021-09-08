@@ -93,7 +93,7 @@ public class TestUtil {
 
 		@Override
 		public ParameterInfo getParameterInfo(String parameterId) {
-			return new ParameterInfo(parameterId, parameterId, parameterId, parameterId);
+			return new ParameterInfo(parameterId, parameterId, parameterId, "unit");
 		}
 	}
 }

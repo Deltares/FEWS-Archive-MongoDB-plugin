@@ -117,8 +117,10 @@ public final class Insert {
 					logger.warn(LogUtil.getLogMessageJson(ex, Map.of("netcdfFile", netcdfFile.toString())).toJson(), ex);
 				}
 			});
-			ObjectId insertedId = Database.insertOne(Settings.get("metaDataCollection"), metaDataDocument).getInsertedId().asObjectId().getValue();
-			commitInserted(insertedId, allInsertedIds);
+			if(!metaDataDocument.getList("netcdfFiles", Document.class).isEmpty()) {
+				ObjectId insertedId = Database.insertOne(Settings.get("metaDataCollection"), metaDataDocument).getInsertedId().asObjectId().getValue();
+				commitInserted(insertedId, allInsertedIds);
+			}
 		}
 		catch (Exception ex){
 			logger.warn(LogUtil.getLogMessageJson(ex, Map.of("metaDataFile", metaDataFile.toString())).toJson(), ex);

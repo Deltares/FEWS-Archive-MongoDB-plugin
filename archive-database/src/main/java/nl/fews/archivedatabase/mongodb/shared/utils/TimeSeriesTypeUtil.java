@@ -1,6 +1,7 @@
 package nl.fews.archivedatabase.mongodb.shared.utils;
 
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
+import nl.wldelft.fews.castor.archive.types.ArchiveTimeSeriesType;
 import org.javatuples.Pair;
 
 import java.util.Map;
@@ -93,6 +94,17 @@ public final class TimeSeriesTypeUtil {
 	);
 
 	/**
+	 * lookup for area id + archive time series type representation of each timeseries type
+	 */
+	private static final Map<Pair<String, Integer>, TimeSeriesType> timeSeriesTypeByAreaArchiveType = Map.of(
+			new Pair<>("scalar", ArchiveTimeSeriesType.EXTERNALFORECAST_TYPE),TimeSeriesType.SCALAR_EXTERNAL_FORECASTING,
+			new Pair<>("scalar", ArchiveTimeSeriesType.OBSERVED_TYPE),TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL,
+			new Pair<>("scalar", ArchiveTimeSeriesType.SIMULATED_TYPE),TimeSeriesType.SCALAR_SIMULATED_FORECASTING,
+			new Pair<>("scalar", ArchiveTimeSeriesType.SIMULATED_TYPE),TimeSeriesType.SCALAR_SIMULATED_HISTORICAL,
+			new Pair<>("scalar", ArchiveTimeSeriesType.SIMULATED_TYPE),TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED
+	);
+
+	/**
 	 * lookup by valueType + metaDataType
 	 */
 	private static final Map<Pair<String, String>, TimeSeriesType> timeSeriesType = Map.of(
@@ -100,8 +112,8 @@ public final class TimeSeriesTypeUtil {
 			new Pair<>("scalar", "externalForecastMetaData"), TimeSeriesType.SCALAR_EXTERNAL_FORECASTING,
 			new Pair<>("scalar", "simulationMetaData"), TimeSeriesType.SCALAR_SIMULATED_FORECASTING,
 			new Pair<>("scalar", "historicalMetaData"), TimeSeriesType.SCALAR_SIMULATED_HISTORICAL,
-			new Pair<>("gridded", "netcdfMetaData"), TimeSeriesType.GRID_EXTERNAL_HISTORICAL,
-			new Pair<>("gridded", "externalForecastMetaData"), TimeSeriesType.GRID_EXTERNAL_FORECASTING,
+			new Pair<>("grid", "netcdfMetaData"), TimeSeriesType.GRID_EXTERNAL_HISTORICAL,
+			new Pair<>("grid", "externalForecastMetaData"), TimeSeriesType.GRID_EXTERNAL_FORECASTING,
 			new Pair<>("", "ratingCurvesMetaData"), TimeSeriesType.RATING_CURVES,
 			new Pair<>("", "configMetaData"), TimeSeriesType.CONFIGURATION,
 			new Pair<>("", "productsMetaData"), TimeSeriesType.PRODUCTS
@@ -115,8 +127,8 @@ public final class TimeSeriesTypeUtil {
 			new Pair<>("scalar", "external forecasting"), TimeSeriesType.SCALAR_EXTERNAL_FORECASTING,
 			new Pair<>("scalar", "simulated forecasting"), TimeSeriesType.SCALAR_SIMULATED_FORECASTING,
 			new Pair<>("scalar", "simulated historical"), TimeSeriesType.SCALAR_SIMULATED_HISTORICAL,
-			new Pair<>("gridded", "external historical"), TimeSeriesType.GRID_EXTERNAL_HISTORICAL,
-			new Pair<>("gridded", "external forecasting"), TimeSeriesType.GRID_EXTERNAL_FORECASTING
+			new Pair<>("grid", "external historical"), TimeSeriesType.GRID_EXTERNAL_HISTORICAL,
+			new Pair<>("grid", "external forecasting"), TimeSeriesType.GRID_EXTERNAL_FORECASTING
 	);
 
 	/**
@@ -194,5 +206,14 @@ public final class TimeSeriesTypeUtil {
 	 */
 	public static TimeSeriesType getTimeSeriesTypeByTypeString(Pair<String, String> valueTypeTimeSeriesType){
 		return timeSeriesTypeByTypeString.get(valueTypeTimeSeriesType);
+	}
+
+	/**
+	 *
+	 * @param areaArchiveType areaArchiveType
+	 * @return TimeSeriesType
+	 */
+	public static TimeSeriesType getTimeSeriesTypeByAreaArchiveType(Pair<String, Integer> areaArchiveType){
+		return timeSeriesTypeByAreaArchiveType.get(areaArchiveType);
 	}
 }

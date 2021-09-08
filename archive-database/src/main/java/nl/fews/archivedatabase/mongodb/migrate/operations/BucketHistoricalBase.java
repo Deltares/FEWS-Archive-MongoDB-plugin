@@ -27,7 +27,6 @@ public abstract class BucketHistoricalBase implements BucketHistorical {
 	 *
 	 */
 	public void bucketGroups(String singletonCollection, String bucketCollection){
-		logger.info("bucketGroups");
 		try {
 			List<String> bucketKeyFields = BucketUtil.getBucketKeyFields(bucketCollection);
 			ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
@@ -54,7 +53,6 @@ public abstract class BucketHistoricalBase implements BucketHistorical {
 	 * @param bucketSize bucketSize
 	 */
 	private void bucketGroup(Document bucketKeyDocument, BucketSize bucketSize, String singletonCollection, String bucketCollection){
-		logger.info("bucketGroups(Threaded)");
 		try{
 			List<Document> timeSeries = getUnwoundTimeSeries(bucketKeyDocument, singletonCollection);
 			Map<Long, List<Document>> timeSeriesBuckets = TimeSeriesUtil.getTimeSeriesBuckets(timeSeries, bucketSize);
