@@ -15,85 +15,85 @@ import java.util.stream.LongStream;
 
 public class TestUtil {
 
-    static {
-        LogUtils.initConsole();
-    }
+	static {
+		LogUtils.initConsole();
+	}
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public static TimeSeriesArrays getDefaultTimeSeriesArrays() {
-        List<TimeSeriesArray<TimeSeriesHeader>> arrays = new ArrayList<>();
-        for (int y = 2012; y < 2014; y++) {
-            for (int h = 0; h < 10; h++) {
-                DefaultTimeSeriesHeader timeSeriesHeader = new DefaultTimeSeriesHeader();
-                timeSeriesHeader.setApprovedTime(Instant.parse(y + "-01-01T00:00:00Z").toEpochMilli());
-                timeSeriesHeader.setCreationTime(Instant.parse(y + "-01-01T00:00:00Z").toEpochMilli());
-                timeSeriesHeader.setEnsembleId("ensembleId" + h);
-                timeSeriesHeader.setEnsembleMemberId("ensembleMemberId" + h);
-                timeSeriesHeader.setEnsembleMemberIndex(1);
-                timeSeriesHeader.setForecastTime(Instant.parse(y + "-01-01T00:00:00Z").toEpochMilli());
-                timeSeriesHeader.setLocationId("locationId" + h);
-                timeSeriesHeader.setLocationName("locationName" + h);
-                timeSeriesHeader.setModuleInstanceId("moduleInstanceId" + h);
-                timeSeriesHeader.setParameterId("parameterId" + h);
-                timeSeriesHeader.setParameterName("parameterName" + h);
-                timeSeriesHeader.setParameterType(ParameterType.INSTANTANEOUS);
-                timeSeriesHeader.setQualifierIds("qualifierId" + h, "qualifierId" + h);
-                timeSeriesHeader.setTimeStep(TimeStepUtils.createEquidistant(new TimeSpan(TimeUnit.HOUR, 6), TimeZone.getTimeZone("UTC"), "timeStepLabel"));
-                timeSeriesHeader.setUnit("unit");
+	@SuppressWarnings({"unchecked"})
+	public static TimeSeriesArrays<TimeSeriesHeader> getDefaultTimeSeriesArrays() {
+		List<TimeSeriesArray<TimeSeriesHeader>> arrays = new ArrayList<>();
+		for (int y = 2012; y < 2014; y++) {
+			for (int h = 0; h < 10; h++) {
+				DefaultTimeSeriesHeader timeSeriesHeader = new DefaultTimeSeriesHeader();
+				timeSeriesHeader.setApprovedTime(Instant.parse(y + "-01-01T00:00:00Z").toEpochMilli());
+				timeSeriesHeader.setCreationTime(Instant.parse(y + "-01-01T00:00:00Z").toEpochMilli());
+				timeSeriesHeader.setEnsembleId("ensembleId" + h);
+				timeSeriesHeader.setEnsembleMemberId("ensembleMemberId" + h);
+				timeSeriesHeader.setEnsembleMemberIndex(1);
+				timeSeriesHeader.setForecastTime(Instant.parse(y + "-01-01T00:00:00Z").toEpochMilli());
+				timeSeriesHeader.setLocationId("locationId" + h);
+				timeSeriesHeader.setLocationName("locationName" + h);
+				timeSeriesHeader.setModuleInstanceId("moduleInstanceId" + h);
+				timeSeriesHeader.setParameterId("parameterId" + h);
+				timeSeriesHeader.setParameterName("parameterName" + h);
+				timeSeriesHeader.setParameterType(ParameterType.INSTANTANEOUS);
+				timeSeriesHeader.setQualifierIds("qualifierId" + h, "qualifierId" + h);
+				timeSeriesHeader.setTimeStep(TimeStepUtils.createEquidistant(new TimeSpan(TimeUnit.HOUR, 6), TimeZone.getTimeZone("UTC"), "timeStepLabel"));
+				timeSeriesHeader.setUnit("unit");
 
-                TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader);
-                timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
-                String year = y + "-01-01T00:00:00Z";
-                timeSeriesArray.ensureTimes(LongStream.range(0, 10).map(x -> Instant.parse(year).plus(x*6, ChronoUnit.HOURS).toEpochMilli()).toArray());
-                for (int i = 0; i < 10; i++) {
-                    timeSeriesArray.setValue(i,  i);
-                    timeSeriesArray.setFlag(i, TimeSeriesArray.FLAG_SOURCE_NONE);
-                    timeSeriesArray.setComment(i, "comment" + i);
-                    timeSeriesArray.setUser(i, "user" + i);
-                }
-                arrays.add(timeSeriesArray);
-            }
-        }
-        return new TimeSeriesArrays<>(arrays.toArray(TimeSeriesArray[]::new));
-    }
+				TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader);
+				timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
+				String year = y + "-01-01T00:00:00Z";
+				timeSeriesArray.ensureTimes(LongStream.range(0, 10).map(x -> Instant.parse(year).plus(x*6, ChronoUnit.HOURS).toEpochMilli()).toArray());
+				for (int i = 0; i < 10; i++) {
+					timeSeriesArray.setValue(i,  i);
+					timeSeriesArray.setFlag(i, TimeSeriesArray.FLAG_SOURCE_NONE);
+					timeSeriesArray.setComment(i, "comment" + i);
+					timeSeriesArray.setUser(i, "user" + i);
+				}
+				arrays.add(timeSeriesArray);
+			}
+		}
+		return new TimeSeriesArrays<>(arrays.toArray(TimeSeriesArray[]::new));
+	}
 
-    /**
-     * ArchiveDatabaseUnitConverterTestImplementation
-     */
-    public static class ArchiveDatabaseUnitConverterTestImplementation implements ArchiveDatabaseUnitConverter {
+	/**
+	 * ArchiveDatabaseUnitConverterTestImplementation
+	 */
+	public static class ArchiveDatabaseUnitConverterTestImplementation implements ArchiveDatabaseUnitConverter {
 
-        @Override
-        public float[] convert(String parameterId, float[] floats) { return floats; }
+		@Override
+		public float[] convert(String parameterId, float[] floats) { return floats; }
 
-        @Override
-        public String getOutputUnitType(String parameterId) { return "unit"; }
-    }
+		@Override
+		public String getOutputUnitType(String parameterId) { return "unit"; }
+	}
 
-    /**
-     * ArchiveDatabaseTimeConverterTestImplementation
-     */
-    public static class ArchiveDatabaseTimeConverterTestImplementation implements ArchiveDatabaseTimeConverter {
+	/**
+	 * ArchiveDatabaseTimeConverterTestImplementation
+	 */
+	public static class ArchiveDatabaseTimeConverterTestImplementation implements ArchiveDatabaseTimeConverter {
 
-        @Override
-        public long[] convert(long[] longs) { return longs; }
+		@Override
+		public long[] convert(long[] longs) { return longs; }
 
-        @Override
-        public TimeZone getLocalTimeZone() { return TimeZone.getTimeZone("UTC"); }
-    }
+		@Override
+		public TimeZone getLocalTimeZone() { return TimeZone.getTimeZone("UTC"); }
+	}
 
-    /**
-     * ArchiveDatabaseRegionConfigInfoProviderTestImplementation
-     */
-    public static class ArchiveDatabaseRegionConfigInfoProviderTestImplementation implements ArchiveDatabaseRegionConfigInfoProvider {
+	/**
+	 * ArchiveDatabaseRegionConfigInfoProviderTestImplementation
+	 */
+	public static class ArchiveDatabaseRegionConfigInfoProviderTestImplementation implements ArchiveDatabaseRegionConfigInfoProvider {
 
-        @Override
-        public LocationInfo getLocationInfo(String locationId) {
-            return new LocationInfo(locationId, locationId, locationId);
-        }
+		@Override
+		public LocationInfo getLocationInfo(String locationId) {
+			return new LocationInfo(locationId, locationId, locationId);
+		}
 
-        @Override
-        public ParameterInfo getParameterInfo(String parameterId) {
-            return new ParameterInfo(parameterId, parameterId, parameterId);
-        }
-    }
+		@Override
+		public ParameterInfo getParameterInfo(String parameterId) {
+			return new ParameterInfo(parameterId, parameterId, parameterId, parameterId);
+		}
+	}
 }

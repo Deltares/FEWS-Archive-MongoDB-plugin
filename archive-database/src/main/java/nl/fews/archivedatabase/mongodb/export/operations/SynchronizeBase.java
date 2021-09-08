@@ -3,12 +3,12 @@ package nl.fews.archivedatabase.mongodb.export.operations;
 import nl.fews.archivedatabase.mongodb.export.interfaces.Synchronize;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
-import nl.fews.archivedatabase.mongodb.shared.utils.BucketUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
 import org.javatuples.Triplet;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class SynchronizeBase implements Synchronize {
@@ -19,41 +19,23 @@ public abstract class SynchronizeBase implements Synchronize {
 	 * @param timeSeriesType timeSeriesType
 	 */
 	public void synchronize(List<Document> timeSeries, TimeSeriesType timeSeriesType){
-		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
-		List<String> keys = Database.getCollectionKeys(collection);
-
-		Triplet<List<Document>, List<Document>, List<Document>> triplet = synchronize(timeSeries, collection, keys);
-		List<Document> insert = triplet.getValue0();
-		List<Document> replace = triplet.getValue1();
-		List<Document> remove = triplet.getValue2();
-
-		if (insert.stream().filter(s -> s.getString("encodedTimeStepId").equals("nonequidistant")).anyMatch(d -> d.getList("timeseries", Document.class).size() > BucketUtil.TIME_SERIES_MAX_ENTRY_COUNT) ||
-				replace.stream().filter(s -> s.getString("encodedTimeStepId").equals("nonequidistant")).anyMatch(d -> d.getList("timeseries", Document.class).size() > BucketUtil.TIME_SERIES_MAX_ENTRY_COUNT)) {
-			for (Document document: insert)
-				BucketUtil.ensureBucketSize(timeSeriesType, document);
-			for (Document document: replace)
-				BucketUtil.ensureBucketSize(timeSeriesType, document);
-
-			triplet = synchronize(timeSeries, collection, keys);
-			insert = triplet.getValue0();
-			replace = triplet.getValue1();
-			remove = triplet.getValue2();
-		}
-		if (insert.stream().filter(s -> s.getString("encodedTimeStepId").equals("nonequidistant")).anyMatch(d -> d.getList("timeseries", Document.class).size() > BucketUtil.TIME_SERIES_MAX_ENTRY_COUNT) ||
-				replace.stream().filter(s -> s.getString("encodedTimeStepId").equals("nonequidistant")).anyMatch(d -> d.getList("timeseries", Document.class).size() > BucketUtil.TIME_SERIES_MAX_ENTRY_COUNT))
-			throw new IllegalStateException("Cannot resolve nonequidistant bucket size.");
-
-		synchronize(collection, insert, replace, remove);
+		Map<String, Triplet<List<Document>, List<Document>, List<Document>>> insertUpdateRemove = getInsertUpdateRemove(timeSeries, timeSeriesType);
+		synchronize(
+				timeSeriesType,
+				insertUpdateRemove.values().stream().flatMap(s -> s.getValue0().stream()).collect(Collectors.toList()),
+				insertUpdateRemove.values().stream().flatMap(s -> s.getValue1().stream()).collect(Collectors.toList()),
+				insertUpdateRemove.values().stream().flatMap(s -> s.getValue2().stream()).collect(Collectors.toList()));
 	}
 
 	/**
 	 * Bulk operations
-	 * @param collection collection
+	 * @param timeSeriesType timeSeriesType
 	 * @param insert insert documents
 	 * @param replace replace documents
 	 * @param remove remove documents
 	 */
-	private static void synchronize(String collection, List<Document> insert, List<Document> replace, List<Document> remove){
+	private static void synchronize(TimeSeriesType timeSeriesType, List<Document> insert, List<Document> replace, List<Document> remove){
+		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 		if(!insert.isEmpty())
 			Database.insertMany(collection, insert);
 
@@ -69,9 +51,8 @@ public abstract class SynchronizeBase implements Synchronize {
 	/**
 	 *
 	 * @param timeSeries timeSeries
-	 * @param collection collection
-	 * @param keys keys
-	 * @return Triplet<List<Document>, List<Document>, List<Document>>
+	 * @param timeSeriesType timeSeriesType
+	 * @return Map<String, Triplet<List<Document>, List<Document>, List<Document>>>
 	 */
-	protected abstract Triplet<List<Document>, List<Document>, List<Document>> synchronize(List<Document> timeSeries, String collection, List<String> keys);
+	protected abstract Map<String, Triplet<List<Document>, List<Document>, List<Document>>> getInsertUpdateRemove(List<Document> timeSeries, TimeSeriesType timeSeriesType);
 }

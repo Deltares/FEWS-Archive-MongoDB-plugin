@@ -3,7 +3,6 @@ package nl.fews.archivedatabase.mongodb.shared.utils;
 import com.mongodb.client.model.UpdateOptions;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.BucketSize;
-import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import org.bson.Document;
 
@@ -59,14 +58,55 @@ public final class BucketUtil {
 
 	/**
 	 *
-	 * @param timeSeriesGroup document
+	 * @param bucketKey, bucketKey
 	 * @return BucketSize
 	 */
-	public static BucketSize getBucketSize(Document timeSeriesGroup){
-		Document bucketSize = Database.findOne(Settings.get("bucketSizeCollection"), timeSeriesGroup, new Document("bucketSize", 1));
-		if (bucketSize != null)
-			return BucketSize.valueOf(bucketSize.getString("bucketSize"));
-		return DEFAULT_BUCKET_SIZE;
+	public static synchronized BucketSize getNetsBucketSize(String bucketCollection, String bucketKey){
+		Document bucketSize = Database.findOne(Settings.get("bucketSizeCollection"), new Document("bucketCollection", bucketCollection).append("bucketKey", bucketKey), new Document("_id", 0).append("bucketSize", 1));
+		if (bucketSize == null){
+			Database.insertOne(Settings.get("bucketSizeCollection"), new Document("bucketCollection", bucketCollection).append("bucketKey", bucketKey).append("bucketSize", BucketSize.YEAR.toString()));
+			return BucketSize.YEAR;
+		}
+		return BucketSize.valueOf(bucketSize.getString("bucketSize"));
+	}
+
+	/**
+	 *
+	 * @param bucketCollection bucketCollection
+	 * @param document document
+	 * @return String
+	 */
+	public static String getBucketKey(String bucketCollection, Document document){
+		return getBucketKeyDocument(bucketCollection, document).toJson();
+	}
+
+	/**
+	 *
+	 * @param bucketKeyFields timeSeriesType
+	 * @param document document
+	 * @return String
+	 */
+	public static String getBucketKey(List<String> bucketKeyFields, Document document){
+		return new Document(bucketKeyFields.stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new))).toJson();
+	}
+
+	/**
+	 *
+	 * @param bucketCollection bucketCollection
+	 * @param document document
+	 * @return Document
+	 */
+	public static Document getBucketKeyDocument(String bucketCollection, Document document){
+		return new Document(getBucketKeyFields(bucketCollection).stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new)));
+	}
+
+	/**
+	 *
+	 * @param bucketCollection bucketCollection
+	 * @return Document
+	 */
+	public static List<String> getBucketKeyFields(String bucketCollection){
+		return Database.getCollectionKeys(bucketCollection).stream().filter(s -> !s.equals("bucketSize") && !s.equals("bucket")).collect(Collectors.toList());
 	}
 
 	/**
@@ -145,63 +185,6 @@ public final class BucketUtil {
 
 	/**
 	 *
-	 * @param startTime startTime
-	 * @param endTime endTime
-	 * @return BucketSize
-	 */
-	public static BucketSize getArchiveInferredBucketSize(Date startTime, Date endTime){
-		LocalDateTime s = DateUtil.getLocalDateTime(startTime);
-		LocalDateTime e = DateUtil.getLocalDateTime(endTime);
-
-		if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue() && s.getDayOfMonth() == e.getDayOfMonth())
-			return BucketSize.DAY;
-		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue())
-			return BucketSize.MONTH;
-		else
-			return BucketSize.DAY;
-	}
-
-	/**
-	 *
-	 * @param startTime startTime
-	 * @param endTime endTime
-	 * @return int
-	 */
-	public static BucketSize getInferredBucketSize(Date startTime, Date endTime){
-
-		LocalDateTime s = DateUtil.getLocalDateTime(startTime);
-		LocalDateTime e = DateUtil.getLocalDateTime(endTime);
-
-		if(e.compareTo(s) <= 0)
-			throw new IllegalArgumentException(String.format("startTime: [%s] endTime: [%s]. startTime must be greater than end time.", startTime, endTime));
-		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue() && s.getDayOfMonth() == e.getDayOfMonth() && s.getHour() == e.getHour() && s.getMinute() == e.getMinute() && s.getSecond() == e.getSecond())
-			return BucketSize.SECOND;
-		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue() && s.getDayOfMonth() == e.getDayOfMonth() && s.getHour() == e.getHour() && s.getMinute() == e.getMinute())
-			return BucketSize.MINUTE;
-		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue() && s.getDayOfMonth() == e.getDayOfMonth() && s.getHour() == e.getHour())
-			return BucketSize.HOUR;
-		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue() && s.getDayOfMonth() == e.getDayOfMonth())
-			return BucketSize.DAY;
-		else if(s.getYear() == e.getYear() && s.getMonthValue() == e.getMonthValue())
-			return BucketSize.MONTH;
-		else if(s.getYear() == e.getYear())
-			return BucketSize.YEAR;
-		else if(e.getYear() - s.getYear() > 1000000)
-			return BucketSize.AEON;
-		else if(e.getYear() - s.getYear() > 1000)
-			return BucketSize.MEGANNUM;
-		else if(e.getYear() - s.getYear() > 100)
-			return BucketSize.MILLENNIA;
-		else if(e.getYear() - s.getYear() > 10)
-			return BucketSize.CENTURY;
-		else if(e.getYear() - s.getYear() > 0)
-			return BucketSize.DECADE;
-		else
-			throw new IllegalArgumentException(String.format("[%s] - [%s]", startTime, endTime));
-	}
-
-	/**
-	 *
 	 * @param date date
 	 * @param bucketSize bucketSize
 	 * @return int
@@ -239,33 +222,48 @@ public final class BucketUtil {
 	/**
 	 *
 	 * @param bucketSize bucketSize
-	 * @param timeSeriesGroup timeSeriesGroup
+	 * @param bucketKeyDocument bucketKey
+	 * @param bucketKey bucketKey
 	 */
-	public static void resizeBuckets(TimeSeriesType timeSeriesType, Document timeSeriesGroup, BucketSize bucketSize){
-		if(!TimeSeriesTypeUtil.getTimeSeriesTypeBucket(timeSeriesType))
-			throw new IllegalArgumentException(String.format("[%s] Only [%s] and [%s] support bucketing", timeSeriesType, TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED));
-
-		List<Document> timeSeries = TimeSeriesUtil.getTimeSeries(timeSeriesGroup, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType));
+	private static synchronized void resizeExistingBuckets(String bucketCollection, Document bucketKeyDocument, String bucketKey, BucketSize bucketSize){
+		List<Document> timeSeries = TimeSeriesUtil.getUnwoundTimeSeries(bucketKeyDocument, bucketCollection);
 		Map<Long, List<Document>> timeSeriesBuckets = TimeSeriesUtil.getTimeSeriesBuckets(timeSeries, bucketSize);
-		List<Document> timeSeriesDocuments = TimeSeriesUtil.getTimeSeriesDocuments(timeSeriesGroup, timeSeriesBuckets, bucketSize, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType));
+		List<Document> timeSeriesDocuments = TimeSeriesUtil.getTimeSeriesDocuments(bucketKeyDocument, timeSeriesBuckets, bucketSize, bucketCollection);
 
-		TimeSeriesUtil.removeTimeSeriesDocuments(timeSeriesGroup, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType));
-		TimeSeriesUtil.saveTimeSeriesDocuments(timeSeriesDocuments, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType));
-
-		Database.updateOne(Settings.get("bucketSizeCollection"), timeSeriesGroup, new Document("bucketSize", bucketSize.toString()), new UpdateOptions().upsert(true));
+		Database.deleteMany(bucketCollection, bucketKeyDocument);
+		if(!timeSeriesDocuments.isEmpty())
+			Database.insertMany(bucketCollection, timeSeriesDocuments);
+		Database.updateOne(Settings.get("bucketSizeCollection"), new Document("bucketCollection", bucketCollection).append("bucketKey", bucketKey), new Document("$set", new Document("bucketSize", bucketSize.toString())), new UpdateOptions().upsert(true));
 	}
 
 	/**
 	 *
-	 * @param timeSeriesType timeSeriesType
-	 * @param document document
+	 * @param documents documents
+	 * @return Map<String, Pair<Document, Document>>
 	 */
-	public static void ensureBucketSize(TimeSeriesType timeSeriesType, Document document){
-		if(document.getString("encodedTimeStepId").equals("nonequidistant") && document.getList("timeseries", Document.class).size() > BucketUtil.TIME_SERIES_MAX_ENTRY_COUNT){
-			BucketSize bucketSize = BucketUtil.getEstimatedBucketSize(document.getDate("startTime"), document.getDate("endTime"), document.getList("timeseries", Document.class).size());
-			Document timeSeriesGroup = Database.getCollectionIndexes(Settings.get("bucketSizeCollection"))[0];
-			timeSeriesGroup = new Document(timeSeriesGroup.keySet().stream().filter(s -> !s.equals("unique")).collect(Collectors.toMap(s -> s, document::get, (k, v) -> v, LinkedHashMap::new)));
-			resizeBuckets(timeSeriesType, timeSeriesGroup,bucketSize);
+	private static Document getMaxSizeDocument(List<Document> documents){
+		Document maxSizeDocument = null;
+		for (Document document: documents) {
+			if(document.getString("encodedTimeStepId").equals("NETS"))
+				maxSizeDocument = maxSizeDocument == null || document.getList("timeseries", Document.class).size() > maxSizeDocument.getList("timeseries", Document.class).size() ? document : maxSizeDocument;
 		}
+		return maxSizeDocument;
+	}
+
+	/**
+	 *
+	 * @param bucketCollection bucketCollection
+	 * @param documents documents
+	 */
+	public static BucketSize ensureBucketSize(String bucketCollection, List<Document> documents){
+		BucketSize bucketSize = null;
+		Document document = getMaxSizeDocument(documents);
+		if(document != null && document.getList("timeseries", Document.class).size() > BucketUtil.TIME_SERIES_MAX_ENTRY_COUNT) {
+			bucketSize = BucketUtil.getEstimatedBucketSize(document.getDate("startTime"), document.getDate("endTime"), document.getList("timeseries", Document.class).size());
+			Document bucketKeyDocument = BucketUtil.getBucketKeyDocument(bucketCollection, document);
+			String bucketKey = BucketUtil.getBucketKey(bucketCollection, document);
+			resizeExistingBuckets(bucketCollection, bucketKeyDocument, bucketKey, bucketSize);
+		}
+		return bucketSize;
 	}
 }

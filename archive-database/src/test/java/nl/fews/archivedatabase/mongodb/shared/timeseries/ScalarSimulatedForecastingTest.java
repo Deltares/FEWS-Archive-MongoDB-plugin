@@ -43,7 +43,8 @@ class ScalarSimulatedForecastingTest {
 	void getRoot() {
 		Document expected = Document.parse("{\"timeSeriesType\": \"simulated forecasting\", \"moduleInstanceId\": \"moduleInstanceId0\", \"locationId\": \"locationId0\", \"parameterId\": \"parameterId0\", \"qualifierIds\": [\"qualifierId0\", \"qualifierId0\"], \"qualifierId\": \"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"startTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}, \"endTime\": {\"$date\": \"2012-01-03T06:00:00Z\"}, \"localStartTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}, \"localEndTime\": {\"$date\": \"2012-01-03T06:00:00Z\"}, \"ensembleId\": \"ensembleId0\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}, \"localForecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}, \"taskRunId\": \"taskRunId\"}");
 		TimeSeries timeSeries = new ScalarSimulatedForecasting();
-		List<Document> timeSeriesDocuments = timeSeries.getEvents(timeSeriesArray);
+		Document metadataDocument = timeSeries.getMetaData(timeSeriesHeader, "areaId", "sourceId");
+		List<Document> timeSeriesDocuments = timeSeries.getEvents(timeSeriesArray, metadataDocument);
 		Document runInfoDocument = timeSeries.getRunInfo(timeSeriesHeader);
 		Document document = timeSeries.getRoot(timeSeriesHeader, timeSeriesDocuments, runInfoDocument);
 		assertEquals(expected.toJson(), document.toJson());
@@ -61,7 +62,7 @@ class ScalarSimulatedForecastingTest {
 					timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
 					SimulationMetaData simulationMetaData = (SimulationMetaData) MetaDataUtil.getNetcdfMetaData(metaDataFile);
 					ArchiveRunInfo archiveRunInfo = RunInfoUtil.getRunInfo(simulationMetaData);
-					assertNotNull(ts.getRoot(timeSeriesArray.getHeader(), ts.getEvents(timeSeriesArray), ts.getRunInfo(archiveRunInfo)));
+					assertNotNull(ts.getRoot(timeSeriesArray.getHeader(), ts.getEvents(timeSeriesArray, metadataDocument), ts.getRunInfo(archiveRunInfo)));
 				}));
 	}
 

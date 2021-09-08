@@ -3,34 +3,35 @@ package nl.fews.archivedatabase.mongodb.export.operations;
 import nl.fews.archivedatabase.mongodb.export.interfaces.Synchronize;
 import nl.fews.archivedatabase.mongodb.export.utils.DatabaseSingletonUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
+import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
+import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
 import org.javatuples.Triplet;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public final class SynchronizeSingletons extends SynchronizeBase implements Synchronize {
 
 	/**
 	 *
 	 * @param timeSeries timeSeries
-	 * @param collection collection
-	 * @param keys keys
+	 * @param timeSeriesType timeSeriesType
 	 * @return Triplet<List<Document>, List<Document>, List<Document>>
 	 */
 	@Override
-	protected Triplet<List<Document>, List<Document>, List<Document>> synchronize(List<Document> timeSeries, String collection, List<String> keys){
-		Map<String, Document> existingDocuments = getExistingDocuments(collection, getExistingQueries(timeSeries, keys), keys);
+	protected Map<String, Triplet<List<Document>, List<Document>, List<Document>>> getInsertUpdateRemove(List<Document> timeSeries, TimeSeriesType timeSeriesType){
+		Map<String, Triplet<List<Document>, List<Document>, List<Document>>> insertUpdateRemove = new HashMap<>();
+		Map<String, Document> existingDocuments = getExistingDocuments(getExistingQueries(timeSeries, timeSeriesType), timeSeriesType);
 
-		List<Document> insert = new ArrayList<>();
-		List<Document> replace = new ArrayList<>();
-		List<Document> remove = new ArrayList<>();
+		DatabaseSingletonUtil.getDocumentsByKey(timeSeries, timeSeriesType).forEach((key, documents) -> {
+			List<Document> insert = new ArrayList<>();
+			List<Document> replace = new ArrayList<>();
+			List<Document> remove = new ArrayList<>();
 
-		DatabaseSingletonUtil.getDocumentsByKey(timeSeries, keys).forEach((key, documents) -> {
 			Document document = documents.get(documents.size() - 1);
-			String existingQuery = new Document(keys.stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new))).toJson();
-
-			Document existingDocument = existingDocuments.getOrDefault(existingQuery, null);
+			Document existingDocument = existingDocuments.getOrDefault(key, null);
 			if (existingDocument == null) {
 				if(!document.getList("timeseries", Document.class).isEmpty())
 					insert.add(document);
@@ -43,18 +44,20 @@ public final class SynchronizeSingletons extends SynchronizeBase implements Sync
 				else
 					replace.add(document);
 			}
+			insertUpdateRemove.put(key, new Triplet<>(insert, replace, remove));
 		});
-		return new Triplet<>(insert, replace, remove);
+		return insertUpdateRemove;
 	}
 
 	/**
 	 *
-	 * @param collection collection
 	 * @param existingQueries existingQueries
-	 * @param keys keys
+	 * @param timeSeriesType timeSeriesType
 	 * @return existingDocuments
 	 */
-	private static Map<String, Document> getExistingDocuments(String collection, List<Document> existingQueries, List<String> keys){
+	private static Map<String, Document> getExistingDocuments(List<Document> existingQueries, TimeSeriesType timeSeriesType){
+		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
+		List<String> keys = Database.getCollectionKeys(collection);
 		Map<String, Document> existingDocuments = new HashMap<>();
 		if(!existingQueries.isEmpty()) {
 			for (Document document : Database.find(collection, new Document("$or", existingQueries), new Document("timeseries", 0))) {
@@ -69,12 +72,14 @@ public final class SynchronizeSingletons extends SynchronizeBase implements Sync
 	/**
 	 *
 	 * @param timeSeries timeSeries
-	 * @param keys keys
+	 * @param timeSeriesType timeSeriesType
 	 * @return existingQueries
 	 */
-	private static List<Document> getExistingQueries(List<Document> timeSeries, List<String> keys){
+	private static List<Document> getExistingQueries(List<Document> timeSeries, TimeSeriesType timeSeriesType){
+		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
+		List<String> keys = Database.getCollectionKeys(collection);
 		List<Document> existingQueries = new ArrayList<>();
-		for (Map.Entry<String, List<Document>> key : DatabaseSingletonUtil.getDocumentsByKey(timeSeries, keys).entrySet()) {
+		for (Map.Entry<String, List<Document>> key : DatabaseSingletonUtil.getDocumentsByKey(timeSeries, timeSeriesType).entrySet()) {
 			Document document = key.getValue().get(key.getValue().size() - 1);
 			existingQueries.add(new Document(keys.stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new))));
 		}

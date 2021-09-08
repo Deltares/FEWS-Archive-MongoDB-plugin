@@ -11,5 +11,6 @@ public enum BucketSize{
 	DAY,
 	HOUR,
 	MINUTE,
-	SECOND
+	SECOND,
+	VARIABLE
 }

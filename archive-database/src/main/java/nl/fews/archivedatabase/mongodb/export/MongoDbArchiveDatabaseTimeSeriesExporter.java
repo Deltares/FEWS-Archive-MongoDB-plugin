@@ -1,6 +1,7 @@
 package nl.fews.archivedatabase.mongodb.export;
 
 import nl.fews.archivedatabase.mongodb.export.interfaces.Synchronize;
+import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
@@ -11,7 +12,6 @@ import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +21,7 @@ import java.util.List;
  * Otherwise removed, updated, or replaced, depending on the extent of changes.  The _id key and durable key is preserved
  * Documents are binned (bucketed) according to UTC event date, either yearly or monthly according to timeStepMinutes
  * null values are converted to empty string except for event values, where if NaN or null => null
- * event dates are are assumed to be non-null and unique for each timeSeriesArray collection
+ * event dates are assumed to be non-null and unique for each timeSeriesArray collection
  * The following fields are omitted if there is no local timezone specified (use null or omit to specify no timezone):
  *  - metaData.localTimeZone
  *  - timeseries.lt
@@ -46,6 +46,12 @@ import java.util.List;
  */
 @SuppressWarnings({"unchecked"})
 public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabaseTimeSeriesExporter<TimeSeriesHeader> {
+
+	//DEFAULTS THAT MAY BE ADDED TO INTERFACE AND OPTIONALLY OVERRIDDEN LATER
+	static{
+		Settings.put("bucketSizeCollection", Database.Collection.BucketSize.toString());
+	}
+
 	/**
 	 *
 	 */
@@ -207,8 +213,8 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 			for(TimeSeriesArray<TimeSeriesHeader> timeSeriesArray: timeSeriesArrays.toArray()){
 				TimeSeriesHeader header = timeSeriesArray.getHeader();
 
-				List<Document> timeseriesDocuments = timeSeries.getEvents(timeSeriesArray);
 				Document metaDataDocument = timeSeries.getMetaData(header, areaId, sourceId);
+				List<Document> timeseriesDocuments = timeSeries.getEvents(timeSeriesArray, metaDataDocument);
 				Document runInfoDocument = timeSeries.getRunInfo(header);
 				Document rootDocument = timeSeries.getRoot(header, timeseriesDocuments, runInfoDocument);
 
@@ -224,6 +230,8 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 					Settings.get("archiveDatabaseUrl") :
 					Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
 			Settings.put("connectionString", connectionString);
+
+			//LogUtils.addAppender(MongoDbAppender.createAppender("databaseLogAppender", Settings.get("connectionString"), null));
 
 			Synchronize synchronize = (Synchronize)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "export.operations", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(timeSeriesType))).getConstructor().newInstance();
 			synchronize.synchronize(ts, timeSeriesType);

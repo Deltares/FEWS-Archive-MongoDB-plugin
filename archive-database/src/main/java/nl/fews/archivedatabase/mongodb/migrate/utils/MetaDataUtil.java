@@ -24,7 +24,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public final class MetaDataUtil {
 
@@ -97,7 +96,6 @@ public final class MetaDataUtil {
 			pool.shutdown();
 		}
 		catch (Exception ex){
-			Thread.currentThread().interrupt();
 			throw new RuntimeException(ex);
 		}
 		return existingMetaDataFilesFs;

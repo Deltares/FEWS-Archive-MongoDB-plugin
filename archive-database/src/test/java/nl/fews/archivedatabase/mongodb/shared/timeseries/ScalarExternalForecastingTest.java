@@ -43,7 +43,8 @@ class ScalarExternalForecastingTest {
 		Document expected = Document.parse("{\"timeSeriesType\": \"external forecasting\", \"moduleInstanceId\": \"moduleInstanceId0\", \"locationId\": \"locationId0\", \"parameterId\": \"parameterId0\", \"qualifierIds\": [\"qualifierId0\", \"qualifierId0\"], \"qualifierId\": \"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"startTime\": {\"$date\": 1325376000000}, \"endTime\": {\"$date\": 1325570400000}, \"localStartTime\": {\"$date\": 1325376000000}, \"localEndTime\": {\"$date\": 1325570400000}, \"ensembleId\": \"ensembleId0\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": 1325376000000}, \"localForecastTime\": {\"$date\": 1325376000000}}");
 
 		TimeSeries timeSeries = new ScalarExternalForecasting();
-		List<Document> timeSeriesDocuments = timeSeries.getEvents(timeSeriesArray);
+		Document metadataDocument = timeSeries.getMetaData(timeSeriesHeader, "areaId", "sourceId");
+		List<Document> timeSeriesDocuments = timeSeries.getEvents(timeSeriesArray, metadataDocument);
 		Document runInfoDocument = timeSeries.getRunInfo(timeSeriesHeader);
 		Document document = timeSeries.getRoot(timeSeriesHeader, timeSeriesDocuments, runInfoDocument);
 		assertEquals(expected.toJson(), document.toJson());
@@ -59,7 +60,7 @@ class ScalarExternalForecastingTest {
 					Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = NetcdfUtil.getTimeSeriesRecordsMap(netcdfFile.getKey(), netcdfContent);
 					TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
 					timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
-					assertNotNull(ts.getRoot(timeSeriesArray.getHeader(), ts.getEvents(timeSeriesArray), new Document()));
+					assertNotNull(ts.getRoot(timeSeriesArray.getHeader(), ts.getEvents(timeSeriesArray, metadataDocument), new Document()));
 				}));
 	}
 
