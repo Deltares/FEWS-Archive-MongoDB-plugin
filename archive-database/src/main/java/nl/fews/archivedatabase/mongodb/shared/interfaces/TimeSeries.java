@@ -29,9 +29,10 @@ public interface TimeSeries {
 	/**
 	 *
 	 * @param timeSeriesArray FEWS timeseries array
+	 * @param metadataDocument metadataDocument
 	 * @return the sorted list of timeseries event documents
 	 */
-	List<Document> getEvents(TimeSeriesArray<TimeSeriesHeader> timeSeriesArray);
+	List<Document> getEvents(TimeSeriesArray<TimeSeriesHeader> timeSeriesArray, Document metadataDocument);
 
 	/**
 	 * @param header FEWS timeseries header

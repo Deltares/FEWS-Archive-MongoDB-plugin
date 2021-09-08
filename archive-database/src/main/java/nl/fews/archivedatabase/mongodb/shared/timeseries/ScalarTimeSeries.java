@@ -3,18 +3,18 @@ package nl.fews.archivedatabase.mongodb.shared.timeseries;
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.DateUtil;
+import nl.fews.archivedatabase.mongodb.shared.utils.LogUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.json.JSONArray;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -22,6 +22,11 @@ import java.util.stream.IntStream;
  *
  */
 public abstract class ScalarTimeSeries implements TimeSeries {
+
+	/**
+	 *
+	 */
+	private static final Logger logger = LogManager.getLogger(ScalarTimeSeries.class);
 
 	/**
 	 *
@@ -77,7 +82,7 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 	 * @param header FEWS timeseries header
 	 * @param sourceId sourceId
 	 * @param areaId areaId
-	 * @return bson document representing the meta data of this timeseries
+	 * @return bson document representing the metadata of this timeseries
 	 */
 	public Document getMetaData(TimeSeriesHeader header, String areaId, String sourceId){
 		Document document = new Document();
@@ -87,27 +92,24 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 		int timeStepMinutes = min == max ? min : (min / 60) % 2 == 0 ? min : max;
 		areaId = areaId != null ? areaId : "";
 		sourceId = sourceId != null ? sourceId : "";
-		String unit = header.getUnit() != null ? header.getUnit(): "";
+		String headerUnit = header.getUnit() != null && !header.getUnit().trim().equals("-") && !header.getUnit().trim().equals("") ? header.getUnit().trim() : null;
 
-		ParameterInfo parameterInfo = null;
-		try{
-			parameterInfo = Settings.get("archiveDatabaseRegionConfigInfoProvider") != null ? Settings.get("archiveDatabaseRegionConfigInfoProvider", ArchiveDatabaseRegionConfigInfoProvider.class).getParameterInfo(header.getParameterId()) : null;
-		}
-		catch (NullPointerException ex){
-			//IGNORE
-		}
+		ParameterInfo parameterInfo = Settings.get("archiveDatabaseRegionConfigInfoProvider") != null ? Settings.get("archiveDatabaseRegionConfigInfoProvider", ArchiveDatabaseRegionConfigInfoProvider.class).getParameterInfo(header.getParameterId()) : null;
 		String parameterName = parameterInfo != null ? parameterInfo.getName() : "";
+		String parameterUnit = parameterInfo != null ? parameterInfo.getUnit() : null;
+
+		String unit = parameterUnit != null ? parameterUnit : headerUnit != null ? headerUnit : "";
+
+		if(headerUnit != null && parameterUnit != null && !headerUnit.equals(parameterUnit) && !parameterUnit.equals(header.getParameterId())){
+			Exception ex = new IllegalArgumentException(String.format("Units for header.getParameterId() -> %3$s not equal: header.getUnit() -> %1$s, parameterInfo.getUnit() -> %2$s. Using header.getUnit() -> %1$s.",
+					header.getUnit(), parameterInfo.getUnit(), header.getParameterId()));
+			logger.debug(LogUtil.getLogMessageJson(ex, Map.of("parameterId", header.getParameterId())).toJson(), ex);
+		}
 
 		String parameterType = header.getParameterType() != null && header.getParameterType().getName() != null ? header.getParameterType().getName() : "";
 		String timeStepLabel = header.getTimeStep() != null && header.getTimeStep().toString() != null ? header.getTimeStep().toString() : "";
 
-		LocationInfo locationInfo = null;
-		try{
-			locationInfo = Settings.get("archiveDatabaseRegionConfigInfoProvider") != null ? Settings.get("archiveDatabaseRegionConfigInfoProvider", ArchiveDatabaseRegionConfigInfoProvider.class).getLocationInfo(header.getLocationId()) : null;
-		}
-		catch (NullPointerException ex){
-			//IGNORE
-		}
+		LocationInfo locationInfo = Settings.get("archiveDatabaseRegionConfigInfoProvider") != null ? Settings.get("archiveDatabaseRegionConfigInfoProvider", ArchiveDatabaseRegionConfigInfoProvider.class).getLocationInfo(header.getLocationId()) : null;
 		String locationName = locationInfo != null ? locationInfo.getName() : "";
 
 		String displayUnit = Settings.get("archiveDatabaseUnitConverter") != null ? Settings.get("archiveDatabaseUnitConverter", ArchiveDatabaseUnitConverter.class).getOutputUnitType(unit) : null;
@@ -133,13 +135,15 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 	/**
 	 *
 	 * @param timeSeriesArray FEWS timeseries array
+	 * @param metadataDocument metadataDocument
 	 * @return the sorted list of timeseries event documents
 	 */
-	public List<Document> getEvents(TimeSeriesArray<TimeSeriesHeader> timeSeriesArray){
+	public List<Document> getEvents(TimeSeriesArray<TimeSeriesHeader> timeSeriesArray, Document metadataDocument){
 		List<Document> documents = new ArrayList<>();
 
+		String unit = metadataDocument.getString("unit");
 		Date[] localTimes = Settings.get("archiveDatabaseTimeConverter") != null ? DateUtil.getDates(Settings.get("archiveDatabaseTimeConverter", ArchiveDatabaseTimeConverter.class).convert(timeSeriesArray.toTimesArray())) : null;
-		float[] displayValues = Settings.get("archiveDatabaseUnitConverter") != null ? Settings.get("archiveDatabaseUnitConverter", ArchiveDatabaseUnitConverter.class).convert(timeSeriesArray.getHeader().getUnit(), timeSeriesArray.toFloatArray()) : null;
+		float[] displayValues = Settings.get("archiveDatabaseUnitConverter") != null ? Settings.get("archiveDatabaseUnitConverter", ArchiveDatabaseUnitConverter.class).convert(unit, timeSeriesArray.toFloatArray()) : null;
 
 		for (int i = 0; i < timeSeriesArray.size(); i++) {
 			Object value = !Float.isNaN(timeSeriesArray.getValue(i)) ? timeSeriesArray.getValue(i) : null;

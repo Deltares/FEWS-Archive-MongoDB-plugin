@@ -31,12 +31,12 @@ class InsertTest {
 	@Test
 	void insertMetaDatas() {
 		Insert.insertMetaDatas(MetaDataUtil.getExistingMetaDataFilesFs(), MetaDataUtil.getExistingMetaDataFilesDb());
-		assertEquals(9, MetaDataUtil.getExistingMetaDataFilesDb().size());
+		assertEquals(7, MetaDataUtil.getExistingMetaDataFilesDb().size());
 	}
 
 	@Test
 	void insertMetaData() {
-		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().findFirst().orElse(null);
+		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(f -> !f.getKey().toString().contains("gridded")).findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
 		assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
 		assertEquals(8, MetaDataUtil.getMetaDataFilesInsert(MetaDataUtil.getExistingMetaDataFilesFs(), MetaDataUtil.getExistingMetaDataFilesDb()).size());

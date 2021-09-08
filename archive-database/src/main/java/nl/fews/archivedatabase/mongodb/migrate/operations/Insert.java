@@ -1,6 +1,7 @@
 package nl.fews.archivedatabase.mongodb.migrate.operations;
 
-import nl.fews.archivedatabase.mongodb.migrate.utils.DatabaseUtil;
+import com.mongodb.MongoBulkWriteException;
+import com.mongodb.MongoWriteException;
 import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.NetcdfUtil;
 import nl.fews.archivedatabase.mongodb.migrate.utils.RunInfoUtil;
@@ -30,6 +31,9 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinPool;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -41,6 +45,11 @@ public final class Insert {
 	 *
 	 */
 	private static final Logger logger = LogManager.getLogger(Insert.class);
+
+	/**
+	 *
+	 */
+	private static final Pattern dupKeyPattern = Pattern.compile("(\\{.*})");
 
 	/**
 	 *
@@ -108,8 +117,10 @@ public final class Insert {
 					logger.warn(LogUtil.getLogMessageJson(ex, Map.of("netcdfFile", netcdfFile.toString())).toJson(), ex);
 				}
 			});
-			ObjectId insertedId = Database.insertOne(Settings.get("metaDataCollection"), metaDataDocument).getInsertedId().asObjectId().getValue();
-			commitInserted(insertedId, allInsertedIds);
+			if(!metaDataDocument.getList("netcdfFiles", Document.class).isEmpty()) {
+				ObjectId insertedId = Database.insertOne(Settings.get("metaDataCollection"), metaDataDocument).getInsertedId().asObjectId().getValue();
+				commitInserted(insertedId, allInsertedIds);
+			}
 		}
 		catch (Exception ex){
 			logger.warn(LogUtil.getLogMessageJson(ex, Map.of("metaDataFile", metaDataFile.toString())).toJson(), ex);
@@ -158,15 +169,7 @@ public final class Insert {
 		if (timeSeries.isEmpty())
 			return new Pair<>(collection, new ArrayList<>());
 
-		if(timeSeries.stream().filter(s -> s.getString("encodedTimeStepId").equals("nonequidistant")).anyMatch(s -> s.getList("timeseries", Document.class).size() > BucketUtil.TIME_SERIES_MAX_ENTRY_COUNT)){
-			timeSeries.forEach(ts -> BucketUtil.ensureBucketSize(timeSeriesType, ts));
-			timeSeries = extract(timeSeriesType, timeSeriesRecordsMap, netcdfFile, netcdfContent, archiveRunInfo);
-		}
-
-		if(timeSeries.stream().filter(s -> s.getString("encodedTimeStepId").equals("nonequidistant")).anyMatch(s -> s.getList("timeseries", Document.class).size() > BucketUtil.TIME_SERIES_MAX_ENTRY_COUNT))
-			throw new IllegalStateException("Cannot resolve nonequidistant bucket size.");
-
-		return DatabaseUtil.synchronize(collection, timeSeries, netcdfFile);
+		return synchronize(collection, timeSeries, netcdfFile);
 	}
 
 	/**
@@ -208,19 +211,15 @@ public final class Insert {
 			TimeSeries timeSeries = (TimeSeries) Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "shared.timeseries", TimeSeriesTypeUtil.getTimeSeriesTypeClassName(timeSeriesType))).getConstructor().newInstance();
 			TimeSeriesHeader header = timeSeriesArray.getHeader();
 
-			List<Document> eventDocuments = timeSeries.getEvents(timeSeriesArray);
 			Document metaDataDocument = timeSeries.getMetaData(header, netcdfContent.getAreaId(), netcdfContent.getSourceId());
+			List<Document> eventDocuments = timeSeries.getEvents(timeSeriesArray, metaDataDocument);
 			Document runInfoDocument = timeSeries.getRunInfo(archiveRunInfo);
 			Document rootDocument = timeSeries.getRoot(header, eventDocuments, runInfoDocument).append("committed", false);
 
 			if(!eventDocuments.isEmpty() && TimeSeriesTypeUtil.getTimeSeriesTypeBucket(timeSeriesType)){
 				Date startTime = rootDocument.getDate("startTime");
-				Date endTime = rootDocument.getDate("endTime");
-
-				BucketSize bucketSize = BucketUtil.getArchiveInferredBucketSize(startTime, endTime);
-				long bucketValue = BucketUtil.getBucketValue(startTime, bucketSize);
-				rootDocument.append("bucketSize", bucketSize.toString());
-				rootDocument.append("bucket", bucketValue);
+				rootDocument.append("bucketSize", BucketSize.VARIABLE.toString());
+				rootDocument.append("bucket", BucketUtil.getBucketValue(startTime, BucketSize.SECOND));
 			}
 
 			if(!metaDataDocument.isEmpty()) rootDocument.append("metaData", metaDataDocument);
@@ -231,6 +230,61 @@ public final class Insert {
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);
+		}
+	}
+
+	/**
+	 *
+	 * @param collection collection
+	 * @param timeSeries timeSeries
+	 * @param netcdfFile netcdfFile
+	 * @return Pair<String,List<ObjectId>>
+	 */
+	private static Pair<String,List<ObjectId>> synchronize(String collection, List<Document> timeSeries, File netcdfFile){
+		List<ObjectId> insertedIds = new ArrayList<>();
+		try {
+			Database.insertMany(collection, timeSeries);
+			insertedIds.addAll(timeSeries.stream().map(s -> s.getObjectId("_id")).collect(Collectors.toList()));
+		}
+		catch (MongoBulkWriteException ex) {
+			Database.deleteMany(collection, new Document("_id", new Document("$in", timeSeries.stream().filter(s -> s.containsKey("_id") && s.getObjectId("_id") != null).map(s -> s.getObjectId("_id")).collect(Collectors.toList()))));
+			for (Document ts : timeSeries)
+				insertNetcdf(collection, ts, insertedIds, netcdfFile);
+		}
+		return new Pair<>(collection, insertedIds);
+	}
+
+	/**
+	 *
+	 * @param collection collection
+	 * @param timeSeries timeSeries
+	 * @param insertedIds insertedIds
+	 * @param netcdfFile netcdfFile
+	 */
+	private static void insertNetcdf(String collection, Document timeSeries, List<ObjectId> insertedIds, File netcdfFile){
+		try {
+			Database.insertOne(collection, timeSeries);
+			insertedIds.add(timeSeries.getObjectId("_id"));
+		}
+		catch (MongoWriteException wex) {
+			timeSeries.remove("timeseries");
+
+			Matcher matcher = dupKeyPattern.matcher(wex.getError().getMessage());
+			Document dupKey = matcher.find() ? Document.parse(matcher.group(1).replace("\",\"", "\\\",\\\"").replace("\"[\"", "\"[\\\"").replace("\"]\"", "\\\"]\"")) : new Document();
+
+			Document existingTimeseries = !dupKey.isEmpty() ? Database.findOne(collection, dupKey, new Document("timeseries", 0)) : null;
+			existingTimeseries = existingTimeseries != null ? existingTimeseries : new Document();
+
+			Document existingMetaData = !existingTimeseries.isEmpty() ? Database.findOne(Settings.get("metaDataCollection"), new Document("netcdfFiles.timeSeriesIds", existingTimeseries.getObjectId("_id"))) : null;
+			existingMetaData = existingMetaData != null ? existingMetaData : new Document();
+
+			Document message = LogUtil.getLogMessageJson(wex, Map.of(
+					"dupKey", dupKey,
+					"existingMetaData", existingMetaData,
+					"existingTimeseries", existingTimeseries,
+					"duplicatedTimeseries", timeSeries,
+					"netcdfFile", netcdfFile.toString()));
+			logger.warn(message.toJson(), wex);
 		}
 	}
 }

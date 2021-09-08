@@ -4,6 +4,7 @@ import nl.fews.archivedatabase.mongodb.TestUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.util.LogUtils;
+import org.elasticsearch.common.collect.List;
 import org.json.JSONObject;
 
 import java.net.InetAddress;
@@ -35,6 +36,7 @@ public class TestSettings {
 			Settings.put("folderMaxDepth", 4);
 			Settings.put("metadataFileName", "metaData.xml");
 			Settings.put("runInfoFileName", "runInfo.xml");
+			Settings.put("valueTypes", List.of("scalar"));
 			Settings.put("archiveDatabaseUserName", "fews_admin");
 			String testType = testSettings != null && InetAddress.getLocalHost().getHostName().equalsIgnoreCase(testSettings.getString("hostName")) ? "full" : "minimal";
 			Settings.put("baseDirectoryArchive", Paths.get("src", "test", "resources", testType).toAbsolutePath().toString());

@@ -5,7 +5,6 @@ import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
-import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -14,7 +13,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -58,13 +56,14 @@ class DatabaseTest {
 	}
 
 	@Test
-	void getCollectionIndexes() {
-		Document document = Database.getCollectionIndexes(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL))[0];
-		document.remove("unique");
-		assertEquals(new JSONArray(Database.getCollectionKeys(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL))).toString() , new JSONArray(document.keySet().stream().collect(Collectors.toList())).toString());
-
-		assertEquals(new JSONArray(List.of("moduleInstanceId","locationId", "parameterId", "qualifierId", "encodedTimeStepId")).toString(),
-				new JSONArray(Database.getCollectionIndexes(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL))[4].keySet().stream().collect(Collectors.toList())).toString());
+	void replaceCollection() {
+		Database.insertOne("dropCollection", new Document("Test", "Test"));
+		Database.insertOne("dropCollectionNew", new Document("Test", "Test"));
+		assertEquals("Test", Database.findOne("dropCollection", new Document()).getString("Test"));
+		assertEquals("Test", Database.findOne("dropCollectionNew", new Document()).getString("Test"));
+		Database.replaceCollection("dropCollectionNew", "dropCollection");
+		assertNotNull(Database.findOne("dropCollection", new Document()));
+		assertNull(Database.findOne("dropCollectionNew", new Document()));
 	}
 
 	@Test
@@ -136,4 +135,5 @@ class DatabaseTest {
 		Database.deleteMany("deleteMany", new Document("Test", "Test"));
 		assertNull(Database.aggregate("deleteMany", List.of(new Document("$group", new Document("_id", null).append("count", new Document("$sum", 1))))).first());
 	}
+
 }

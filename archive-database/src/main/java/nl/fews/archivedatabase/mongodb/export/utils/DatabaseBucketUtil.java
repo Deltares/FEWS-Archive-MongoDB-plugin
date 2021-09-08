@@ -1,12 +1,9 @@
 package nl.fews.archivedatabase.mongodb.export.utils;
 
-import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.BucketSize;
-import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.BucketUtil;
 import org.bson.Document;
 import org.javatuples.Pair;
-import org.json.JSONArray;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,12 +26,12 @@ public final class DatabaseBucketUtil {
 	 * @param documents the timeseries-event-sorted, intersecting documents (at least one timeseries event entry time entry intersects the bucket)
 	 * @return a single Document representing the merged documents passes + any existing values, if this bucket was already in mongo db
 	 */
-	public static Document mergeDocuments(long bucketValue, Document existingDocument, List<Document> documents){
+	public static Document mergeDocuments(long bucketValue, Document existingDocument, List<Document> documents, String bucketCollection){
 		removeExistingTimeseries(existingDocument, documents);
 		Map<Date, Document> timeSeries = existingDocument.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t"), s -> s));
 		for (Document document: documents) {
-			BucketSize bucketSize = document.getString("encodedTimeStepId").equals("nonequidistant") ?
-					BucketUtil.getBucketSize(new Document(Database.getCollectionIndexes(Settings.get("bucketSizeCollection"))[0].keySet().stream().filter(s -> !s.equals("unique")).collect(Collectors.toMap(s -> s, document::get, (k, v) -> v, LinkedHashMap::new)))) :
+			BucketSize bucketSize = document.getString("encodedTimeStepId").equals("NETS") ?
+					BucketUtil.getNetsBucketSize(bucketCollection, BucketUtil.getBucketKey(bucketCollection, document)) :
 					BucketUtil.getBucketSize(document.get("metaData", Document.class).getInteger("timeStepMinutes"));
 			for (Document event:document.getList("timeseries", Document.class)){
 				if (bucketValue == BucketUtil.getBucketValue(event.getDate("t"), bucketSize)){
@@ -61,26 +58,25 @@ public final class DatabaseBucketUtil {
 	 * This will result in documents being used multiple times for each bucket they intersect.
 	 * The entire document is needed to determine the original range within the timeseries for deletions
 	 * @param timeSeries the entire list of all documents passed to this instance
-	 * @param keys the document key fields matching the database unique collection key
+	 * @param bucketCollection the document key fields matching the database unique collection key
 	 * @return Map<String, Map<Integer, List<Document>>>
 	 *     JSON string key representation of mongo unique key fields (less the bucket) =>
 	 *     distinct buckets having the parent key =>
 	 *     all documents having timeseries range that intersects the parent bucket.
 	 */
-	public static Map<String, Map<Pair<BucketSize, Long>, List<Document>>> getDocumentsByKeyBucket(List<Document> timeSeries, List<String> keys){
+	public static Map<String, Map<Pair<BucketSize, Long>, List<Document>>> getDocumentsByKeyBucket(List<Document> timeSeries, String bucketCollection){
 		Map<String, Map<Pair<BucketSize, Long>, List<Document>>> keyBucketDocuments = new HashMap<>();
-
 		for (Document document:timeSeries) {
-			BucketSize bucketSize = document.getString("encodedTimeStepId").equals("nonequidistant") ?
-					BucketUtil.getBucketSize(new Document(Database.getCollectionIndexes(Settings.get("bucketSizeCollection"))[0].keySet().stream().filter(s -> !s.equals("unique")).collect(Collectors.toMap(s -> s, document::get, (k, v) -> v, LinkedHashMap::new)))) :
+			String bucketKey = BucketUtil.getBucketKey(bucketCollection, document);
+			BucketSize bucketSize = document.getString("encodedTimeStepId").equals("NETS") ?
+					BucketUtil.getNetsBucketSize(bucketCollection, bucketKey) :
 					BucketUtil.getBucketSize(document.get("metaData", Document.class).getInteger("timeStepMinutes"));
-			String key = new JSONArray(keys.stream().filter(s -> !s.equals("bucketSize") && !s.equals("bucket")).map(document::get).collect(Collectors.toList())).toString();
 			List<Pair<BucketSize, Long>> buckets = document.getList("timeseries", Document.class).stream().map(s -> new Pair<>(bucketSize, BucketUtil.getBucketValue(s.getDate("t"), bucketSize))).distinct().collect(Collectors.toList());
 
-			keyBucketDocuments.putIfAbsent(key, new HashMap<>());
+			keyBucketDocuments.putIfAbsent(bucketKey, new HashMap<>());
 			for (Pair<BucketSize, Long> bucket:buckets){
-				keyBucketDocuments.get(key).putIfAbsent(bucket, new ArrayList<>());
-				keyBucketDocuments.get(key).get(bucket).add(document);
+				keyBucketDocuments.get(bucketKey).putIfAbsent(bucket, new ArrayList<>());
+				keyBucketDocuments.get(bucketKey).get(bucket).add(document);
 			}
 		}
 		return keyBucketDocuments;

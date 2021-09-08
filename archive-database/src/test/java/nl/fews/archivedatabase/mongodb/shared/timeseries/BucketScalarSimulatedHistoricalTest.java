@@ -14,7 +14,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ScalarSimulatedHistoricalStitchedTest {
+class BucketScalarSimulatedHistoricalTest {
 
 	private TimeSeriesHeader timeSeriesHeader;
 	private TimeSeriesArray<TimeSeriesHeader> timeSeriesArray;
@@ -33,7 +33,8 @@ class ScalarSimulatedHistoricalStitchedTest {
 		Document expected = Document.parse("{\"timeSeriesType\": \"simulated historical\", \"moduleInstanceId\": \"moduleInstanceId0\", \"locationId\": \"locationId0\", \"parameterId\": \"parameterId0\", \"qualifierIds\": [\"qualifierId0\", \"qualifierId0\"], \"qualifierId\": \"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"startTime\": {\"$date\": 1325376000000}, \"endTime\": {\"$date\": 1325570400000}, \"localStartTime\": {\"$date\": 1325376000000}, \"localEndTime\": {\"$date\": 1325570400000}, \"ensembleId\": \"ensembleId0\", \"ensembleMemberId\": \"1\"}");
 
 		TimeSeries timeSeries = new ScalarSimulatedHistoricalStitched();
-		List<Document> timeSeriesDocuments = timeSeries.getEvents(timeSeriesArray);
+		Document metadataDocument = timeSeries.getMetaData(timeSeriesHeader, "areaId", "sourceId");
+		List<Document> timeSeriesDocuments = timeSeries.getEvents(timeSeriesArray, metadataDocument);
 		Document runInfoDocument = timeSeries.getRunInfo(timeSeriesHeader);
 		Document document = timeSeries.getRoot(timeSeriesHeader, timeSeriesDocuments, runInfoDocument);
 		assertEquals(expected.toJson(), document.toJson());

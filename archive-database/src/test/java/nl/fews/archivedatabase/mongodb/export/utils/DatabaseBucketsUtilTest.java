@@ -2,7 +2,6 @@ package nl.fews.archivedatabase.mongodb.export.utils;
 
 import nl.fews.archivedatabase.mongodb.TestUtil;
 import nl.fews.archivedatabase.mongodb.export.TestSettings;
-import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.BucketSize;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
@@ -42,7 +41,8 @@ class DatabaseBucketsUtilTest {
 		for(TimeSeriesArray<TimeSeriesHeader> timeSeriesArray: timeSeriesArrays.toArray()){
 			TimeSeriesHeader header = timeSeriesArray.getHeader();
 
-			List<Document> timeseriesDocuments = timeSeries.getEvents(timeSeriesArray);
+			Document metadataDocument = timeSeries.getMetaData(header, "areaId", "sourceId");
+			List<Document> timeseriesDocuments = timeSeries.getEvents(timeSeriesArray, metadataDocument);
 			Document metaDataDocument = timeSeries.getMetaData(header, "areaId", "sourceId");
 			Document runInfoDocument = timeSeries.getRunInfo(header);
 			Document rootDocument = timeSeries.getRoot(header, timeseriesDocuments, runInfoDocument);
@@ -62,19 +62,19 @@ class DatabaseBucketsUtilTest {
 	void getDocumentsByKey() {
 
 		String[] expected = new String[]{
-			"[\"moduleInstanceId0\",\"locationId0\",\"parameterId0\",\"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\",\"SETS360\"]",
-			"[\"moduleInstanceId1\",\"locationId1\",\"parameterId1\",\"[\\\"qualifierId1\\\",\\\"qualifierId1\\\"]\",\"SETS360\"]",
-			"[\"moduleInstanceId2\",\"locationId2\",\"parameterId2\",\"[\\\"qualifierId2\\\",\\\"qualifierId2\\\"]\",\"SETS360\"]",
-			"[\"moduleInstanceId3\",\"locationId3\",\"parameterId3\",\"[\\\"qualifierId3\\\",\\\"qualifierId3\\\"]\",\"SETS360\"]",
-			"[\"moduleInstanceId4\",\"locationId4\",\"parameterId4\",\"[\\\"qualifierId4\\\",\\\"qualifierId4\\\"]\",\"SETS360\"]",
-			"[\"moduleInstanceId5\",\"locationId5\",\"parameterId5\",\"[\\\"qualifierId5\\\",\\\"qualifierId5\\\"]\",\"SETS360\"]",
-			"[\"moduleInstanceId6\",\"locationId6\",\"parameterId6\",\"[\\\"qualifierId6\\\",\\\"qualifierId6\\\"]\",\"SETS360\"]",
-			"[\"moduleInstanceId7\",\"locationId7\",\"parameterId7\",\"[\\\"qualifierId7\\\",\\\"qualifierId7\\\"]\",\"SETS360\"]",
-			"[\"moduleInstanceId8\",\"locationId8\",\"parameterId8\",\"[\\\"qualifierId8\\\",\\\"qualifierId8\\\"]\",\"SETS360\"]",
-			"[\"moduleInstanceId9\",\"locationId9\",\"parameterId9\",\"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\",\"SETS360\"]"
+			"{\"moduleInstanceId\": \"moduleInstanceId0\", \"locationId\": \"locationId0\", \"parameterId\": \"parameterId0\", \"qualifierId\": \"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\", \"encodedTimeStepId\": \"SETS360\"}",
+			"{\"moduleInstanceId\": \"moduleInstanceId1\", \"locationId\": \"locationId1\", \"parameterId\": \"parameterId1\", \"qualifierId\": \"[\\\"qualifierId1\\\",\\\"qualifierId1\\\"]\", \"encodedTimeStepId\": \"SETS360\"}",
+			"{\"moduleInstanceId\": \"moduleInstanceId2\", \"locationId\": \"locationId2\", \"parameterId\": \"parameterId2\", \"qualifierId\": \"[\\\"qualifierId2\\\",\\\"qualifierId2\\\"]\", \"encodedTimeStepId\": \"SETS360\"}",
+			"{\"moduleInstanceId\": \"moduleInstanceId3\", \"locationId\": \"locationId3\", \"parameterId\": \"parameterId3\", \"qualifierId\": \"[\\\"qualifierId3\\\",\\\"qualifierId3\\\"]\", \"encodedTimeStepId\": \"SETS360\"}",
+			"{\"moduleInstanceId\": \"moduleInstanceId4\", \"locationId\": \"locationId4\", \"parameterId\": \"parameterId4\", \"qualifierId\": \"[\\\"qualifierId4\\\",\\\"qualifierId4\\\"]\", \"encodedTimeStepId\": \"SETS360\"}",
+			"{\"moduleInstanceId\": \"moduleInstanceId5\", \"locationId\": \"locationId5\", \"parameterId\": \"parameterId5\", \"qualifierId\": \"[\\\"qualifierId5\\\",\\\"qualifierId5\\\"]\", \"encodedTimeStepId\": \"SETS360\"}",
+			"{\"moduleInstanceId\": \"moduleInstanceId6\", \"locationId\": \"locationId6\", \"parameterId\": \"parameterId6\", \"qualifierId\": \"[\\\"qualifierId6\\\",\\\"qualifierId6\\\"]\", \"encodedTimeStepId\": \"SETS360\"}",
+			"{\"moduleInstanceId\": \"moduleInstanceId7\", \"locationId\": \"locationId7\", \"parameterId\": \"parameterId7\", \"qualifierId\": \"[\\\"qualifierId7\\\",\\\"qualifierId7\\\"]\", \"encodedTimeStepId\": \"SETS360\"}",
+			"{\"moduleInstanceId\": \"moduleInstanceId8\", \"locationId\": \"locationId8\", \"parameterId\": \"parameterId8\", \"qualifierId\": \"[\\\"qualifierId8\\\",\\\"qualifierId8\\\"]\", \"encodedTimeStepId\": \"SETS360\"}",
+			"{\"moduleInstanceId\": \"moduleInstanceId9\", \"locationId\": \"locationId9\", \"parameterId\": \"parameterId9\", \"qualifierId\": \"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\", \"encodedTimeStepId\": \"SETS360\"}"
 		};
 
-		Map<String, Map<Pair<BucketSize, Long>, List<Document>>> documents = DatabaseBucketUtil.getDocumentsByKeyBucket(ts, Database.getCollectionKeys(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)));
+		Map<String, Map<Pair<BucketSize, Long>, List<Document>>> documents = DatabaseBucketUtil.getDocumentsByKeyBucket(ts, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
 
 		assertEquals(10, documents.size());
 
@@ -106,13 +106,13 @@ class DatabaseBucketsUtilTest {
 
 		assertEquals(10, ts.get(0).getList("timeseries", Document.class).size());
 
-		Document d = DatabaseBucketUtil.mergeDocuments(2012, new Document(ts.get(0)).append("timeseries", new ArrayList<Document>()), ts);
+		Document d = DatabaseBucketUtil.mergeDocuments(2012, new Document(ts.get(0)).append("timeseries", new ArrayList<Document>()), ts, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
 		assertEquals(10, d.getList("timeseries", Document.class).size());
 
-		d = DatabaseBucketUtil.mergeDocuments(2013, new Document(ts.get(10)).append("timeseries", new ArrayList<Document>()), ts);
+		d = DatabaseBucketUtil.mergeDocuments(2013, new Document(ts.get(10)).append("timeseries", new ArrayList<Document>()), ts, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
 		assertEquals(10, d.getList("timeseries", Document.class).size());
 
-		d = DatabaseBucketUtil.mergeDocuments(2014, new Document(ts.get(0)).append("timeseries", new ArrayList<Document>()), ts);
+		d = DatabaseBucketUtil.mergeDocuments(2014, new Document(ts.get(0)).append("timeseries", new ArrayList<Document>()), ts, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
 		assertEquals(0, d.getList("timeseries", Document.class).size());
 	}
 }

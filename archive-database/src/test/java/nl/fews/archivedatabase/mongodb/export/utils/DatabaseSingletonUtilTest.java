@@ -2,11 +2,9 @@ package nl.fews.archivedatabase.mongodb.export.utils;
 
 import nl.fews.archivedatabase.mongodb.TestUtil;
 import nl.fews.archivedatabase.mongodb.export.TestSettings;
-import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.fews.archivedatabase.mongodb.shared.timeseries.ScalarExternalForecasting;
-import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
@@ -33,26 +31,26 @@ class DatabaseSingletonUtilTest {
 	void getDocumentsByKey() {
 
 		String[] expected = new String[]{
-			"[\"moduleInstanceId0\",\"locationId0\",\"parameterId0\",\"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\",\"SETS360\",\"ensembleId0\",\"1\",\"2012-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId0\",\"locationId0\",\"parameterId0\",\"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\",\"SETS360\",\"ensembleId0\",\"1\",\"2013-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId1\",\"locationId1\",\"parameterId1\",\"[\\\"qualifierId1\\\",\\\"qualifierId1\\\"]\",\"SETS360\",\"ensembleId1\",\"1\",\"2012-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId1\",\"locationId1\",\"parameterId1\",\"[\\\"qualifierId1\\\",\\\"qualifierId1\\\"]\",\"SETS360\",\"ensembleId1\",\"1\",\"2013-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId2\",\"locationId2\",\"parameterId2\",\"[\\\"qualifierId2\\\",\\\"qualifierId2\\\"]\",\"SETS360\",\"ensembleId2\",\"1\",\"2012-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId2\",\"locationId2\",\"parameterId2\",\"[\\\"qualifierId2\\\",\\\"qualifierId2\\\"]\",\"SETS360\",\"ensembleId2\",\"1\",\"2013-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId3\",\"locationId3\",\"parameterId3\",\"[\\\"qualifierId3\\\",\\\"qualifierId3\\\"]\",\"SETS360\",\"ensembleId3\",\"1\",\"2012-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId3\",\"locationId3\",\"parameterId3\",\"[\\\"qualifierId3\\\",\\\"qualifierId3\\\"]\",\"SETS360\",\"ensembleId3\",\"1\",\"2013-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId4\",\"locationId4\",\"parameterId4\",\"[\\\"qualifierId4\\\",\\\"qualifierId4\\\"]\",\"SETS360\",\"ensembleId4\",\"1\",\"2012-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId4\",\"locationId4\",\"parameterId4\",\"[\\\"qualifierId4\\\",\\\"qualifierId4\\\"]\",\"SETS360\",\"ensembleId4\",\"1\",\"2013-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId5\",\"locationId5\",\"parameterId5\",\"[\\\"qualifierId5\\\",\\\"qualifierId5\\\"]\",\"SETS360\",\"ensembleId5\",\"1\",\"2012-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId5\",\"locationId5\",\"parameterId5\",\"[\\\"qualifierId5\\\",\\\"qualifierId5\\\"]\",\"SETS360\",\"ensembleId5\",\"1\",\"2013-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId6\",\"locationId6\",\"parameterId6\",\"[\\\"qualifierId6\\\",\\\"qualifierId6\\\"]\",\"SETS360\",\"ensembleId6\",\"1\",\"2012-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId6\",\"locationId6\",\"parameterId6\",\"[\\\"qualifierId6\\\",\\\"qualifierId6\\\"]\",\"SETS360\",\"ensembleId6\",\"1\",\"2013-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId7\",\"locationId7\",\"parameterId7\",\"[\\\"qualifierId7\\\",\\\"qualifierId7\\\"]\",\"SETS360\",\"ensembleId7\",\"1\",\"2012-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId7\",\"locationId7\",\"parameterId7\",\"[\\\"qualifierId7\\\",\\\"qualifierId7\\\"]\",\"SETS360\",\"ensembleId7\",\"1\",\"2013-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId8\",\"locationId8\",\"parameterId8\",\"[\\\"qualifierId8\\\",\\\"qualifierId8\\\"]\",\"SETS360\",\"ensembleId8\",\"1\",\"2012-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId8\",\"locationId8\",\"parameterId8\",\"[\\\"qualifierId8\\\",\\\"qualifierId8\\\"]\",\"SETS360\",\"ensembleId8\",\"1\",\"2013-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId9\",\"locationId9\",\"parameterId9\",\"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\",\"SETS360\",\"ensembleId9\",\"1\",\"2012-01-01T00:00:00Z\"]",
-			"[\"moduleInstanceId9\",\"locationId9\",\"parameterId9\",\"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\",\"SETS360\",\"ensembleId9\",\"1\",\"2013-01-01T00:00:00Z\"]"
+			"{\"moduleInstanceId\": \"moduleInstanceId0\", \"locationId\": \"locationId0\", \"parameterId\": \"parameterId0\", \"qualifierId\": \"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId0\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId0\", \"locationId\": \"locationId0\", \"parameterId\": \"parameterId0\", \"qualifierId\": \"[\\\"qualifierId0\\\",\\\"qualifierId0\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId0\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2013-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId1\", \"locationId\": \"locationId1\", \"parameterId\": \"parameterId1\", \"qualifierId\": \"[\\\"qualifierId1\\\",\\\"qualifierId1\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId1\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId1\", \"locationId\": \"locationId1\", \"parameterId\": \"parameterId1\", \"qualifierId\": \"[\\\"qualifierId1\\\",\\\"qualifierId1\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId1\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2013-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId2\", \"locationId\": \"locationId2\", \"parameterId\": \"parameterId2\", \"qualifierId\": \"[\\\"qualifierId2\\\",\\\"qualifierId2\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId2\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId2\", \"locationId\": \"locationId2\", \"parameterId\": \"parameterId2\", \"qualifierId\": \"[\\\"qualifierId2\\\",\\\"qualifierId2\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId2\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2013-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId3\", \"locationId\": \"locationId3\", \"parameterId\": \"parameterId3\", \"qualifierId\": \"[\\\"qualifierId3\\\",\\\"qualifierId3\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId3\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId3\", \"locationId\": \"locationId3\", \"parameterId\": \"parameterId3\", \"qualifierId\": \"[\\\"qualifierId3\\\",\\\"qualifierId3\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId3\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2013-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId4\", \"locationId\": \"locationId4\", \"parameterId\": \"parameterId4\", \"qualifierId\": \"[\\\"qualifierId4\\\",\\\"qualifierId4\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId4\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId4\", \"locationId\": \"locationId4\", \"parameterId\": \"parameterId4\", \"qualifierId\": \"[\\\"qualifierId4\\\",\\\"qualifierId4\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId4\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2013-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId5\", \"locationId\": \"locationId5\", \"parameterId\": \"parameterId5\", \"qualifierId\": \"[\\\"qualifierId5\\\",\\\"qualifierId5\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId5\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId5\", \"locationId\": \"locationId5\", \"parameterId\": \"parameterId5\", \"qualifierId\": \"[\\\"qualifierId5\\\",\\\"qualifierId5\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId5\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2013-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId6\", \"locationId\": \"locationId6\", \"parameterId\": \"parameterId6\", \"qualifierId\": \"[\\\"qualifierId6\\\",\\\"qualifierId6\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId6\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId6\", \"locationId\": \"locationId6\", \"parameterId\": \"parameterId6\", \"qualifierId\": \"[\\\"qualifierId6\\\",\\\"qualifierId6\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId6\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2013-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId7\", \"locationId\": \"locationId7\", \"parameterId\": \"parameterId7\", \"qualifierId\": \"[\\\"qualifierId7\\\",\\\"qualifierId7\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId7\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId7\", \"locationId\": \"locationId7\", \"parameterId\": \"parameterId7\", \"qualifierId\": \"[\\\"qualifierId7\\\",\\\"qualifierId7\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId7\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2013-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId8\", \"locationId\": \"locationId8\", \"parameterId\": \"parameterId8\", \"qualifierId\": \"[\\\"qualifierId8\\\",\\\"qualifierId8\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId8\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId8\", \"locationId\": \"locationId8\", \"parameterId\": \"parameterId8\", \"qualifierId\": \"[\\\"qualifierId8\\\",\\\"qualifierId8\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId8\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2013-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId9\", \"locationId\": \"locationId9\", \"parameterId\": \"parameterId9\", \"qualifierId\": \"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId9\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2012-01-01T00:00:00Z\"}}",
+			"{\"moduleInstanceId\": \"moduleInstanceId9\", \"locationId\": \"locationId9\", \"parameterId\": \"parameterId9\", \"qualifierId\": \"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\", \"encodedTimeStepId\": \"SETS360\", \"ensembleId\": \"ensembleId9\", \"ensembleMemberId\": \"1\", \"forecastTime\": {\"$date\": \"2013-01-01T00:00:00Z\"}}"
 		};
 
 		TimeSeriesArrays timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();
@@ -64,7 +62,8 @@ class DatabaseSingletonUtilTest {
 		for(TimeSeriesArray<TimeSeriesHeader> timeSeriesArray: timeSeriesArrays.toArray()){
 			TimeSeriesHeader header = timeSeriesArray.getHeader();
 
-			List<Document> timeseriesDocuments = timeSeries.getEvents(timeSeriesArray);
+			Document metadataDocument = timeSeries.getMetaData(header, "areaId", "sourceId");
+			List<Document> timeseriesDocuments = timeSeries.getEvents(timeSeriesArray, metadataDocument);
 			Document metaDataDocument = timeSeries.getMetaData(header, "areaId", "sourceId");
 			Document runInfoDocument = timeSeries.getRunInfo(header);
 			Document rootDocument = timeSeries.getRoot(header, timeseriesDocuments, runInfoDocument);
@@ -77,7 +76,7 @@ class DatabaseSingletonUtilTest {
 				ts.add(rootDocument);
 			}
 		}
-		Map<String, List<Document>> documents = DatabaseSingletonUtil.getDocumentsByKey(ts, Database.getCollectionKeys(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING)));
+		Map<String, List<Document>> documents = DatabaseSingletonUtil.getDocumentsByKey(ts, TimeSeriesType.SCALAR_EXTERNAL_FORECASTING);
 
 		assertEquals(20, documents.size());
 

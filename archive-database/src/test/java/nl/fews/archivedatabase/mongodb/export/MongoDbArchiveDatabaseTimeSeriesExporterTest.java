@@ -4,6 +4,7 @@ import com.mongodb.client.model.Sorts;
 import nl.fews.archivedatabase.mongodb.TestUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
+import nl.wldelft.util.LogUtils;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,10 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 
 	@Container
     public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo"));
+
+	static{
+		LogUtils.initConsole();
+	}
 
 	@BeforeEach
 	public void setUp() {

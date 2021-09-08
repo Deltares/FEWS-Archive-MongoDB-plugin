@@ -32,7 +32,7 @@ class UpdateTest {
 
 	@Test
 	void updateMetaDatas() {
-		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().findFirst().orElse(null);
+		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(f -> !f.getKey().toString().contains("gridded")).findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
 		assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());
 

@@ -2,10 +2,10 @@ package nl.fews.archivedatabase.mongodb.migrate.operations;
 
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
 import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
-import nl.fews.archivedatabase.mongodb.shared.enums.BucketSize;
+import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
-import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesUtil;
+import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,13 +16,12 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Testcontainers
-class StitchScalarSimulatedHistoricalTest {
+class BucketScalarSimulatedHistoricalTest {
 
 	@Container
 	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo"));
@@ -34,21 +33,10 @@ class StitchScalarSimulatedHistoricalTest {
 	}
 
 	@Test
-	void stitchGroups() {
+	void bucketGroups() {
 		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar") && s.getKey().toString().contains("TVA_UpdateStates")).findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
-		StitchScalarSimulatedHistorical.stitchGroups();
-		List<Document> timeSeriesGroups = TimeSeriesUtil.getTimeSeriesGroups(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED);
-		assertFalse(timeSeriesGroups.isEmpty());
-	}
-
-	@Test
-	void stitchGroup() throws InterruptedException{
-		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar") && s.getKey().toString().contains("TVA_UpdateStates")).findFirst().orElse(null);
-		Insert.insertMetaData(entry.getKey(), entry.getValue());
-		List<Document> timeSeriesGroups = TimeSeriesUtil.getTimeSeriesGroups(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL);
-		StitchScalarSimulatedHistorical.stitchGroup(timeSeriesGroups.get(0).get("timeSeriesGroup", Document.class), BucketSize.valueOf(timeSeriesGroups.get(0).getString("bucketSize")));
-		timeSeriesGroups = TimeSeriesUtil.getTimeSeriesGroups(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED);
-		assertFalse(timeSeriesGroups.isEmpty());
+		new BucketScalarSimulatedHistorical().bucketGroups(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED));
+		assertNotNull(Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED), new Document()).first());
 	}
 }

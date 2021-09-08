@@ -2,10 +2,11 @@ package nl.fews.archivedatabase.mongodb;
 
 import nl.fews.archivedatabase.mongodb.export.MongoDbArchiveDatabaseTimeSeriesExporter;
 import nl.fews.archivedatabase.mongodb.migrate.MongoDbOpenArchiveToArchiveDatabaseMigrator;
+import nl.fews.archivedatabase.mongodb.query.MongoDbArchiveDatabaseTimeSeriesReader;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabase;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeSeriesExporter;
-import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeSeriesReader;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.OpenArchiveToArchiveDatabaseMigrator;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeSeriesReader;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 
 public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader> {
@@ -24,6 +25,11 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 	 *
 	 */
 	private static MongoDbOpenArchiveToArchiveDatabaseMigrator mongoDbOpenArchiveToArchiveDatabaseMigrator = null;
+
+	/**
+	 *
+	 */
+	private static MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = null;
 
 	/**
 	 *
@@ -62,8 +68,14 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 		return mongoDbOpenArchiveToArchiveDatabaseMigrator;
 	}
 
+
+	/**
+	 * 
+	 */
 	@Override
 	public ArchiveDatabaseTimeSeriesReader getArchiveDataBaseTimeSeriesReader() {
-		return null;
+		if(mongoDbArchiveDatabaseTimeSeriesReader == null)
+			mongoDbArchiveDatabaseTimeSeriesReader = MongoDbArchiveDatabaseTimeSeriesReader.create();
+		return mongoDbArchiveDatabaseTimeSeriesReader;
 	}
 }
