@@ -12,6 +12,7 @@ import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -231,9 +232,7 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 					Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
 			Settings.put("connectionString", connectionString);
 
-			//LogUtils.addAppender(MongoDbAppender.createAppender("databaseLogAppender", Settings.get("connectionString"), null));
-
-			Synchronize synchronize = (Synchronize)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "export.operations", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(timeSeriesType))).getConstructor().newInstance();
+			Synchronize synchronize = (Synchronize)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "export.operations", String.format("Synchronize%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
 			synchronize.synchronize(ts, timeSeriesType);
 		}
 		catch (Exception ex){

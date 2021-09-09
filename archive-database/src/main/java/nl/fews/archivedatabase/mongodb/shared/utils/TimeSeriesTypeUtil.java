@@ -82,26 +82,26 @@ public final class TimeSeriesTypeUtil {
 	/**
 	 * lookup for string representation of each timeseries type
 	 */
-	private static final Map<TimeSeriesType, String> timeSeriesTypeSyncType = Map.of(
-			TimeSeriesType.SCALAR_EXTERNAL_FORECASTING, "SynchronizeSingletons",
-			TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, "SynchronizeBuckets",
-			TimeSeriesType.SCALAR_SIMULATED_FORECASTING, "SynchronizeSingletons",
-			TimeSeriesType.SCALAR_SIMULATED_HISTORICAL, "SynchronizeSingletons",
-			TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET, "SynchronizeBuckets",
-			TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED, "SynchronizeBuckets",
-			TimeSeriesType.SCALAR_SIMULATED_FORECASTING_OVERWRITE, "SynchronizeSingletons",
-			TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_OVERWRITE, "SynchronizeSingletons"
+	private static final Map<TimeSeriesType, String> timeSeriesTypeTypes = Map.of(
+			TimeSeriesType.SCALAR_EXTERNAL_FORECASTING, "Singletons",
+			TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, "Buckets",
+			TimeSeriesType.SCALAR_SIMULATED_FORECASTING, "Singletons",
+			TimeSeriesType.SCALAR_SIMULATED_HISTORICAL, "Singletons",
+			TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET, "Buckets",
+			TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED, "Buckets",
+			TimeSeriesType.SCALAR_SIMULATED_FORECASTING_OVERWRITE, "Singletons",
+			TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_OVERWRITE, "Singletons"
 	);
 
 	/**
-	 * lookup for area id + archive time series type representation of each timeseries type
+	 * lookup for archive time series type representation of each timeseries type
 	 */
-	private static final Map<Pair<String, Integer>, TimeSeriesType> timeSeriesTypeByAreaArchiveType = Map.of(
-			new Pair<>("scalar", ArchiveTimeSeriesType.EXTERNALFORECAST_TYPE),TimeSeriesType.SCALAR_EXTERNAL_FORECASTING,
-			new Pair<>("scalar", ArchiveTimeSeriesType.OBSERVED_TYPE),TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL,
-			new Pair<>("scalar1", ArchiveTimeSeriesType.SIMULATED_TYPE),TimeSeriesType.SCALAR_SIMULATED_FORECASTING,
-			new Pair<>("scalar2", ArchiveTimeSeriesType.SIMULATED_TYPE),TimeSeriesType.SCALAR_SIMULATED_HISTORICAL,
-			new Pair<>("scalar3", ArchiveTimeSeriesType.SIMULATED_TYPE),TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED
+	private static final Map<Integer, TimeSeriesType> timeSeriesTypeByArchiveType = Map.of(
+			ArchiveTimeSeriesType.EXTERNALFORECAST_TYPE,TimeSeriesType.SCALAR_EXTERNAL_FORECASTING,
+			ArchiveTimeSeriesType.OBSERVED_TYPE,TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL,
+			ArchiveTimeSeriesType.SIMULATED_TYPE,TimeSeriesType.SCALAR_SIMULATED_FORECASTING,
+			3,TimeSeriesType.SCALAR_SIMULATED_HISTORICAL,
+			4,TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED
 	);
 
 	/**
@@ -177,8 +177,8 @@ public final class TimeSeriesTypeUtil {
 	 * @param timeSeriesType timeSeriesType
 	 * @return collection name
 	 */
-	public static String getTimeSeriesTypeSyncType(TimeSeriesType timeSeriesType) {
-		return timeSeriesTypeSyncType.get(timeSeriesType);
+	public static String getTimeSeriesTypeTypes(TimeSeriesType timeSeriesType) {
+		return timeSeriesTypeTypes.get(timeSeriesType);
 	}
 
 	/**
@@ -210,10 +210,10 @@ public final class TimeSeriesTypeUtil {
 
 	/**
 	 *
-	 * @param areaArchiveType areaArchiveType
+	 * @param archiveType archiveType
 	 * @return TimeSeriesType
 	 */
-	public static TimeSeriesType getTimeSeriesTypeByAreaArchiveType(Pair<String, Integer> areaArchiveType){
-		return timeSeriesTypeByAreaArchiveType.get(areaArchiveType);
+	public static TimeSeriesType getTimeSeriesTypeByArchiveType(Integer archiveType){
+		return timeSeriesTypeByArchiveType.get(archiveType);
 	}
 }

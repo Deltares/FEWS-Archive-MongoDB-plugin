@@ -55,14 +55,14 @@ class TimeSeriesTypeUtilTest {
 
 	@Test
 	void getTimeSeriesTypeSyncType() {
-		assertEquals("SynchronizeSingletons", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING));
-		assertEquals("SynchronizeBuckets", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
-		assertEquals("SynchronizeSingletons", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_SIMULATED_FORECASTING));
-		assertEquals("SynchronizeSingletons", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL));
-		assertEquals("SynchronizeBuckets", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET));
-		assertEquals("SynchronizeBuckets", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED));
-		assertEquals("SynchronizeSingletons", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_SIMULATED_FORECASTING_OVERWRITE));
-		assertEquals("SynchronizeSingletons", TimeSeriesTypeUtil.getTimeSeriesTypeSyncType(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_OVERWRITE));
+		assertEquals("Singletons", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING));
+		assertEquals("Buckets", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
+		assertEquals("Singletons", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_SIMULATED_FORECASTING));
+		assertEquals("Singletons", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL));
+		assertEquals("Buckets", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET));
+		assertEquals("Buckets", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED));
+		assertEquals("Singletons", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_SIMULATED_FORECASTING_OVERWRITE));
+		assertEquals("Singletons", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_OVERWRITE));
 	}
 
 	@Test

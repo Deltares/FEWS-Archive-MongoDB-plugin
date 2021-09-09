@@ -16,6 +16,7 @@ import nl.fews.archivedatabase.mongodb.shared.utils.PathUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
+import nl.wldelft.archive.util.metadata.simulation.SimulationMetaData;
 import nl.wldelft.archive.util.metadata.timeseries.TimeSeriesRecord;
 import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
@@ -87,6 +88,7 @@ public final class Insert {
 			NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
 			if (netcdfMetaData == null)
 				return;
+			String areaId = netcdfMetaData instanceof SimulationMetaData ? ((SimulationMetaData)netcdfMetaData).getAreaId() : null;
 			ArchiveRunInfo archiveRunInfo = RunInfoUtil.getRunInfo(netcdfMetaData);
 			Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
 			Map<File, Pair<Date, NetcdfContent>> netcdfFiles = NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile, netcdfMetaData);
@@ -101,7 +103,7 @@ public final class Insert {
 			netcdfFiles.forEach((netcdfFile, dateNetcdf) -> {
 				try {
 					NetcdfContent netcdfContent = netcdfContentMap.get(netcdfFile);
-					Pair<String, List<ObjectId>> insertedIds = Insert.insertNetcdfs(netcdfFile, netcdfContent, archiveRunInfo);
+					Pair<String, List<ObjectId>> insertedIds = Insert.insertNetcdfs(netcdfFile, netcdfContent, archiveRunInfo, areaId);
 					if (insertedIds.getValue1() != null && !insertedIds.getValue1().isEmpty()) {
 						allInsertedIds.putIfAbsent(insertedIds.getValue0(), new ArrayList<>());
 						allInsertedIds.get(insertedIds.getValue0()).addAll(insertedIds.getValue1());
@@ -145,9 +147,10 @@ public final class Insert {
 	 * @param netcdfFile netcdfFile
 	 * @param netcdfContent netcdfContent
 	 * @param archiveRunInfo archiveRunInfo
+	 * @param areaId areaId
 	 * @return List<ObjectId>
 	 */
-	private static Pair<String, List<ObjectId>> insertNetcdfs(File netcdfFile, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo) {
+	private static Pair<String, List<ObjectId>> insertNetcdfs(File netcdfFile, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo, String areaId) {
 
 		if(netcdfFile == null || !netcdfFile.exists())
 			return new Pair<>(null, new ArrayList<>());
@@ -165,7 +168,7 @@ public final class Insert {
 		if(TimeSeriesTypeUtil.getTimeSeriesTypeClassName(timeSeriesType) == null)
 			return new Pair<>(null, new ArrayList<>());
 
-		List<Document> timeSeries = extract(timeSeriesType, timeSeriesRecordsMap, netcdfFile, netcdfContent, archiveRunInfo);
+		List<Document> timeSeries = extract(timeSeriesType, timeSeriesRecordsMap, netcdfFile, netcdfContent, archiveRunInfo, areaId);
 		if (timeSeries.isEmpty())
 			return new Pair<>(collection, new ArrayList<>());
 
@@ -179,9 +182,10 @@ public final class Insert {
 	 * @param netcdfFile netcdfFile
 	 * @param netcdfContent netcdfContent
 	 * @param archiveRunInfo archiveRunInfo
+	 * @param areaId areaId
 	 * @return List<Document>
 	 */
-	private static List<Document> extract(TimeSeriesType timeSeriesType, Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap, File netcdfFile, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo){
+	private static List<Document> extract(TimeSeriesType timeSeriesType, Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap, File netcdfFile, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo, String areaId){
 		List<Document> timeSeries = new ArrayList<>();
 
 		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = NetcdfUtil.getTimeSeriesArrays(netcdfFile);
@@ -191,7 +195,7 @@ public final class Insert {
 
 			timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
 
-			Document ts = getTimeSeries(timeSeriesType, timeSeriesArray, netcdfContent, archiveRunInfo);
+			Document ts = getTimeSeries(timeSeriesType, timeSeriesArray, netcdfContent, archiveRunInfo, areaId);
 			if (ts.containsKey("timeseries"))
 				timeSeries.add(ts);
 		}
@@ -204,14 +208,17 @@ public final class Insert {
 	 * @param timeSeriesArray timeSeriesArray
 	 * @param netcdfContent netcdfContent
 	 * @param archiveRunInfo archiveRunInfo
+	 * @param areaId areaId
 	 * @return Document
 	 */
-	private static Document getTimeSeries(TimeSeriesType timeSeriesType, TimeSeriesArray<TimeSeriesHeader> timeSeriesArray, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo){
+	private static Document getTimeSeries(TimeSeriesType timeSeriesType, TimeSeriesArray<TimeSeriesHeader> timeSeriesArray, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo, String areaId){
 		try {
 			TimeSeries timeSeries = (TimeSeries) Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "shared.timeseries", TimeSeriesTypeUtil.getTimeSeriesTypeClassName(timeSeriesType))).getConstructor().newInstance();
 			TimeSeriesHeader header = timeSeriesArray.getHeader();
 
-			Document metaDataDocument = timeSeries.getMetaData(header, netcdfContent.getAreaId(), netcdfContent.getSourceId());
+			areaId = netcdfContent.getAreaId() != null && !netcdfContent.getAreaId().equals("") ? netcdfContent.getAreaId() : areaId;
+
+			Document metaDataDocument = timeSeries.getMetaData(header, areaId, netcdfContent.getSourceId());
 			List<Document> eventDocuments = timeSeries.getEvents(timeSeriesArray, metaDataDocument);
 			Document runInfoDocument = timeSeries.getRunInfo(archiveRunInfo);
 			Document rootDocument = timeSeries.getRoot(header, eventDocuments, runInfoDocument).append("committed", false);

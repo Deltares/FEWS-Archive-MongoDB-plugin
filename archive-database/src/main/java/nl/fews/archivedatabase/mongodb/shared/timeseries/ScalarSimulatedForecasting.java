@@ -2,7 +2,9 @@ package nl.fews.archivedatabase.mongodb.shared.timeseries;
 
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
+import nl.fews.archivedatabase.mongodb.shared.utils.DateUtil;
 import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeConverter;
 import nl.wldelft.fews.system.data.runs.TaskDescriptor;
 import nl.wldelft.fews.system.data.runs.TaskRunDescriptor;
 import nl.wldelft.fews.system.data.timeseries.FewsTimeSeriesHeader;
@@ -15,7 +17,7 @@ import java.util.List;
 /**
  *
  */
-public class ScalarSimulatedForecasting extends ScalarExternalForecasting implements TimeSeries {
+public class ScalarSimulatedForecasting extends ScalarTimeSeries implements TimeSeries {
 
 	/**
 	 *
@@ -28,11 +30,25 @@ public class ScalarSimulatedForecasting extends ScalarExternalForecasting implem
 	public Document getRoot(TimeSeriesHeader header, List<Document> eventDocuments, Document runInfo){
 		Document document = super.getRoot(header, eventDocuments, runInfo);
 
+		String ensembleId = header.getEnsembleId() != null && !header.getEnsembleId().equals("none") ? header.getEnsembleId() : "";
+		String ensembleMemberId = header.getEnsembleMemberId() != null && !header.getEnsembleMemberId().equals("none") ? header.getEnsembleMemberId() : "";
+		Date forecastTime = runInfo.get("time0") instanceof Date ? runInfo.getDate("time0") : new Date(Long.MIN_VALUE);
+		Date localForecastTime = Settings.get("archiveDatabaseTimeConverter") == null ? null : DateUtil.getDates(Settings.get("archiveDatabaseTimeConverter", ArchiveDatabaseTimeConverter.class).convert(new long[]{header.getForecastTime()}))[0];
 		String taskRunId = runInfo.getString("taskRunId");
+
+		if (forecastTime.getTime() == Long.MIN_VALUE)
+			forecastTime = new Date(header.getForecastTime());
+
+		if (forecastTime.getTime() == Long.MIN_VALUE)
+			throw new IllegalArgumentException("header.getForecastTime() cannot be null or default");
 
 		if (taskRunId == null || taskRunId.equals(""))
 			throw new IllegalArgumentException("runInfo.getString(\"taskRunId\") cannot be null or empty");
 
+		document.append("ensembleId", ensembleId);
+		document.append("ensembleMemberId", ensembleMemberId);
+		document.append("forecastTime", forecastTime);
+		if(localForecastTime != null) document.append("localForecastTime", localForecastTime);
 		document.append("taskRunId", taskRunId);
 
 		return document;
@@ -42,13 +58,16 @@ public class ScalarSimulatedForecasting extends ScalarExternalForecasting implem
 	 * @param header FEWS timeseries header
 	 * @param areaId areaId
 	 * @param sourceId sourceId
-	 * @return bson document representing the meta data of this timeseries
+	 * @return bson document representing the metadata of this timeseries
 	 */
 	@Override
 	public Document getMetaData(TimeSeriesHeader header, String areaId, String sourceId){
 		Document document = super.getMetaData(header, areaId, sourceId);
 
+		int ensembleMemberIndex = header.getEnsembleMemberIndex();
 		Date approvedTime = new Date(header.getApprovedTime());
+
+		document.append("ensembleMemberIndex", ensembleMemberIndex);
 		document.append("approvedTime", approvedTime);
 
 		return document;
