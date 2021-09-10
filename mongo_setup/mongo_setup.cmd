@@ -25,6 +25,7 @@ echo Creating Directories...
 if not exist %-install_dir% md %-install_dir%
 if not exist %-data_dir% md %-data_dir%
 if not exist %-log_dir% md %-log_dir%
+if not exist .\install md .\install
 
 sc query type=service state=all |find "%-service_name%" >NUL && sc query %-service_name% |find "RUNNING" >NUL
 if %errorlevel%==0 (
@@ -36,11 +37,15 @@ if %errorlevel%==0 (
 	echo Removing Service...
 	sc delete %-service_name% >NUL )
 
+echo Acquiring Binaries...
+curl https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-5.0.2.zip -o .\install\mongodb-windows-x86_64-5.0.2.zip >NUL
+
 echo Installing MongoDB...
-.\7z\7za.exe x -y -o%-install_dir% .\mongodb\mongodb-windows-x86_64-4.4.3.zip >NUL
-xcopy /s /y /q %-install_dir%\mongodb-win32-x86_64-windows-4.4.3\* %-install_dir% >NUL
-rd /s /q %-install_dir%\mongodb-win32-x86_64-windows-4.4.3 >NUL
+tar -zxf .\install\mongodb-windows-x86_64-5.0.2.zip -C %-install_dir% >NUL
+xcopy /s /y /q %-install_dir%\mongodb-win32-x86_64-windows-5.0.2\* %-install_dir% >NUL
+rd /s /q %-install_dir%\mongodb-win32-x86_64-windows-5.0.2 >NUL
 del %-install_dir%\bin\Install-Compass.ps1 >NUL
+::%-install_dir%\bin\vcredist_x64.exe
 
 echo Writing Configuration...
 (
