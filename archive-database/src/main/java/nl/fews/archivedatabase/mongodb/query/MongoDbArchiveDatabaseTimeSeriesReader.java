@@ -110,10 +110,14 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			if(archiveDatabaseResultSearchParameters.getTimeStep() != null)
 				query.put("encodedTimeStepId", List.of(archiveDatabaseResultSearchParameters.getTimeStep().getEncoded()));
 
+			List<String> bucketKeys = List.of("bucketSize", "bucket");
+			List<String> collectionKeys = Database.getCollectionKeys(collection);
+			List<String> countKeys = collectionKeys.stream().anyMatch(bucketKeys::contains) ? collectionKeys.stream().filter(s -> !bucketKeys.contains(s)).collect(Collectors.toList()) : List.of();
+
 			Map<String, List<String>> distinctKeyFields = Map.of(
 					"parameterId", List.of("parameterId"),
 					"moduleInstanceId", List.of("moduleInstanceId"),
-					"numberOfTimeSeries", Database.getCollectionKeys(collection).stream().filter(s -> !List.of("bucketSize", "bucket").contains(s)).collect(Collectors.toList()));
+					"numberOfTimeSeries", countKeys);
 
 			Summarize summarize = (Summarize)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("Summarize%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
 			Map<String, Integer> summary = summarize.getSummary(collection, distinctKeyFields, query, archiveDatabaseResultSearchParameters.getPeriod().getStartDate(), archiveDatabaseResultSearchParameters.getPeriod().getEndDate());
