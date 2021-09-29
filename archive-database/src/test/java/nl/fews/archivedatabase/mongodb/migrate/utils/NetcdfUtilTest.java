@@ -2,7 +2,6 @@ package nl.fews.archivedatabase.mongodb.migrate.utils;
 
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
-import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
 import nl.wldelft.archive.util.metadata.timeseries.TimeSeriesRecord;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
@@ -30,8 +29,7 @@ class NetcdfUtilTest {
 	void getTimeSeriesArrayMerged() {
 		MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.toString().contains("scalar")).limit(1).forEach(metaDataFile ->
 				NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile.getKey(), MetaDataUtil.getNetcdfMetaData(metaDataFile.getKey())).entrySet().stream().limit(1).forEach(netcdfFile -> {
-					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile.getKey());
-					NetcdfContent netcdfContent = MetaDataUtil.getNetcdfContentMap(metaDataFile.getKey(), netcdfMetaData).get(netcdfFile.getKey());
+					NetcdfContent netcdfContent = netcdfFile.getValue().getValue1();
 					TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = NetcdfUtil.getTimeSeriesArrays(netcdfFile.getKey());
 					Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = NetcdfUtil.getTimeSeriesRecordsMap(netcdfFile.getKey(), netcdfContent);
 					TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArrays.get(0).getHeader().getLocationId()).get(timeSeriesArrays.get(0).getHeader().getParameterId());
@@ -43,8 +41,7 @@ class NetcdfUtilTest {
 	void getTimeSeriesRecordsMap() {
 		MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.toString().contains("scalar")).limit(1).forEach(metaDataFile ->
 				NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile.getKey(), MetaDataUtil.getNetcdfMetaData(metaDataFile.getKey())).entrySet().stream().limit(1).forEach(netcdfFile -> {
-					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile.getKey());
-					NetcdfContent netcdfContent = MetaDataUtil.getNetcdfContentMap(metaDataFile.getKey(), netcdfMetaData).get(netcdfFile.getKey());
+					NetcdfContent netcdfContent = netcdfFile.getValue().getValue1();
 					assertNotNull(NetcdfUtil.getTimeSeriesRecordsMap(netcdfFile.getKey(), netcdfContent));
 		}));
 	}

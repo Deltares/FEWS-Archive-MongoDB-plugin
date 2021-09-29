@@ -2,7 +2,6 @@ package nl.fews.archivedatabase.mongodb.migrate.utils;
 
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
-import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -66,14 +65,5 @@ class MetaDataUtilTest {
 		File metaDataFile = existingMetaDataFilesFs.keySet().stream().findFirst().orElse(null);
 		NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
 		assertNotNull(netcdfMetaData);
-	}
-
-	@Test
-	void getNetcdfContentMap() {
-		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs();
-		File metaDataFile = existingMetaDataFilesFs.keySet().stream().findFirst().orElse(null);
-		NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
-		Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
-		assertNotNull(netcdfContentMap);
 	}
 }

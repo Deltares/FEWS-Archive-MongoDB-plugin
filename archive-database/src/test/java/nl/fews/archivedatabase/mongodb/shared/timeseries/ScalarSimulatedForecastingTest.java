@@ -7,7 +7,6 @@ import nl.fews.archivedatabase.mongodb.migrate.utils.RunInfoUtil;
 import nl.fews.archivedatabase.mongodb.shared.TestSettings;
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
-import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
 import nl.wldelft.archive.util.metadata.simulation.SimulationMetaData;
 import nl.wldelft.archive.util.metadata.timeseries.TimeSeriesRecord;
 import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
@@ -18,7 +17,6 @@ import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -54,9 +52,7 @@ class ScalarSimulatedForecastingTest {
 					TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = NetcdfUtil.getTimeSeriesArrays(netcdfFile.getKey()).get(0);
 					TimeSeries ts = new ScalarSimulatedForecasting();
 
-					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
-					Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
-					NetcdfContent netcdfContent = netcdfContentMap.get(netcdfFile.getKey());
+					NetcdfContent netcdfContent = netcdfFile.getValue().getValue1();
 					Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = NetcdfUtil.getTimeSeriesRecordsMap(netcdfFile.getKey(), netcdfContent);
 					TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
 					timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);

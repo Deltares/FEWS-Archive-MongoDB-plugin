@@ -6,7 +6,6 @@ import nl.fews.archivedatabase.mongodb.migrate.utils.NetcdfUtil;
 import nl.fews.archivedatabase.mongodb.shared.TestSettings;
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
-import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
 import nl.wldelft.archive.util.metadata.timeseries.TimeSeriesRecord;
 import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
@@ -52,9 +51,7 @@ class ScalarExternalHistoricalTest {
 					TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = NetcdfUtil.getTimeSeriesArrays(netcdfFile.getKey()).get(0);
 					TimeSeries ts = new ScalarExternalHistorical();
 
-					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
-					Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
-					NetcdfContent netcdfContent = netcdfContentMap.get(netcdfFile.getKey());
+					NetcdfContent netcdfContent = netcdfFile.getValue().getValue1();
 					Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = NetcdfUtil.getTimeSeriesRecordsMap(netcdfFile.getKey(), netcdfContent);
 					TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
 					timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
@@ -77,9 +74,7 @@ class ScalarExternalHistoricalTest {
 					TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = NetcdfUtil.getTimeSeriesArrays(netcdfFile.getKey()).get(0);
 					TimeSeries ts = new ScalarExternalHistorical();
 
-					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
-					Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
-					NetcdfContent netcdfContent = netcdfContentMap.get(netcdfFile.getKey());
+					NetcdfContent netcdfContent = netcdfFile.getValue().getValue1();
 					Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = NetcdfUtil.getTimeSeriesRecordsMap(netcdfFile.getKey(), netcdfContent);
 					TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
 					timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
@@ -100,9 +95,7 @@ class ScalarExternalHistoricalTest {
 					TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = NetcdfUtil.getTimeSeriesArrays(netcdfFile.getKey()).get(0);
 					TimeSeries ts = new ScalarExternalHistorical();
 
-					NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
-					Map<File, NetcdfContent> netcdfContentMap = MetaDataUtil.getNetcdfContentMap(metaDataFile, netcdfMetaData);
-					NetcdfContent netcdfContent = netcdfContentMap.get(netcdfFile.getKey());
+					NetcdfContent netcdfContent = netcdfFile.getValue().getValue1();
 					Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = NetcdfUtil.getTimeSeriesRecordsMap(netcdfFile.getKey(), netcdfContent);
 					TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
 					timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);

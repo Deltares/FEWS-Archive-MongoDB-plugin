@@ -3,6 +3,7 @@ package nl.fews.archivedatabase.mongodb.migrate;
 import nl.fews.archivedatabase.mongodb.TestUtil;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.OpenArchiveToArchiveDatabaseMigrationSettings;
 import nl.wldelft.util.LogUtils;
+import nl.wldelft.util.Properties;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -45,16 +46,22 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 			migrateDatabase.setUnitConverter(new TestUtil.ArchiveDatabaseUnitConverterTestImplementation());
 			migrateDatabase.setRegionConfigInfoProvider(new TestUtil.ArchiveDatabaseRegionConfigInfoProviderTestImplementation());
 			migrateDatabase.setUserNamePassword(testSettings.isNull("userName") ? "" : testSettings.getString("userName"), testSettings.isNull("password") ? "" : testSettings.getString("password"));
+			if (testSettings.get("properties") != JSONObject.NULL){
+				Properties.Builder builder = new Properties.Builder();
+				testSettings.getJSONObject("properties").toMap().forEach((k, v) -> builder.addObject(k, v.toString()));
+				migrateDatabase.setProperties(builder.build());
+			}
 			migrateDatabase.migrate(
 					testSettings.get("areaId") != JSONObject.NULL ? testSettings.getString("areaId") : null,
 					testSettings.get("sourceId") != JSONObject.NULL ? testSettings.getString("sourceId") : null);
+
 		}
 	}
 
 	@Test
 	void finalizeMigration() throws IOException {
 		String hostName = InetAddress.getLocalHost().getHostName();
-		if(testSettings != null && hostName.equalsIgnoreCase(testSettings.getString("hostName")) && hostName.equalsIgnoreCase("CHADWHH01")) {
+		if(testSettings != null && hostName.equalsIgnoreCase(testSettings.getString("hostName"))) {
 			MongoDbOpenArchiveToArchiveDatabaseMigrator migrateDatabase = MongoDbOpenArchiveToArchiveDatabaseMigrator.create();
 			migrateDatabase.setArchiveDatabaseUrl(testSettings.getString("archiveDatabaseUrl"));
 			OpenArchiveToArchiveDatabaseMigrationSettings openArchiveToArchiveDatabaseMigrationSettings = new OpenArchiveToArchiveDatabaseMigrationSettings(
