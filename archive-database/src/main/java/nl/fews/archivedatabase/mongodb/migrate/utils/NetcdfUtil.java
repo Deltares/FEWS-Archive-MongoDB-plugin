@@ -91,7 +91,7 @@ public final class NetcdfUtil {
 	public static Map<String, Map<String, TimeSeriesRecord>> getTimeSeriesRecordsMap(File netcdfFile, NetcdfContent netcdfContent){
 		try {
 			Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = new HashMap<>();
-			try (NetcdfFile dataSet = NetcdfFile.openInMemory(netcdfFile.getAbsolutePath())) {
+			try (NetcdfFile dataSet = NetcdfFile.open(netcdfFile.getAbsolutePath())) {
 				for (TimeSeriesRecord timeSeriesRecord : ElasticSearchIndexUtil.createTimeSeries(dataSet, netcdfContent, false).getObject0()) {
 					timeSeriesRecordsMap.putIfAbsent(timeSeriesRecord.getArchiveLocationId(), new HashMap<>());
 					timeSeriesRecordsMap.get(timeSeriesRecord.getArchiveLocationId()).putIfAbsent(timeSeriesRecord.getArchiveParameterId(), timeSeriesRecord);

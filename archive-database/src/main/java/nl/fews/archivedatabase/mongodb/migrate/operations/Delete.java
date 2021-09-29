@@ -28,6 +28,21 @@ public final class Delete {
 	private static final Logger logger = LogManager.getLogger(Delete.class);
 
 	/**
+	 *
+	 */
+	private static int progressCurrent = 0;
+
+	/**
+	 *
+	 */
+	private static int progressExpected = 0;
+
+	/**
+	 *
+	 */
+	private static final Object mutex = new Object();
+
+	/**
 	 * Static Class
 	 */
 	private Delete(){}
@@ -40,7 +55,10 @@ public final class Delete {
 	public static void deleteMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb){
 		ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
 		ArrayList<Callable<Void>> tasks = new ArrayList<>();
-		MetaDataUtil.getMetaDataFilesDelete(existingMetaDataFilesFs, existingMetaDataFilesDb).forEach((file, date) -> tasks.add(() -> {
+		Map<File, Date> metaDataFiles = MetaDataUtil.getMetaDataFilesDelete(existingMetaDataFilesFs, existingMetaDataFilesDb);
+		progressExpected = metaDataFiles.size();
+		progressCurrent = 0;
+		metaDataFiles.forEach((file, date) -> tasks.add(() -> {
 			deleteMetaData(file);
 			return null;
 		}));
@@ -54,6 +72,10 @@ public final class Delete {
 	 */
 	public static void deleteMetaData(File metaDataFile){
 		try {
+			synchronized (mutex){
+				if (++progressCurrent % 100 == 0)
+					logger.info("Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+			}
 			Document metaData = Database.findOne(Settings.get("metaDataCollection"), new Document("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class))));
 			if (metaData != null) {
 				Database.updateOne(Settings.get("metaDataCollection"), new Document("_id", metaData.getObjectId("_id")), new Document("$set", new Document("committed", false)));

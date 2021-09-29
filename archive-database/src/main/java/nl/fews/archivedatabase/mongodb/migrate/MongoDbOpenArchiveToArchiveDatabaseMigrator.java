@@ -11,33 +11,30 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.elasticsearch.common.collect.List;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
  */
 public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenArchiveToArchiveDatabaseMigrator {
 
-	/**
-	 *
-	 */
-	private static final Logger logger = LogManager.getLogger(BucketHistoricalBase.class);
-
 	//DEFAULTS THAT MAY BE ADDED TO INTERFACE AND OPTIONALLY OVERRIDDEN LATER
 	static{
 		Settings.put("metaDataCollection", Database.Collection.MigrateMetaData.toString());
 		Settings.put("logCollection", Database.Collection.MigrateLog.toString());
 		Settings.put("bucketSizeCollection", Database.Collection.BucketSize.toString());
-		Settings.put("folderMaxDepth", 4);
 		Settings.put("metadataFileName", "metaData.xml");
 		Settings.put("runInfoFileName", "runInfo.xml");
-		Settings.put("valueTypes", List.of("scalar"));
 	}
+
+	/**
+	 *
+	 */
+	private static final Logger logger = LogManager.getLogger(MongoDbOpenArchiveToArchiveDatabaseMigrator.class);
 
 	/**
 	 *
@@ -91,7 +88,9 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void setProperties(Properties properties) {
-		Settings.put("properties", properties);
+		Settings.put("folderMaxDepth", properties.indexOf("folderMaxDepth") == -1 ? 4 : properties.getObject(properties.indexOf("folderMaxDepth")) instanceof Integer ? properties.getInt("folderMaxDepth", 4) : Integer.parseInt(properties.getString("folderMaxDepth", "4")));
+		Settings.put("valueTypes", properties.indexOf("valueTypes") == -1 ? "scalar" : Arrays.stream(properties.getString("valueTypes", "scalar").split(",")).map(String::trim).collect(Collectors.toList()));
+		Settings.put("useBulkInsert", properties.indexOf("useBulkInsert") != -1 && (properties.getObject(properties.indexOf("useBulkInsert")) instanceof Boolean ? properties.getBool("useBulkInsert", false) : Boolean.parseBoolean(properties.getString("useBulkInsert", "false"))));
 	}
 
 	/**
@@ -130,18 +129,36 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void migrate(String areaId, String sourceId) {
+		logger.info("Settings: {}", Settings.toJsonString(1));
+
 		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
 				Settings.get("archiveDatabaseUrl") :
 				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
 		Settings.put("connectionString", connectionString);
 
+		logger.info("Start: deleteUncommitted");
 		Delete.deleteUncommitted();
+		logger.info("End: deleteUncommitted");
 
-		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs();
+		logger.info("Start: getExistingMetaDataFilesFs");
+		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs(areaId);
+		logger.info("End: getExistingMetaDataFilesFs");
+
+		logger.info("Start: existingMetaDataFilesDb");
 		Map<File, Date> existingMetaDataFilesDb = MetaDataUtil.getExistingMetaDataFilesDb();
+		logger.info("End: existingMetaDataFilesDb");
+
+		logger.info("Start: insertMetaDatas");
 		Insert.insertMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
+		logger.info("End: insertMetaDatas");
+
+		logger.info("Start: updateMetaDatas");
 		Update.updateMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
+		logger.info("End: updateMetaDatas");
+
+		logger.info("Start: deleteMetaDatas");
 		Delete.deleteMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
+		logger.info("End: deleteMetaDatas");
 	}
 
 	/**
@@ -202,7 +219,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 
 			bucketScalarExternalHistorical();
 			bucketScalarSimulatedHistorical();
-			replaceScalarExternalHistoricalWithBucketedCollection();
+			//replaceScalarExternalHistoricalWithBucketedCollection();
 		}
 	}
 }

@@ -4,10 +4,11 @@ import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.PathUtil;
 import nl.wldelft.archive.util.metadata.externalforecast.ExternalForecastMetaDataReader;
-import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
 import nl.wldelft.archive.util.metadata.observed.MetaDataReader;
 import nl.wldelft.archive.util.metadata.simulation.SimulationMetaDataReader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.json.JSONObject;
 import org.json.XML;
@@ -26,6 +27,26 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 public final class MetaDataUtil {
+
+	/**
+	 *
+	 */
+	private static final Logger logger = LogManager.getLogger(MetaDataUtil.class);
+
+	/**
+	 *
+	 */
+	private static int progressCurrent = 0;
+
+	/**
+	 *
+	 */
+	private static int progressExpected = 0;
+
+	/**
+	 *
+	 */
+	private static final Object mutex = new Object();
 
 	/**
 	 * Static Class
@@ -66,7 +87,15 @@ public final class MetaDataUtil {
 	 *
 	 * @return Map<File, Date>
 	 */
-	public static Map<File, Date> getExistingMetaDataFilesFs () {
+	public static Map<File, Date> getExistingMetaDataFilesFs (){
+		return MetaDataUtil.getExistingMetaDataFilesFs(null);
+	}
+
+	/**
+	 * @param areaId areaId
+	 * @return Map<File, Date>
+	 */
+	public static Map<File, Date> getExistingMetaDataFilesFs (String areaId) {
 		Map<File, Date> existingMetaDataFilesFs = new HashMap<>();
 		Path start = Paths.get(Settings.get("baseDirectoryArchive", String.class));
 		int rootDepth = start.getNameCount();
@@ -76,9 +105,16 @@ public final class MetaDataUtil {
 		try {
 			ForkJoinPool pool = new ForkJoinPool(Settings.get("netcdfReadThreads"));
 			ArrayList<Callable<Map<File, Date>>> tasks = new ArrayList<>();
-			Files.find(start, folderMaxDepth, (p, a) -> a.isDirectory() && p.getNameCount()-rootDepth == folderMaxDepth).forEach(folder -> tasks.add(() ->
-				Files.find(folder, Integer.MAX_VALUE, (p, a) -> a.isRegularFile() && p.endsWith(metadataFileName)).collect(Collectors.toMap(Path::toFile, s -> new Date(s.toFile().lastModified())))
-			));
+			List<Path> folders = Files.find(start, folderMaxDepth, (p, a) -> a.isDirectory() && p.getNameCount()-rootDepth == folderMaxDepth).filter(f -> areaId == null || areaId.isEmpty() || PathUtil.containsSegment(f, areaId)).collect(Collectors.toList());
+			progressExpected = folders.size();
+			progressCurrent = 0;
+			folders.forEach(folder -> tasks.add(() -> {
+				synchronized (mutex){
+					if (++progressCurrent % 100 == 0)
+						logger.info("getExistingMetaDataFilesFs - Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+				}
+				return Files.find(folder, Integer.MAX_VALUE, (p, a) -> a.isRegularFile() && p.endsWith(metadataFileName)).collect(Collectors.toMap(Path::toFile, s -> new Date(s.toFile().lastModified())));
+			}));
 			List<Future<Map<File, Date>>> results = pool.invokeAll(tasks);
 
 			for (Future<Map<File, Date>> x : results) {
@@ -132,19 +168,5 @@ public final class MetaDataUtil {
 		catch (Exception ex){
 			throw new RuntimeException(ex);
 		}
-	}
-
-	/**
-	 *
-	 * @param metaDataFile metaDataFile
-	 * @param netcdfMetaData netcdfMetaData
-	 * @return Map<File, NetcdfContent>
-	 */
-	public static Map<File, NetcdfContent> getNetcdfContentMap(File metaDataFile, NetcdfMetaData netcdfMetaData){
-		Map<File, NetcdfContent> netcdfContentMap = new HashMap<>();
-		for (int i = 0; i < netcdfMetaData.netcdfFileCount(); i++) {
-			netcdfContentMap.put(PathUtil.normalize(new File(metaDataFile.getParentFile(), netcdfMetaData.getNetcdf(i).getUrl())), netcdfMetaData.getNetcdf(i));
-		}
-		return netcdfContentMap;
 	}
 }

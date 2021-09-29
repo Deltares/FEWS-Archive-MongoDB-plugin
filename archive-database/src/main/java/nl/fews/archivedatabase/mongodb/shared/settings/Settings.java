@@ -1,7 +1,9 @@
 package nl.fews.archivedatabase.mongodb.shared.settings;
 
+import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -45,5 +47,13 @@ public final class Settings {
 	 */
 	public static <T> T get(String key) {
 		return (T)map.get(key);
+	}
+
+	/**
+	 * @param indentFactor indentFactor
+	 * @return String
+	 */
+	public static String toJsonString(int indentFactor){
+		return new JSONObject(map.entrySet().stream().filter(s -> !s.getKey().toLowerCase().contains("password")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))).toString(indentFactor);
 	}
 }
