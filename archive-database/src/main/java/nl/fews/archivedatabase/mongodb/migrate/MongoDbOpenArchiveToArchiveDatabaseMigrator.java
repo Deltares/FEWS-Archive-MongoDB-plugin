@@ -219,7 +219,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 
 			bucketScalarExternalHistorical();
 			bucketScalarSimulatedHistorical();
-			//replaceScalarExternalHistoricalWithBucketedCollection();
+			replaceScalarExternalHistoricalWithBucketedCollection();
 		}
 	}
 }
