@@ -1,6 +1,8 @@
 package nl.fews.archivedatabase.mongodb.migrate;
 
+import nl.fews.archivedatabase.mongodb.MongoDbArchiveDatabase;
 import nl.fews.archivedatabase.mongodb.TestUtil;
+import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.OpenArchiveToArchiveDatabaseMigrationSettings;
 import nl.wldelft.util.LogUtils;
 import nl.wldelft.util.Properties;
@@ -34,8 +36,11 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 	void migrate() throws IOException {
 		String hostName = InetAddress.getLocalHost().getHostName();
 		if(testSettings != null && hostName.equalsIgnoreCase(testSettings.getString("hostName"))) {
-			MongoDbOpenArchiveToArchiveDatabaseMigrator migrateDatabase = MongoDbOpenArchiveToArchiveDatabaseMigrator.create();
-			migrateDatabase.setArchiveDatabaseUrl(testSettings.getString("archiveDatabaseUrl"));
+			MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+			mongoDbArchiveDatabase.setArchiveDatabaseUrl(testSettings.getString("archiveDatabaseUrl"));
+			mongoDbArchiveDatabase.setUserNamePassword(testSettings.isNull("userName") ? "" : testSettings.getString("userName"), testSettings.isNull("password") ? "" : testSettings.getString("password"));
+
+			MongoDbOpenArchiveToArchiveDatabaseMigrator migrateDatabase = (MongoDbOpenArchiveToArchiveDatabaseMigrator)mongoDbArchiveDatabase.getOpenArchiveToArchiveDatabaseMigrator();
 			OpenArchiveToArchiveDatabaseMigrationSettings openArchiveToArchiveDatabaseMigrationSettings = new OpenArchiveToArchiveDatabaseMigrationSettings(
 					testSettings.getInt("databaseBaseThreads"),
 					testSettings.getInt("netcdfReadThreads"),
@@ -45,7 +50,6 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 			migrateDatabase.setTimeConverter(new TestUtil.ArchiveDatabaseTimeConverterTestImplementation());
 			migrateDatabase.setUnitConverter(new TestUtil.ArchiveDatabaseUnitConverterTestImplementation());
 			migrateDatabase.setRegionConfigInfoProvider(new TestUtil.ArchiveDatabaseRegionConfigInfoProviderTestImplementation());
-			migrateDatabase.setUserNamePassword(testSettings.isNull("userName") ? "" : testSettings.getString("userName"), testSettings.isNull("password") ? "" : testSettings.getString("password"));
 			if (testSettings.get("properties") != JSONObject.NULL){
 				Properties.Builder builder = new Properties.Builder();
 				testSettings.getJSONObject("properties").toMap().forEach((k, v) -> builder.addObject(k, v.toString()));
@@ -62,8 +66,11 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 	void finalizeMigration() throws IOException {
 		String hostName = InetAddress.getLocalHost().getHostName();
 		if(testSettings != null && hostName.equalsIgnoreCase(testSettings.getString("hostName"))) {
+			MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+			mongoDbArchiveDatabase.setArchiveDatabaseUrl(testSettings.getString("archiveDatabaseUrl"));
+			mongoDbArchiveDatabase.setUserNamePassword(testSettings.isNull("userName") ? "" : testSettings.getString("userName"), testSettings.isNull("password") ? "" : testSettings.getString("password"));
+
 			MongoDbOpenArchiveToArchiveDatabaseMigrator migrateDatabase = MongoDbOpenArchiveToArchiveDatabaseMigrator.create();
-			migrateDatabase.setArchiveDatabaseUrl(testSettings.getString("archiveDatabaseUrl"));
 			OpenArchiveToArchiveDatabaseMigrationSettings openArchiveToArchiveDatabaseMigrationSettings = new OpenArchiveToArchiveDatabaseMigrationSettings(
 					testSettings.getInt("databaseBaseThreads"),
 					testSettings.getInt("netcdfReadThreads"),
@@ -73,7 +80,6 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 			migrateDatabase.setTimeConverter(new TestUtil.ArchiveDatabaseTimeConverterTestImplementation());
 			migrateDatabase.setUnitConverter(new TestUtil.ArchiveDatabaseUnitConverterTestImplementation());
 			migrateDatabase.setRegionConfigInfoProvider(new TestUtil.ArchiveDatabaseRegionConfigInfoProviderTestImplementation());
-			migrateDatabase.setUserNamePassword(testSettings.isNull("userName") ? "" : testSettings.getString("userName"), testSettings.isNull("password") ? "" : testSettings.getString("password"));
 			migrateDatabase.finalizeMigration(true);
 		}
 	}

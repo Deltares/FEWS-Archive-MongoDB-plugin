@@ -94,26 +94,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	}
 
 	/**
-	 * The base url format string template for connecting to a mongo db instance
-	 * @param archiveDatabaseUrl mongodb://%s:%s@mongo.infisys.net:27018/admin?tls=true => mongodb://username:password@[server|dns|ip]:port/authDB?connectionSettings
-	 */
-	@Override
-	public void setArchiveDatabaseUrl(String archiveDatabaseUrl) {
-		Settings.put("archiveDatabaseUrl", archiveDatabaseUrl);
-	}
-
-	/**
-	 * The user / pass to use for mongo db connections
-	 * @param archiveDatabaseUserName The password to apply to the archiveDatabaseUrl
-	 * @param archiveDatabasePassword The username to apply to the archiveDatabaseUrl
-	 */
-	@Override
-	public void setUserNamePassword(String archiveDatabaseUserName, String archiveDatabasePassword) {
-		Settings.put("archiveDatabaseUserName", archiveDatabaseUserName);
-		Settings.put("archiveDatabasePassword", archiveDatabasePassword);
-	}
-
-	/**
 	 *
 	 * @param configRevision configRevision
 	 */
@@ -130,12 +110,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	@Override
 	public void migrate(String areaId, String sourceId) {
 		logger.info("Settings: {}", Settings.toJsonString(1));
-
-		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
-				Settings.get("archiveDatabaseUrl") :
-				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
-		Settings.put("connectionString", connectionString);
-
 		logger.info("Start: deleteUncommitted");
 		Delete.deleteUncommitted();
 		logger.info("End: deleteUncommitted");
@@ -212,11 +186,6 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	@Override
 	public void finalizeMigration(boolean finalize) {
 		if(finalize) {
-			String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
-					Settings.get("archiveDatabaseUrl") :
-					Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
-			Settings.put("connectionString", connectionString);
-
 			bucketScalarExternalHistorical();
 			bucketScalarSimulatedHistorical();
 			replaceScalarExternalHistoricalWithBucketedCollection();

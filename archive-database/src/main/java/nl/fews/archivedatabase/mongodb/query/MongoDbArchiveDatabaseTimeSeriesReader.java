@@ -6,6 +6,7 @@ import nl.fews.archivedatabase.mongodb.query.interfaces.Read;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Summarize;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
+import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.fews.castor.archive.types.ArchiveTimeSeriesType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
@@ -47,6 +48,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public ArchiveDatabaseReadResult read(ArchiveDatabaseResultSearchParameters archiveDatabaseResultSearchParameters) {
+		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
+				Settings.get("archiveDatabaseUrl") :
+				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
+		Settings.put("connectionString", connectionString);
+
 		if(archiveDatabaseResultSearchParameters.getPeriod().getEndDate().before(archiveDatabaseResultSearchParameters.getPeriod().getStartDate()))
 			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
 
@@ -87,6 +93,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public ArchiveDatabaseSummary getSummary(ArchiveDatabaseResultSearchParameters archiveDatabaseResultSearchParameters) {
+		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
+				Settings.get("archiveDatabaseUrl") :
+				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
+		Settings.put("connectionString", connectionString);
+
 		if(archiveDatabaseResultSearchParameters.getPeriod().getEndDate().before(archiveDatabaseResultSearchParameters.getPeriod().getStartDate()))
 			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
 
@@ -139,6 +150,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public ArchiveDatabaseFilterOptions getFilterOptions(String areaId, ArchiveTimeSeriesType archiveTimeSeriesType, Period period, Set<String> sourceIds) {
+		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
+				Settings.get("archiveDatabaseUrl") :
+				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
+		Settings.put("connectionString", connectionString);
+
 		if(period.getEndDate().before(period.getStartDate()))
 			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
 

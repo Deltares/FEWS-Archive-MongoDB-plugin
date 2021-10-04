@@ -1,6 +1,7 @@
 package nl.fews.archivedatabase.mongodb.export;
 
 import com.mongodb.client.model.Sorts;
+import nl.fews.archivedatabase.mongodb.MongoDbArchiveDatabase;
 import nl.fews.archivedatabase.mongodb.TestUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
@@ -64,8 +65,10 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 
 		TimeSeriesArrays timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();
 
-		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = MongoDbArchiveDatabaseTimeSeriesExporter.create();
-		mongoDbArchiveDatabaseTimeSeriesExporter.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+
+		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = (MongoDbArchiveDatabaseTimeSeriesExporter)mongoDbArchiveDatabase.getArchiveTimeSeriesExporter();
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertExternalHistoricalTimeSeries(timeSeriesArrays, "areaId", "sourceId");
 		
 		int index = 0;
@@ -120,8 +123,10 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 
 		TimeSeriesArrays timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();
 
-		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = MongoDbArchiveDatabaseTimeSeriesExporter.create();
-		mongoDbArchiveDatabaseTimeSeriesExporter.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+
+		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = (MongoDbArchiveDatabaseTimeSeriesExporter)mongoDbArchiveDatabase.getArchiveTimeSeriesExporter();
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertExternalForecastingTimeSeries(timeSeriesArrays, "areaId", "sourceId");
 		
 		int index = 0;
@@ -175,8 +180,10 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 
 		TimeSeriesArrays timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();
 
-		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = MongoDbArchiveDatabaseTimeSeriesExporter.create();
-		mongoDbArchiveDatabaseTimeSeriesExporter.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+
+		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = (MongoDbArchiveDatabaseTimeSeriesExporter)mongoDbArchiveDatabase.getArchiveTimeSeriesExporter();
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertSimulatedForecastingTimeSeries(timeSeriesArrays, "areaId", "sourceId");
 
 		int index = 0;
@@ -255,8 +262,10 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 
 		TimeSeriesArrays timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();
 
-		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = MongoDbArchiveDatabaseTimeSeriesExporter.create();
-		mongoDbArchiveDatabaseTimeSeriesExporter.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+
+		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = (MongoDbArchiveDatabaseTimeSeriesExporter)mongoDbArchiveDatabase.getArchiveTimeSeriesExporter();
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertSimulatedHistoricalTimeSeries(timeSeriesArrays, "areaId", "sourceId");
 
 		int index = 0;
