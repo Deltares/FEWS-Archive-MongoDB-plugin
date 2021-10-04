@@ -94,6 +94,7 @@ public final class Insert {
 		}));
 		pool.invokeAll(tasks);
 		pool.shutdown();
+		logger.info("Insert Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("Insert: %,.2f", ((double)progressCurrent/progressExpected*100)));
 	}
 
 	/**
@@ -105,7 +106,7 @@ public final class Insert {
 		try{
 			synchronized (mutex){
 				if (++progressCurrent % 100 == 0)
-					logger.info("Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+					logger.info("Insert Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
 			}
 			NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
 			if (netcdfMetaData == null)

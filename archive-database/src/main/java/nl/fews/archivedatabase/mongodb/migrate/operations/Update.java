@@ -63,6 +63,7 @@ public final class Update {
 		}));
 		pool.invokeAll(tasks);
 		pool.shutdown();
+		logger.info("Update Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
 	}
 
 	/**
@@ -74,7 +75,7 @@ public final class Update {
 		try {
 			synchronized (mutex){
 				if (++progressCurrent % 100 == 0)
-					logger.info("Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+					logger.info("Update Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
 			}
 			Document dbMetaData = Database.findOne(Settings.get("metaDataCollection"), new Document("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class))));
 			if (dbMetaData != null) {

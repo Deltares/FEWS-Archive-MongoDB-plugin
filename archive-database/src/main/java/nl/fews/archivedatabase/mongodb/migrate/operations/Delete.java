@@ -64,6 +64,7 @@ public final class Delete {
 		}));
 		pool.invokeAll(tasks);
 		pool.shutdown();
+		logger.info("Delete Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
 	}
 
 	/**
@@ -74,7 +75,7 @@ public final class Delete {
 		try {
 			synchronized (mutex){
 				if (++progressCurrent % 100 == 0)
-					logger.info("Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+					logger.info("Delete Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
 			}
 			Document metaData = Database.findOne(Settings.get("metaDataCollection"), new Document("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class))));
 			if (metaData != null) {

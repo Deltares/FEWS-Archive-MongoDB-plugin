@@ -26,12 +26,30 @@ public abstract class BucketHistoricalBase implements BucketHistorical {
 	/**
 	 *
 	 */
+	private static int progressCurrent = 0;
+
+	/**
+	 *
+	 */
+	private static int progressExpected = 0;
+
+	/**
+	 *
+	 */
+	private static final Object mutex = new Object();
+
+	/**
+	 *
+	 */
 	public void bucketGroups(String singletonCollection, String bucketCollection){
 		try {
 			List<String> bucketKeyFields = BucketUtil.getBucketKeyFields(bucketCollection);
 			ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
 			ArrayList<Callable<Void>> tasks = new ArrayList<>();
-			TimeSeriesUtil.getTimeSeriesGroups(singletonCollection, bucketKeyFields).forEach(timeSeriesGroup -> tasks.add(() -> {
+			List<Document> timeSeriesGroups = TimeSeriesUtil.getTimeSeriesGroups(singletonCollection, bucketKeyFields);
+			progressExpected = timeSeriesGroups.size();
+			progressCurrent = 0;
+			timeSeriesGroups.forEach(timeSeriesGroup -> tasks.add(() -> {
 				bucketGroup(timeSeriesGroup.get("timeSeriesGroup", Document.class), BucketSize.valueOf(timeSeriesGroup.getString("bucketSize")), singletonCollection, bucketCollection);
 				return null;
 			}));
@@ -40,6 +58,7 @@ public abstract class BucketHistoricalBase implements BucketHistorical {
 				x.get();
 			}
 			pool.shutdown();
+			logger.info("{} Progress: {}/{} {}%", getClass().getSimpleName(), progressCurrent, progressExpected, String.format("Insert: %,.2f", ((double)progressCurrent/progressExpected*100)));
 		}
 		catch (Exception ex){
 			logger.error(LogUtil.getLogMessageJson(ex, Map.of("singletonCollection", singletonCollection, "bucketCollection", bucketCollection)).toJson(), ex);
@@ -54,6 +73,11 @@ public abstract class BucketHistoricalBase implements BucketHistorical {
 	 */
 	private void bucketGroup(Document bucketKeyDocument, BucketSize bucketSize, String singletonCollection, String bucketCollection){
 		try{
+			synchronized (mutex){
+				if (++progressCurrent % 100 == 0)
+					logger.info("{} Progress: {}/{} {}%", getClass().getSimpleName(), progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+			}
+
 			List<Document> timeSeries = getUnwoundTimeSeries(bucketKeyDocument, singletonCollection);
 			Map<Long, List<Document>> timeSeriesBuckets = TimeSeriesUtil.getTimeSeriesBuckets(timeSeries, bucketSize);
 			List<Document> timeSeriesDocuments = TimeSeriesUtil.getTimeSeriesDocuments(bucketKeyDocument, timeSeriesBuckets, bucketSize, singletonCollection);

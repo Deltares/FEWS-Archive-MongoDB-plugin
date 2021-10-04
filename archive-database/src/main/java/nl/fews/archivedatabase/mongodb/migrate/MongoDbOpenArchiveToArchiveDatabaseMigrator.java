@@ -91,6 +91,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 		Settings.put("folderMaxDepth", properties.indexOf("folderMaxDepth") == -1 ? 4 : properties.getObject(properties.indexOf("folderMaxDepth")) instanceof Integer ? properties.getInt("folderMaxDepth", 4) : Integer.parseInt(properties.getString("folderMaxDepth", "4")));
 		Settings.put("valueTypes", properties.indexOf("valueTypes") == -1 ? "scalar" : Arrays.stream(properties.getString("valueTypes", "scalar").split(",")).map(String::trim).collect(Collectors.toList()));
 		Settings.put("useBulkInsert", properties.indexOf("useBulkInsert") != -1 && (properties.getObject(properties.indexOf("useBulkInsert")) instanceof Boolean ? properties.getBool("useBulkInsert", false) : Boolean.parseBoolean(properties.getString("useBulkInsert", "false"))));
+		Settings.put("renameFinalizedCollection", properties.indexOf("renameFinalizedCollection") != -1 && (properties.getObject(properties.indexOf("renameFinalizedCollection")) instanceof Boolean ? properties.getBool("renameFinalizedCollection", true) : Boolean.parseBoolean(properties.getString("renameFinalizedCollection", "true"))));
 	}
 
 	/**
@@ -186,9 +187,17 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	@Override
 	public void finalizeMigration(boolean finalize) {
 		if(finalize) {
+			logger.info("Start: bucketScalarExternalHistorical");
 			bucketScalarExternalHistorical();
+			logger.info("End: bucketScalarExternalHistorical");
+			logger.info("Start: bucketScalarSimulatedHistorical");
 			bucketScalarSimulatedHistorical();
-			replaceScalarExternalHistoricalWithBucketedCollection();
+			logger.info("End: bucketScalarSimulatedHistorical");
+			if (Settings.get("renameFinalizedCollection")) {
+				logger.info("Start: replaceScalarExternalHistoricalWithBucketedCollection");
+				replaceScalarExternalHistoricalWithBucketedCollection();
+				logger.info("End: replaceScalarExternalHistoricalWithBucketedCollection");
+			}
 		}
 	}
 }
