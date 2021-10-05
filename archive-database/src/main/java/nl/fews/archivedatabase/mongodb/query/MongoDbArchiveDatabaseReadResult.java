@@ -1,7 +1,12 @@
 package nl.fews.archivedatabase.mongodb.query;
 
 import com.mongodb.client.MongoCursor;
+import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
+import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseReadResult;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.FewsTimeSeriesHeaderProvider;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.HeaderRequest;
+import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
 import nl.wldelft.util.timeseries.*;
 import org.bson.Document;
 
@@ -20,8 +25,23 @@ public class MongoDbArchiveDatabaseReadResult implements ArchiveDatabaseReadResu
 	/**
 	 *
 	 */
-	public MongoDbArchiveDatabaseReadResult(MongoCursor<Document> result) {
+	private final TimeSeriesType timeSeriesType;
+
+	/**
+	 *
+	 */
+	private final TimeSeriesValueType valueType;
+
+	/**
+	 *
+	 * @param result result
+	 * @param valueType valueType
+	 * @param timeSeriesType timeSeriesType
+	 */
+	public MongoDbArchiveDatabaseReadResult(MongoCursor<Document> result, TimeSeriesValueType valueType, TimeSeriesType timeSeriesType) {
 		this.result = result;
+		this.timeSeriesType = timeSeriesType;
+		this.valueType = valueType;
 	}
 
 	/**
@@ -31,23 +51,28 @@ public class MongoDbArchiveDatabaseReadResult implements ArchiveDatabaseReadResu
 	@Override
 	public TimeSeriesArrays<TimeSeriesHeader> next() {
 		Document next = result.next();
-		DefaultTimeSeriesHeader timeSeriesHeader = new DefaultTimeSeriesHeader();
 
-		if(next.containsKey("moduleInstanceId")) timeSeriesHeader.setModuleInstanceId(next.getString("moduleInstanceId"));
-		if(next.containsKey("locationId")) timeSeriesHeader.setLocationId(next.getString("locationId"));
-		if(next.containsKey("parameterId")) timeSeriesHeader.setParameterId(next.getString("parameterId"));
-		if(next.containsKey("qualifierIds")) timeSeriesHeader.setQualifierIds(next.getList("qualifierIds", String.class).toArray(new String[0]));
-		if(next.containsKey("encodedTimeStepId")) timeSeriesHeader.setTimeStep(TimeStepUtils.decode(next.getString("encodedTimeStepId")));
-		if(next.containsKey("forecastTime")) timeSeriesHeader.setForecastTime(next.getDate("forecastTime").getTime());
-		if(next.containsKey("ensembleId") && !next.getString("ensembleId").trim().equals("")) timeSeriesHeader.setEnsembleId(next.getString("ensembleId"));
-		if(next.containsKey("ensembleMemberId") && !next.getString("ensembleMemberId").trim().equals("")) timeSeriesHeader.setEnsembleMemberId(next.getString("ensembleMemberId"));
+		HeaderRequest.HeaderRequestBuilder headerRequestBuilder = new HeaderRequest.HeaderRequestBuilder();
+		headerRequestBuilder.setValueType(valueType);
+		headerRequestBuilder.setTimeSeriesType(timeSeriesType);
+		if(next.containsKey("moduleInstanceId")) headerRequestBuilder.setModuleInstanceId(next.getString("moduleInstanceId"));
+		if(next.containsKey("locationId")) headerRequestBuilder.setLocationId(next.getString("locationId"));
+		if(next.containsKey("parameterId")) headerRequestBuilder.setParameterId(next.getString("parameterId"));
+		if(next.containsKey("qualifierIds")) headerRequestBuilder.setQualifiersIds(next.getList("qualifierIds", String.class).toArray(new String[0]));
+		if(next.containsKey("encodedTimeStepId")) headerRequestBuilder.setTimeStep(TimeStepUtils.decode(next.getString("encodedTimeStepId")));
 
-		if(next.get("metaData", Document.class).containsKey("ensembleMemberIndex")) timeSeriesHeader.setEnsembleMemberIndex(next.get("metaData", Document.class).getInteger("ensembleMemberIndex"));
-		if(next.get("metaData", Document.class).containsKey("unit")) timeSeriesHeader.setUnit(next.get("metaData", Document.class).getString("unit"));
-		if(next.get("metaData", Document.class).containsKey("parameterName")) timeSeriesHeader.setParameterName(next.get("metaData", Document.class).getString("parameterName"));
-		if(next.get("metaData", Document.class).containsKey("locationName")) timeSeriesHeader.setLocationName(next.get("metaData", Document.class).getString("locationName"));
-		if(next.get("metaData", Document.class).containsKey("parameterType")) timeSeriesHeader.setParameterType(ParameterType.get(next.get("metaData", Document.class).getString("parameterType")));
-		if(next.get("metaData", Document.class).containsKey("approvedTime")) timeSeriesHeader.setApprovedTime(next.get("metaData", Document.class).getDate("approvedTime").getTime());
+		//if(next.containsKey("forecastTime")) headerRequestBuilder.setForecastTime(next.getDate("forecastTime").getTime());
+		//if(next.containsKey("ensembleId") && !next.getString("ensembleId").trim().equals("")) headerRequestBuilder.setEnsembleId(next.getString("ensembleId"));
+		//if(next.containsKey("ensembleMemberId") && !next.getString("ensembleMemberId").trim().equals("")) headerRequestBuilder.setEnsembleMemberId(next.getString("ensembleMemberId"));
+
+		//if(next.get("metaData", Document.class).containsKey("ensembleMemberIndex")) headerRequestBuilder.setEnsembleMemberIndex(next.get("metaData", Document.class).getInteger("ensembleMemberIndex"));
+		//if(next.get("metaData", Document.class).containsKey("unit")) headerRequestBuilder.setUnit(next.get("metaData", Document.class).getString("unit"));
+		//if(next.get("metaData", Document.class).containsKey("parameterName")) headerRequestBuilder.setParameterName(next.get("metaData", Document.class).getString("parameterName"));
+		//if(next.get("metaData", Document.class).containsKey("locationName")) headerRequestBuilder.setLocationName(next.get("metaData", Document.class).getString("locationName"));
+		//if(next.get("metaData", Document.class).containsKey("parameterType")) headerRequestBuilder.setParameterType(ParameterType.get(next.get("metaData", Document.class).getString("parameterType")));
+		//if(next.get("metaData", Document.class).containsKey("approvedTime")) headerRequestBuilder.setApprovedTime(next.get("metaData", Document.class).getDate("approvedTime").getTime());
+
+		TimeSeriesHeader timeSeriesHeader = Settings.get("headerProvider", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build());
 
 		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader);
 		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());

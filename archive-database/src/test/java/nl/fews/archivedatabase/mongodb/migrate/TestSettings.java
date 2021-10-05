@@ -37,7 +37,8 @@ public class TestSettings {
 			Settings.put("metadataFileName", "metaData.xml");
 			Settings.put("runInfoFileName", "runInfo.xml");
 			Settings.put("valueTypes", List.of("scalar"));
-			Settings.put("useBulkInsert", true);
+			Settings.put("useBulkInsert", false);
+			Settings.put("renameFinalizedCollection", false);
 			Settings.put("archiveDatabaseUserName", "fews_admin");
 			String testType = testSettings != null && InetAddress.getLocalHost().getHostName().equalsIgnoreCase(testSettings.getString("hostName")) ? "full" : "minimal";
 			Settings.put("baseDirectoryArchive", Paths.get("src", "test", "resources", testType).toAbsolutePath().toString());

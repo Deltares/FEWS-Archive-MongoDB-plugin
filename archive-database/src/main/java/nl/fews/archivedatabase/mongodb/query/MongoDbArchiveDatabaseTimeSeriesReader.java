@@ -8,7 +8,7 @@ import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
-import nl.wldelft.fews.castor.archive.types.ArchiveTimeSeriesType;
+import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.TimeStepUtils;
@@ -43,6 +43,15 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 
 	/**
 	 *
+	 * @param fewsTimeSeriesHeaderProvider fewsTimeSeriesHeaderProvider
+	 */
+	@Override
+	public void setHeaderProvider(FewsTimeSeriesHeaderProvider fewsTimeSeriesHeaderProvider) {
+		Settings.put("headerProvider", fewsTimeSeriesHeaderProvider);
+	}
+
+	/**
+	 *
 	 * @param archiveDatabaseResultSearchParameters archiveDatabaseResultSearchParameters
 	 * @return ArchiveDatabaseReadResult
 	 */
@@ -57,7 +66,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
 
 		try{
-			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByArchiveType(archiveDatabaseResultSearchParameters.getArchiveTimeSeriesType().getType());
+			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, archiveDatabaseResultSearchParameters.getTimeSeriesType());
 			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 
 			Map<String, List<Object>> query = new HashMap<>();
@@ -79,7 +88,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			Read read = (Read)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("Read%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
 			MongoCursor<Document> result = read.read(collection, query, archiveDatabaseResultSearchParameters.getPeriod().getStartDate(), archiveDatabaseResultSearchParameters.getPeriod().getEndDate());
 
-			return new MongoDbArchiveDatabaseReadResult(result);
+			return new MongoDbArchiveDatabaseReadResult(result, TimeSeriesValueType.SCALAR, archiveDatabaseResultSearchParameters.getTimeSeriesType());
 		}
 		catch(Exception ex){
 			throw new RuntimeException(ex);
@@ -102,7 +111,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
 
 		try{
-			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByArchiveType(archiveDatabaseResultSearchParameters.getArchiveTimeSeriesType().getType());
+			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, archiveDatabaseResultSearchParameters.getTimeSeriesType());
 			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 
 			Map<String, List<Object>> query = new HashMap<>();
@@ -143,13 +152,13 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	/**
 	 *
 	 * @param areaId areaId
-	 * @param archiveTimeSeriesType archiveTimeSeriesType
+	 * @param fewsTimeSeriesType fewsTimeSeriesType
 	 * @param period period
 	 * @param sourceIds sourceIds
 	 * @return ArchiveDatabaseFilterOptions
 	 */
 	@Override
-	public ArchiveDatabaseFilterOptions getFilterOptions(String areaId, ArchiveTimeSeriesType archiveTimeSeriesType, Period period, Set<String> sourceIds) {
+	public ArchiveDatabaseFilterOptions getFilterOptions(String areaId, nl.wldelft.fews.system.data.timeseries.TimeSeriesType fewsTimeSeriesType, Period period, Set<String> sourceIds) {
 		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
 				Settings.get("archiveDatabaseUrl") :
 				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
@@ -159,7 +168,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
 
 		try{
-			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByArchiveType(archiveTimeSeriesType.getType());
+			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, fewsTimeSeriesType);
 			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 			Map<String, Class<?>> fields = Map.of("moduleInstanceId", String.class, "parameterId", String.class, "encodedTimeStepId", String.class);
 			Map<String, List<Object>> query = new HashMap<>();

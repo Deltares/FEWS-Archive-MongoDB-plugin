@@ -1,7 +1,7 @@
 package nl.fews.archivedatabase.mongodb.shared.utils;
 
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
-import nl.wldelft.fews.castor.archive.types.ArchiveTimeSeriesType;
+import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import org.javatuples.Pair;
 
 import java.util.Map;
@@ -96,12 +96,12 @@ public final class TimeSeriesTypeUtil {
 	/**
 	 * lookup for archive time series type representation of each timeseries type
 	 */
-	private static final Map<Integer, TimeSeriesType> timeSeriesTypeByArchiveType = Map.of(
-			ArchiveTimeSeriesType.EXTERNALFORECAST_TYPE,TimeSeriesType.SCALAR_EXTERNAL_FORECASTING,
-			ArchiveTimeSeriesType.OBSERVED_TYPE,TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL,
-			ArchiveTimeSeriesType.SIMULATED_TYPE,TimeSeriesType.SCALAR_SIMULATED_FORECASTING,
-			3,TimeSeriesType.SCALAR_SIMULATED_HISTORICAL,
-			4,TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED
+	private static final Map<Pair<TimeSeriesValueType, nl.wldelft.fews.system.data.timeseries.TimeSeriesType>, TimeSeriesType> timeSeriesTypeByArchiveType = Map.of(
+			new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING),TimeSeriesType.SCALAR_EXTERNAL_FORECASTING,
+			new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL),TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL,
+			new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING),TimeSeriesType.SCALAR_SIMULATED_FORECASTING
+			//nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL,TimeSeriesType.SCALAR_SIMULATED_HISTORICAL,
+			//nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL,TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED
 	);
 
 	/**
@@ -210,10 +210,11 @@ public final class TimeSeriesTypeUtil {
 
 	/**
 	 *
-	 * @param archiveType archiveType
+	 * @param timeSeriesValueType timeSeriesValueType
+	 * @param timeSeriesType timeSeriesType
 	 * @return TimeSeriesType
 	 */
-	public static TimeSeriesType getTimeSeriesTypeByArchiveType(Integer archiveType){
-		return timeSeriesTypeByArchiveType.get(archiveType);
+	public static TimeSeriesType getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType timeSeriesValueType, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType){
+		return timeSeriesTypeByArchiveType.get(new Pair<>(timeSeriesValueType, timeSeriesType));
 	}
 }

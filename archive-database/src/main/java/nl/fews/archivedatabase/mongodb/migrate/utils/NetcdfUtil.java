@@ -115,7 +115,7 @@ public final class NetcdfUtil {
 			SimpleTimeSeriesContentHandler timeSeriesContentHandler = new SimpleTimeSeriesContentHandler();
 			timeSeriesContentHandler.setTimeSeriesType(TimeSeriesArray.Type.SCALAR);
 			new NetcdfTimeSeriesParser(NetcdfTimeSeriesParser.NETCDF_SCALAR).parse(netcdfFile, timeSeriesContentHandler);
-			TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = timeSeriesContentHandler.getTimeSeriesArrays();
+			TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = (TimeSeriesArrays<TimeSeriesHeader>)timeSeriesContentHandler.getTimeSeriesArrays();
 			timeSeriesArrays.removeCompletelyMissing();
 			return timeSeriesArrays;
 		}
