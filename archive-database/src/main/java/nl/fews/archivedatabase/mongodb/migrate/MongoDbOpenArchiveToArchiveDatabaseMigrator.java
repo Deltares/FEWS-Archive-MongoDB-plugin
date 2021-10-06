@@ -6,6 +6,7 @@ import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
+import nl.fews.archivedatabase.mongodb.shared.utils.LogUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.Properties;
@@ -110,30 +111,36 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void migrate(String areaId, String sourceId) {
-		logger.info("Settings: {}", Settings.toJsonString(1));
-		logger.info("Start: deleteUncommitted");
-		Delete.deleteUncommitted();
-		logger.info("End: deleteUncommitted");
+		try{
+			logger.info("Settings: {}", Settings.toJsonString(1));
+			logger.info("Start: deleteUncommitted");
+			Delete.deleteUncommitted();
+			logger.info("End: deleteUncommitted");
 
-		logger.info("Start: getExistingMetaDataFilesFs");
-		Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs(areaId);
-		logger.info("End: getExistingMetaDataFilesFs");
+			logger.info("Start: getExistingMetaDataFilesFs");
+			Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs(areaId);
+			logger.info("End: getExistingMetaDataFilesFs");
 
-		logger.info("Start: existingMetaDataFilesDb");
-		Map<File, Date> existingMetaDataFilesDb = MetaDataUtil.getExistingMetaDataFilesDb();
-		logger.info("End: existingMetaDataFilesDb");
+			logger.info("Start: existingMetaDataFilesDb");
+			Map<File, Date> existingMetaDataFilesDb = MetaDataUtil.getExistingMetaDataFilesDb();
+			logger.info("End: existingMetaDataFilesDb");
 
-		logger.info("Start: insertMetaDatas");
-		Insert.insertMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
-		logger.info("End: insertMetaDatas");
+			logger.info("Start: insertMetaDatas");
+			Insert.insertMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
+			logger.info("End: insertMetaDatas");
 
-		logger.info("Start: updateMetaDatas");
-		Update.updateMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
-		logger.info("End: updateMetaDatas");
+			logger.info("Start: updateMetaDatas");
+			Update.updateMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
+			logger.info("End: updateMetaDatas");
 
-		logger.info("Start: deleteMetaDatas");
-		Delete.deleteMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
-		logger.info("End: deleteMetaDatas");
+			logger.info("Start: deleteMetaDatas");
+			Delete.deleteMetaDatas(existingMetaDataFilesFs, existingMetaDataFilesDb);
+			logger.info("End: deleteMetaDatas");
+		}
+		catch (Exception ex){
+			logger.error("migrate error", ex);
+			throw new RuntimeException(ex);
+		}
 	}
 
 	/**

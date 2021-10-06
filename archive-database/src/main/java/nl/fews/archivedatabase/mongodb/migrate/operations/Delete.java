@@ -13,12 +13,11 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 public final class Delete {
 
@@ -52,7 +51,7 @@ public final class Delete {
 	 * @param existingMetaDataFilesFs existingMetaDataFilesFs
 	 * @param existingMetaDataFilesDb existingMetaDataFilesDb
 	 */
-	public static void deleteMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb){
+	public static void deleteMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb) throws ExecutionException, InterruptedException {
 		ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
 		ArrayList<Callable<Void>> tasks = new ArrayList<>();
 		Map<File, Date> metaDataFiles = MetaDataUtil.getMetaDataFilesDelete(existingMetaDataFilesFs, existingMetaDataFilesDb);
@@ -60,9 +59,16 @@ public final class Delete {
 		progressCurrent = 0;
 		metaDataFiles.forEach((file, date) -> tasks.add(() -> {
 			deleteMetaData(file);
+			synchronized (mutex){
+				if (++progressCurrent % 100 == 0)
+					logger.info("Delete Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+			}
 			return null;
 		}));
-		pool.invokeAll(tasks);
+		List<Future<Void>> results = pool.invokeAll(tasks);
+		for (Future<Void> x : results) {
+			x.get();
+		}
 		pool.shutdown();
 		logger.info("Delete Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
 	}
@@ -73,10 +79,6 @@ public final class Delete {
 	 */
 	public static void deleteMetaData(File metaDataFile){
 		try {
-			synchronized (mutex){
-				if (++progressCurrent % 100 == 0)
-					logger.info("Delete Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
-			}
 			Document metaData = Database.findOne(Settings.get("metaDataCollection"), new Document("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class))));
 			if (metaData != null) {
 				Database.updateOne(Settings.get("metaDataCollection"), new Document("_id", metaData.getObjectId("_id")), new Document("$set", new Document("committed", false)));

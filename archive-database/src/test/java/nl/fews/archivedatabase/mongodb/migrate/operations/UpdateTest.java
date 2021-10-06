@@ -15,6 +15,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.io.File;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -31,7 +32,7 @@ class UpdateTest {
 	}
 
 	@Test
-	void updateMetaDatas() {
+	void updateMetaDatas() throws ExecutionException, InterruptedException {
 		Map.Entry<File, Date> entry = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(f -> !f.getKey().toString().contains("gridded")).findFirst().orElse(null);
 		Insert.insertMetaData(entry.getKey(), entry.getValue());
 		assertEquals(1, MetaDataUtil.getExistingMetaDataFilesDb().size());

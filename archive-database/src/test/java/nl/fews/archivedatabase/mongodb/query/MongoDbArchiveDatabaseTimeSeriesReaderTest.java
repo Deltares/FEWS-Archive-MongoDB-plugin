@@ -12,6 +12,7 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDat
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseSummary;
 import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
 import nl.wldelft.util.Period;
+import nl.wldelft.util.timeseries.TimeStep;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -54,7 +55,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 				TimeSeriesType.EXTERNAL_HISTORICAL,
 				new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01").getTime()),
 				Set.of(new String[0]),
-				null,
+				Set.of(new TimeStep[0]),
 				Set.of(new String[0]),
 				Set.of(new String[0]));
 
@@ -83,7 +84,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 				TimeSeriesType.SIMULATED_FORECASTING,
 				new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01").getTime()),
 				Set.of(new String[0]),
-				null,
+				Set.of(new TimeStep[0]),
 				Set.of(new String[0]),
 				Set.of(new String[0]));
 
@@ -111,7 +112,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 				TimeSeriesType.EXTERNAL_HISTORICAL,
 				new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01").getTime()),
 				Set.of(new String[0]),
-				null,
+				Set.of(new TimeStep[0]),
 				Set.of(new String[0]),
 				Set.of(new String[0]));
 
@@ -136,7 +137,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 				TimeSeriesType.SIMULATED_FORECASTING,
 				new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01").getTime()),
 				Set.of(new String[0]),
-				null,
+				Set.of(new TimeStep[0]),
 				Set.of(new String[0]),
 				Set.of(new String[0]));
 
