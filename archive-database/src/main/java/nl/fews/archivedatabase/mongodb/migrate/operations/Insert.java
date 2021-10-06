@@ -31,7 +31,9 @@ import org.javatuples.Pair;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -82,7 +84,7 @@ public final class Insert {
 	 * @param existingMetaDataFilesFs existingMetaDataFilesFs
 	 * @param existingMetaDataFilesDb existingMetaDataFilesDb
 	 */
-	public static void insertMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb){
+	public static void insertMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb) throws ExecutionException, InterruptedException {
 		ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
 		ArrayList<Callable<Void>> tasks = new ArrayList<>();
 		Map<File, Date> metaDataFiles = MetaDataUtil.getMetaDataFilesInsert(existingMetaDataFilesFs, existingMetaDataFilesDb);
@@ -90,9 +92,16 @@ public final class Insert {
 		progressCurrent = 0;
 		metaDataFiles.forEach((file, date) -> tasks.add(() -> {
 			insertMetaData(file, date);
+			synchronized (mutex){
+				if (++progressCurrent % 100 == 0)
+					logger.info("Insert Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+			}
 			return null;
 		}));
-		pool.invokeAll(tasks);
+		List<Future<Void>> results = pool.invokeAll(tasks);
+		for (Future<Void> x : results) {
+			x.get();
+		}
 		pool.shutdown();
 		logger.info("Insert Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("Insert: %,.2f", ((double)progressCurrent/progressExpected*100)));
 	}
@@ -104,10 +113,6 @@ public final class Insert {
 	 */
 	public static void insertMetaData(File metaDataFile, Date metaDataValue){
 		try{
-			synchronized (mutex){
-				if (++progressCurrent % 100 == 0)
-					logger.info("Insert Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
-			}
 			NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
 			if (netcdfMetaData == null)
 				return;

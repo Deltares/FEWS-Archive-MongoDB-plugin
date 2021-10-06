@@ -13,6 +13,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.io.File;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -29,7 +30,7 @@ class InsertTest {
 	}
 
 	@Test
-	void insertMetaDatas() {
+	void insertMetaDatas() throws ExecutionException, InterruptedException {
 		Insert.insertMetaDatas(MetaDataUtil.getExistingMetaDataFilesFs(), MetaDataUtil.getExistingMetaDataFilesDb());
 		assertEquals(7, MetaDataUtil.getExistingMetaDataFilesDb().size());
 	}

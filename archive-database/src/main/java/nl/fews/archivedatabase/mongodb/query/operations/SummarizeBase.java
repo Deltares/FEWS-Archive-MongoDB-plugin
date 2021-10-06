@@ -5,26 +5,12 @@ import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import org.bson.Document;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
  */
 public abstract class SummarizeBase implements Summarize {
-	/**
-	 *
-	 * @param collection the collection in the database from which the result was derived
-	 * @param distinctKeyFields the fields over which to group results and return a unique item count
-	 * @param query the query filter having 'and' field keys with 1..n values to 'or' match
-	 * @param startDate event startDate, inclusive
-	 * @param endDate event endDate, inclusive
-	 * @return Map<String, List<Object>>
-	 */
-	@Override
-	public abstract Map<String, Integer> getSummary(String collection, Map<String, List<String>> distinctKeyFields, Map<String, List<Object>> query, Date startDate, Date endDate);
-
 	/**
 	 *
 	 * @param collection the collection in the database from which the result was derived
