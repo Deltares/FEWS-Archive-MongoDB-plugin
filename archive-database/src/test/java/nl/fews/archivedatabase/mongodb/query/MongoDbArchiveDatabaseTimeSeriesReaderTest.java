@@ -183,8 +183,8 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 				"scalar",
 				TimeSeriesType.SIMULATED_FORECASTING,
 				Set.of());
-		assertEquals(1, archiveDatabaseFilterOptions.getParameterIds().size());
-		assertEquals(8, archiveDatabaseFilterOptions.getModuleInstanceIds().size());
+		assertEquals(2, archiveDatabaseFilterOptions.getParameterIds().size());
+		assertEquals(139, archiveDatabaseFilterOptions.getModuleInstanceIds().size());
 		assertEquals(1, archiveDatabaseFilterOptions.getTimeSteps().size());
 	}
 }
