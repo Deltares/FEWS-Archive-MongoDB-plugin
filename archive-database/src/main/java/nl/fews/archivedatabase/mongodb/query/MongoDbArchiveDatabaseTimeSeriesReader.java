@@ -1,11 +1,11 @@
 package nl.fews.archivedatabase.mongodb.query;
 
 import com.mongodb.client.MongoCursor;
-import nl.fews.archivedatabase.mongodb.query.interfaces.Filter;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Read;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Summarize;
+import nl.fews.archivedatabase.mongodb.query.operations.Filter;
 import nl.fews.archivedatabase.mongodb.query.operations.ReadBuckets;
-import nl.fews.archivedatabase.mongodb.query.operations.RequestExternalDataImportBuckets;
+import nl.fews.archivedatabase.mongodb.query.operations.RequestExternalDataImport;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
@@ -91,7 +91,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		if(period.getEndDate().before(period.getStartDate()))
 			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
 
-		return new RequestExternalDataImportBuckets().getExternalDataImportRequests(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), period, timeSeriesArrays);
+		return RequestExternalDataImport.getExternalDataImportRequests(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), period, timeSeriesArrays);
 	}
 
 	/**
@@ -202,8 +202,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			if(sourceIds != null && !sourceIds.isEmpty())
 				query.put("metaData.sourceId", new ArrayList<>(sourceIds));
 
-			Filter filter = (Filter)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("Filter%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
-			Map<String, List<Object>> filters = filter.getFilters(collection, fields, query);
+			Map<String, List<Object>> filters = Filter.getFilters(collection, fields, query);
 			return new MongoDbArchiveDatabaseFilterOptions(
 					filters.get("parameterId").stream().map(Object::toString).sorted().collect(Collectors.toCollection(LinkedHashSet::new)),
 					filters.get("moduleInstanceId").stream().map(Object::toString).sorted().collect(Collectors.toCollection(LinkedHashSet::new)),
