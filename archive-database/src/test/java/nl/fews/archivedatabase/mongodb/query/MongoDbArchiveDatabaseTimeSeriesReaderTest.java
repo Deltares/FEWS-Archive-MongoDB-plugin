@@ -160,7 +160,6 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		ArchiveDatabaseFilterOptions archiveDatabaseFilterOptions = mongoDbArchiveDatabaseTimeSeriesReader.getFilterOptions(
 				"scalar",
 				TimeSeriesType.EXTERNAL_HISTORICAL,
-				new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01").getTime()),
 				Set.of());
 		assertEquals(1, archiveDatabaseFilterOptions.getParameterIds().size());
 		assertEquals(1, archiveDatabaseFilterOptions.getModuleInstanceIds().size());
@@ -180,7 +179,6 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		ArchiveDatabaseFilterOptions archiveDatabaseFilterOptions = mongoDbArchiveDatabaseTimeSeriesReader.getFilterOptions(
 				"scalar",
 				TimeSeriesType.SIMULATED_FORECASTING,
-				new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01").getTime()),
 				Set.of());
 		assertEquals(1, archiveDatabaseFilterOptions.getParameterIds().size());
 		assertEquals(8, archiveDatabaseFilterOptions.getModuleInstanceIds().size());

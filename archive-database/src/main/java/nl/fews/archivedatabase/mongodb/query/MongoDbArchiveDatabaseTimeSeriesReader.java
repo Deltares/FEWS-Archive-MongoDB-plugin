@@ -187,14 +187,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 *
 	 * @param areaId areaId
 	 * @param fewsTimeSeriesType fewsTimeSeriesType
-	 * @param period period
 	 * @param sourceIds sourceIds
 	 * @return ArchiveDatabaseFilterOptions
 	 */
 	@Override
-	public ArchiveDatabaseFilterOptions getFilterOptions(String areaId, nl.wldelft.fews.system.data.timeseries.TimeSeriesType fewsTimeSeriesType, Period period, Set<String> sourceIds) {
-		if(period.getEndDate().before(period.getStartDate()))
-			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
+	public ArchiveDatabaseFilterOptions getFilterOptions(String areaId, nl.wldelft.fews.system.data.timeseries.TimeSeriesType fewsTimeSeriesType, Set<String> sourceIds) {
 
 		try{
 			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, fewsTimeSeriesType);
@@ -206,7 +203,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				query.put("metaData.sourceId", new ArrayList<>(sourceIds));
 
 			Filter filter = (Filter)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("Filter%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
-			Map<String, List<Object>> filters = filter.getFilters(collection, fields, query, period.getStartDate(), period.getEndDate());
+			Map<String, List<Object>> filters = filter.getFilters(collection, fields, query);
 			return new MongoDbArchiveDatabaseFilterOptions(
 					filters.get("parameterId").stream().map(Object::toString).sorted().collect(Collectors.toCollection(LinkedHashSet::new)),
 					filters.get("moduleInstanceId").stream().map(Object::toString).sorted().collect(Collectors.toCollection(LinkedHashSet::new)),

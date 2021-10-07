@@ -41,9 +41,7 @@ class FilterBucketsTest {
 		Map<String, List<Object>> filters = filterBuckets.getFilters(
 				TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL),
 				Map.of("parameterId", String.class, "moduleInstanceId", String.class, "encodedTimeStepId", String.class),
-				Map.of("metaData.areaId", List.of("scalar")),
-				new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01"),
-				new SimpleDateFormat("yyyy-MM-dd").parse("2021-01-01"));
+				Map.of("metaData.areaId", List.of("scalar")));
 		assertEquals(3, filters.size());
 		assertEquals(1, filters.get("parameterId").size());
 		assertEquals(1, filters.get("moduleInstanceId").size());

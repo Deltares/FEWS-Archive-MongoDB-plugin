@@ -5,7 +5,6 @@ import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.*;
-import org.bson.Document;
 import org.json.JSONArray;
 
 import java.util.ArrayList;
