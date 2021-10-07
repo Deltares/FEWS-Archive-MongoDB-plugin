@@ -74,7 +74,7 @@ public class MongoDbArchiveDatabaseReadResult implements ArchiveDatabaseReadResu
 
 		TimeSeriesHeader timeSeriesHeader = Settings.get("headerProvider", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build());
 
-		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader);
+		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader, timeSeriesHeader.getTimeStep());
 		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
 
 		List<Document> events = next.getList("timeseries", Document.class);

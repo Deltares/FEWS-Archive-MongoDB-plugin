@@ -4,6 +4,7 @@ import com.mongodb.client.MongoCursor;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Filter;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Read;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Summarize;
+import nl.fews.archivedatabase.mongodb.query.operations.ReadBuckets;
 import nl.fews.archivedatabase.mongodb.query.operations.RequestExternalDataImportBuckets;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
@@ -13,10 +14,7 @@ import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
 import nl.wldelft.util.Period;
-import nl.wldelft.util.timeseries.TimeSeriesArrays;
-import nl.wldelft.util.timeseries.TimeSeriesHeader;
-import nl.wldelft.util.timeseries.TimeStep;
-import nl.wldelft.util.timeseries.TimeStepUtils;
+import nl.wldelft.util.timeseries.*;
 import org.bson.Document;
 
 import java.util.*;
@@ -62,12 +60,24 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public TimeSeriesArrays<TimeSeriesHeader> importObservedData(SingleExternalDataImportRequest singleExternalDataImportRequest) {
-		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
-				Settings.get("archiveDatabaseUrl") :
-				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
-		Settings.put("connectionString", connectionString);
-
-		return null;
+		MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest = (MongoDbArchiveDatabaseSingleExternalImportRequest)singleExternalDataImportRequest;
+		MongoCursor<Document> results = new ReadBuckets().read(
+				mongoDbArchiveDatabaseSingleExternalImportRequest.getCollection(),
+				mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery(),
+				mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate(),
+				mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate());
+		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesArray();
+		if(results.hasNext()){
+			Document result = results.next();
+			Map<Long, Double> resultMap = result.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s.getDouble("v")));
+			for (int i = 0; i < timeSeriesArray.size(); i++) {
+				long time = timeSeriesArray.getTime(i);
+				if(timeSeriesArray.isValueReliable(i) && resultMap.containsKey(time)) {
+					timeSeriesArray.setValue(i, resultMap.get(time).floatValue());
+				}
+			}
+		}
+		return new TimeSeriesArrays<>(timeSeriesArray);
 	}
 
 	/**
@@ -78,11 +88,6 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public List<SingleExternalDataImportRequest> getObservedDataImportRequest(Period period, TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays) {
-		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
-				Settings.get("archiveDatabaseUrl") :
-				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
-		Settings.put("connectionString", connectionString);
-
 		if(period.getEndDate().before(period.getStartDate()))
 			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
 
@@ -96,11 +101,6 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public ArchiveDatabaseReadResult read(ArchiveDatabaseResultSearchParameters archiveDatabaseResultSearchParameters) {
-		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
-				Settings.get("archiveDatabaseUrl") :
-				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
-		Settings.put("connectionString", connectionString);
-
 		if(archiveDatabaseResultSearchParameters.getPeriod().getEndDate().before(archiveDatabaseResultSearchParameters.getPeriod().getStartDate()))
 			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
 
@@ -141,11 +141,6 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public ArchiveDatabaseSummary getSummary(ArchiveDatabaseResultSearchParameters archiveDatabaseResultSearchParameters) {
-		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
-				Settings.get("archiveDatabaseUrl") :
-				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
-		Settings.put("connectionString", connectionString);
-
 		if(archiveDatabaseResultSearchParameters.getPeriod().getEndDate().before(archiveDatabaseResultSearchParameters.getPeriod().getStartDate()))
 			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
 
@@ -198,11 +193,6 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public ArchiveDatabaseFilterOptions getFilterOptions(String areaId, nl.wldelft.fews.system.data.timeseries.TimeSeriesType fewsTimeSeriesType, Period period, Set<String> sourceIds) {
-		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
-				Settings.get("archiveDatabaseUrl") :
-				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
-		Settings.put("connectionString", connectionString);
-
 		if(period.getEndDate().before(period.getStartDate()))
 			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
 
@@ -222,6 +212,26 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 					filters.get("moduleInstanceId").stream().map(Object::toString).sorted().collect(Collectors.toCollection(LinkedHashSet::new)),
 					filters.get("encodedTimeStepId").stream().map(s -> TimeStepUtils.decode(s.toString())).sorted(Comparator.comparing(Object::toString)).collect(Collectors.toCollection(LinkedHashSet::new))
 			);
+		}
+		catch (Exception ex){
+			throw new RuntimeException(ex);
+		}
+	}
+
+	/**
+	 *
+	 * @param fewsTimeSeriesType fewsTimeSeriesType
+	 * @return ArchiveDatabaseFilterOptions
+	 */
+	@Override
+	public Set<String> getSourceIds(nl.wldelft.fews.system.data.timeseries.TimeSeriesType fewsTimeSeriesType) {
+		try{
+			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, fewsTimeSeriesType);
+			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
+
+			Set<String> sourceIdsFound = new HashSet<>();
+			Database.distinct(collection, "metaData.sourceId", new Document(), String.class).forEach(sourceIdsFound::add);
+			return sourceIdsFound;
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);
