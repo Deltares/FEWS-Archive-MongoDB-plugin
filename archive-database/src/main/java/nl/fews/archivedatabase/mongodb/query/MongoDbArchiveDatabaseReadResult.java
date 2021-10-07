@@ -7,6 +7,7 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDat
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.FewsTimeSeriesHeaderProvider;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.HeaderRequest;
 import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
+import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.*;
 import org.bson.Document;
 
@@ -82,7 +83,11 @@ public class MongoDbArchiveDatabaseReadResult implements ArchiveDatabaseReadResu
 		long[] times = new long[events.size()];
 		for (int i = 0; i < events.size(); i++)
 			times[i] = events.get(i).getDate("t").getTime();
-		timeSeriesArray.ensureTimes(times);
+
+		if(timeSeriesHeader.getTimeStep() == IrregularTimeStep.INSTANCE)
+			timeSeriesArray.ensureTimes(times);
+		else
+			timeSeriesArray.ensurePeriod(new Period(times[0], times[times.length-1]));
 
 		for (int i = 0; i < events.size(); i++)  {
 			timeSeriesArray.setValue(i,  events.get(i).getDouble("v") != null ? events.get(i).getDouble("v").floatValue() : Float.NaN);
