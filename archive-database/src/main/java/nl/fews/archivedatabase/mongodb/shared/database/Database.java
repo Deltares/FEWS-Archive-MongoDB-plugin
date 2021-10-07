@@ -13,10 +13,7 @@ import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -126,6 +123,26 @@ public final class Database {
 				mongoCollection.createIndex(document, new IndexOptions().unique(unique));
 			}
 		}
+	}
+
+	/**
+	 *
+	 */
+	public static void updateTimeSeriesIndex(){
+		Database.dropCollection(Database.Collection.TimeSeriesIndex.toString());
+		Database.ensureCollection(Database.Collection.TimeSeriesIndex.toString());
+		List.of(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, TimeSeriesType.SCALAR_EXTERNAL_FORECASTING, TimeSeriesType.SCALAR_SIMULATED_FORECASTING, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED).forEach(timeSeriesType -> {
+			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
+			List<Document> results = new ArrayList<>();
+			Database.aggregate(collection, List.of(
+					new Document("$sort", new Document("moduleInstanceId", 1).append("parameterId", 1).append("encodedTimeStepId", 1).append("metaData.areaId", 1).append("metaData.sourceId", 1)),
+					new Document("$group", new Document("_id", new Document("moduleInstanceId", "$moduleInstanceId").append("parameterId", "$parameterId").append("encodedTimeStepId", "$encodedTimeStepId").append("areaId", "$metaData.areaId").append("sourceId", "$metaData.sourceId"))),
+					new Document("$replaceRoot", new Document("newRoot", "$_id")),
+					new Document("$addFields", new Document("collection", collection))
+			)).forEach(results::add);
+			if(!results.isEmpty())
+				Database.insertMany(Collection.TimeSeriesIndex.toString(), results);
+		});
 	}
 
 	/**
