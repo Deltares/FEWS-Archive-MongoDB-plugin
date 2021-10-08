@@ -74,11 +74,12 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesArray();
 			if(results.hasNext()){
 				Document result = results.next();
-				Map<Long, Double> resultMap = result.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s.getDouble("v")));
+
+				Map<Long, Float> resultMap = result.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s.get("v") != null ? s.getDouble("v").floatValue() : Float.NaN));
 				for (int i = 0; i < timeSeriesArray.size(); i++) {
 					long time = timeSeriesArray.getTime(i);
 					if(timeSeriesArray.isValueReliable(i) && resultMap.containsKey(time)) {
-						timeSeriesArray.setValue(i, resultMap.get(time).floatValue());
+						timeSeriesArray.setValue(i, resultMap.get(time));
 					}
 				}
 			}
@@ -283,7 +284,13 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	}
 
 	@Override
-	public Set<String> getEnsembleMembers(String s, String s1, Set<String> set, String s2, String[] strings, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
+	public Set<String> getEnsembleMembers(String locationId, String parameterId, Set<String> moduleInstanceId, String ensembleId, String[] qualifiers, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
+		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType));
+		Database.find(collection, new Document("locationId", locationId).
+				append("parameterId", parameterId).
+				append("moduleInstanceId", new Document("$in", new ArrayList<>(moduleInstanceId))).
+				append("ensembleId", ensembleId).
+				append("qualifiers", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()));
 		return null;
 	}
 

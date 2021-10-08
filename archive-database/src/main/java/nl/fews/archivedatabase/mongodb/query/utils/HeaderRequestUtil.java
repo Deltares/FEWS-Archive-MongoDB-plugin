@@ -61,7 +61,7 @@ public class HeaderRequestUtil {
 			timeSeriesArray.ensurePeriod(new Period(times[0], times[times.length-1]));
 
 		for (int i = 0; i < events.size(); i++)  {
-			timeSeriesArray.setValue(i,  events.get(i).getDouble("v") != null ? events.get(i).getDouble("v").floatValue() : Float.NaN);
+			timeSeriesArray.setValue(i,  events.get(i).get("v") != null ? events.get(i).getDouble("v").floatValue() : Float.NaN);
 			timeSeriesArray.setFlag(i, events.get(i).getInteger("f").byteValue());
 			timeSeriesArray.setComment(i, events.get(i).getString("c"));
 		}
