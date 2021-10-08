@@ -14,11 +14,18 @@ import org.bson.Document;
 
 import java.util.List;
 
-public class HeaderRequestUtil {
+public class TimeSeriesArrayUtil {
 
-	private HeaderRequestUtil() {
+	private TimeSeriesArrayUtil() {
 	}
 
+	/**
+	 *
+	 * @param timeSeriesValueType timeSeriesValueType
+	 * @param timeSeriesType timeSeriesType
+	 * @param result result
+	 * @return TimeSeriesArray<TimeSeriesHeader>
+	 */
 	public static TimeSeriesArray<TimeSeriesHeader> getTimeSeriesArray(TimeSeriesValueType timeSeriesValueType, TimeSeriesType timeSeriesType, Document result){
 		HeaderRequest.HeaderRequestBuilder headerRequestBuilder = new HeaderRequest.HeaderRequestBuilder();
 		headerRequestBuilder.setValueType(timeSeriesValueType);

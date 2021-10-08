@@ -1,7 +1,8 @@
 package nl.fews.archivedatabase.mongodb.query;
 
-import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
+import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
+import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
@@ -21,12 +22,17 @@ public class MongoDbArchiveDatabaseSingleExternalImportRequest implements Single
 	/**
 	 *
 	 */
-	private final TimeSeriesType timeSeriesType;
+	private final Map<String, List<Object>> query;
 
 	/**
 	 *
 	 */
-	private final Map<String, List<Object>> query;
+	private final TimeSeriesValueType timeSeriesValueType;
+
+	/**
+	 *
+	 */
+	private final TimeSeriesType timeSeriesType;
 
 	/**
 	 *
@@ -37,10 +43,11 @@ public class MongoDbArchiveDatabaseSingleExternalImportRequest implements Single
 	 *
 	 * @param period period
 	 */
-	public MongoDbArchiveDatabaseSingleExternalImportRequest(Period period, TimeSeriesType timeSeriesType, Map<String, List<Object>> query, TimeSeriesArray<TimeSeriesHeader> timeSeriesArray) {
+	public MongoDbArchiveDatabaseSingleExternalImportRequest(Period period, Map<String, List<Object>> query, TimeSeriesValueType timeSeriesValueType, TimeSeriesType timeSeriesType, TimeSeriesArray<TimeSeriesHeader> timeSeriesArray) {
 		this.period = period;
-		this.timeSeriesType = timeSeriesType;
 		this.query = query;
+		this.timeSeriesValueType = timeSeriesValueType;
+		this.timeSeriesType = timeSeriesType;
 		this.timeSeriesArray = timeSeriesArray;
 	}
 
@@ -75,5 +82,13 @@ public class MongoDbArchiveDatabaseSingleExternalImportRequest implements Single
 	 */
 	public Map<String, List<Object>> getQuery() {
 		return query;
+	}
+
+	/**
+	 *
+	 * @return TimeSeriesValueType
+	 */
+	public TimeSeriesValueType getTimeSeriesValueType() {
+		return timeSeriesValueType;
 	}
 }

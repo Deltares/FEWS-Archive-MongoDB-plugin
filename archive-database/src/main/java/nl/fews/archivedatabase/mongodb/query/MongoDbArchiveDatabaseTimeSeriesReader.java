@@ -5,7 +5,7 @@ import nl.fews.archivedatabase.mongodb.query.interfaces.HasData;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Read;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Summarize;
 import nl.fews.archivedatabase.mongodb.query.operations.Filter;
-import nl.fews.archivedatabase.mongodb.query.utils.HeaderRequestUtil;
+import nl.fews.archivedatabase.mongodb.query.utils.TimeSeriesArrayUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
@@ -66,15 +66,22 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	public TimeSeriesArrays<TimeSeriesHeader> importSingleDataImportRequest(SingleExternalDataImportRequest singleExternalDataImportRequest) {
 		try {
 			MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest = (MongoDbArchiveDatabaseSingleExternalImportRequest)singleExternalDataImportRequest;
-			Read read = (Read)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("Read%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType())))).getConstructor().newInstance();
+			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType());
+
+			Read read = (Read)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("Read%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
 			MongoCursor<Document> results = read.read(
-					TimeSeriesTypeUtil.getTimeSeriesTypeCollection(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType()),
+					TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType),
 					mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery(),
 					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate(),
 					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate());
-			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesArray();
+
 			if(results.hasNext()){
 				Document result = results.next();
+				TimeSeriesArray<TimeSeriesHeader> requestTimeSeriesArray = mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesArray();
+				TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType(), result);
+
+				for (int i = 0; i < requestTimeSeriesArray.size(); i++)
+					timeSeriesArray.put(requestTimeSeriesArray.getTime(i), requestTimeSeriesArray.getValue(i));
 
 				Map<Long, Float> resultMap = result.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s.get("v") != null ? s.getDouble("v").floatValue() : Float.NaN));
 				for (int i = 0; i < timeSeriesArray.size(); i++) {
@@ -83,8 +90,9 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 						timeSeriesArray.setValue(i, resultMap.get(time));
 					}
 				}
+				return new TimeSeriesArrays<>(timeSeriesArray);
 			}
-			return new TimeSeriesArrays<>(timeSeriesArray);
+			return null;
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);
@@ -120,16 +128,17 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				query.put("qualifierId", List.of(qualifierId));
 				query.put("encodedTimeStepId", List.of(timeSeriesHeader.getTimeStep().getEncoded()));
 
-				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(period, TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, query, timeSeriesArray));
+				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(period, query, TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, timeSeriesArray));
 			}
 		}
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = new ArrayList<>();
 		singleExternalDataImportRequests.parallelStream().forEach(singleExternalDataImportRequest -> {
 			try{
 				MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest = (MongoDbArchiveDatabaseSingleExternalImportRequest)singleExternalDataImportRequest;
-				HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType())))).getConstructor().newInstance();
+				TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType());
+				HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
 				if(hasData.hasData(
-						TimeSeriesTypeUtil.getTimeSeriesTypeCollection(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType()),
+						TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType),
 						mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery(),
 						mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate(),
 						mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate()
@@ -151,9 +160,10 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	private boolean singleDataImportRequestHasData(MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest) {
 		try {
-			HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType())))).getConstructor().newInstance();
+			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType());
+			HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
 			return hasData.hasData(
-					TimeSeriesTypeUtil.getTimeSeriesTypeCollection(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType()),
+					TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType),
 					mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery(),
 					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate(),
 					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate()
@@ -314,10 +324,10 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArrays = new ArrayList<>();
 
 		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), new Document("taskRunId", taskRunId)).forEach(result ->
-				timeSeriesArrays.add(HeaderRequestUtil.getTimeSeriesArray(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result)));
+				timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result)));
 
 		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), new Document("taskRunId", taskRunId)).forEach(result ->
-				timeSeriesArrays.add(HeaderRequestUtil.getTimeSeriesArray(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result)));
+				timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result)));
 
 		return new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0]));
 	}
