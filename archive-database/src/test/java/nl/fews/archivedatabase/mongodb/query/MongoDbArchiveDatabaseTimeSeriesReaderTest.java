@@ -256,7 +256,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = mongoDbArchiveDatabaseTimeSeriesReader.getObservedDataImportRequest(period, timeSeriesArrays);
 		//TimeSeriesArrays<TimeSeriesHeader> results = mongoDbArchiveDatabaseTimeSeriesReader.importSingleDataImportRequest(singleExternalDataImportRequests.get(0));
-		assertEquals(1, singleExternalDataImportRequests.size());
+		assertEquals(0, singleExternalDataImportRequests.size());
 	}
 
 	@Test
