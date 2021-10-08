@@ -3,6 +3,7 @@ package nl.fews.archivedatabase.mongodb.query.operations;
 import com.mongodb.ServerAddress;
 import com.mongodb.ServerCursor;
 import com.mongodb.client.MongoCursor;
+import nl.fews.archivedatabase.mongodb.query.interfaces.Read;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import org.bson.Document;
 
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 /**
  * Provides streaming capability for bucketed timeseries
  */
-public final class ReadBuckets extends ReadBase {
+public final class ReadBuckets implements Read {
 
 	/**
 	 *
@@ -22,7 +23,6 @@ public final class ReadBuckets extends ReadBase {
 	 * @param endDate event endDate, inclusive
 	 * @return MongoCursor<Document>
 	 */
-	@Override
 	public MongoCursor<Document> read(String collection, Map<String, List<Object>> query, Date startDate, Date endDate) {
 		Document document = new Document();
 		document.append("endTime", new Document("$gte", startDate));

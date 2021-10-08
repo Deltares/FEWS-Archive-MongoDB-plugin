@@ -1,6 +1,7 @@
 package nl.fews.archivedatabase.mongodb.query;
 
 import com.mongodb.client.MongoCursor;
+import nl.fews.archivedatabase.mongodb.query.interfaces.HasData;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Read;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Summarize;
 import nl.fews.archivedatabase.mongodb.query.operations.Filter;
@@ -122,7 +123,45 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(period, TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, query, timeSeriesArray));
 			}
 		}
-		return singleExternalDataImportRequests;
+		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = new ArrayList<>();
+		singleExternalDataImportRequests.parallelStream().forEach(singleExternalDataImportRequest -> {
+			try{
+				MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest = (MongoDbArchiveDatabaseSingleExternalImportRequest)singleExternalDataImportRequest;
+				HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType())))).getConstructor().newInstance();
+				if(hasData.hasData(
+						TimeSeriesTypeUtil.getTimeSeriesTypeCollection(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType()),
+						mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery(),
+						mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate(),
+						mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate()
+				)){
+					singleExternalDataImportRequestsHavingData.add(singleExternalDataImportRequest);
+				}
+			}
+			catch (Exception ex){
+				throw new RuntimeException(ex);
+			}
+		});
+		return singleExternalDataImportRequestsHavingData;
+	}
+
+	/**
+	 *
+	 * @param mongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest
+	 * @return boolean
+	 */
+	private boolean singleDataImportRequestHasData(MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest) {
+		try {
+			HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType())))).getConstructor().newInstance();
+			return hasData.hasData(
+					TimeSeriesTypeUtil.getTimeSeriesTypeCollection(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType()),
+					mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery(),
+					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate(),
+					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate()
+			);
+		}
+		catch (Exception ex){
+			throw new RuntimeException(ex);
+		}
 	}
 
 	/**

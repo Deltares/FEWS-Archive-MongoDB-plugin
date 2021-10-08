@@ -1,16 +1,17 @@
 package nl.fews.archivedatabase.mongodb.query.operations;
 
-import com.mongodb.client.MongoCursor;
-import nl.fews.archivedatabase.mongodb.query.interfaces.Read;
+import nl.fews.archivedatabase.mongodb.query.interfaces.HasData;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import org.bson.Document;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Provides streaming capability for singleton timeseries
  */
-public final class ReadSingletons implements Read {
+public final class HasDataSingletons implements HasData {
 
 	/**
 	 *
@@ -20,13 +21,13 @@ public final class ReadSingletons implements Read {
 	 * @param endDate forecast endDate, inclusive
 	 * @return MongoCursor<Document>
 	 */
-	public MongoCursor<Document> read(String collection, Map<String, List<Object>> query, Date startDate, Date endDate) {
+	public boolean hasData(String collection, Map<String, List<Object>> query, Date startDate, Date endDate) {
 		Document document = new Document();
 		document.append("forecastTime", new Document("$gte", startDate).append("$lte", endDate));
 		query.forEach((k, v) -> {
 			if(!v.isEmpty())
 				document.append(k, v.size() == 1 ? v.get(0) : new Document("$in", v));
 		});
-		return Database.find(collection, document).iterator();
+		return Database.findOne(collection, document, new Document("_id", 1)) != null;
 	}
 }
