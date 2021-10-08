@@ -80,13 +80,16 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				TimeSeriesArray<TimeSeriesHeader> requestTimeSeriesArray = mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesArray();
 				TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType(), result);
 
-				for (int i = 0; i < requestTimeSeriesArray.size(); i++)
+				for (int i = 0; i < requestTimeSeriesArray.size(); i++) {
 					timeSeriesArray.put(requestTimeSeriesArray.getTime(i), requestTimeSeriesArray.getValue(i));
+					timeSeriesArray.setFlag(i, requestTimeSeriesArray.getFlag(i));
+					timeSeriesArray.setComment(i, requestTimeSeriesArray.getComment(i));
+				}
 
 				Map<Long, Float> resultMap = result.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s.get("v") != null ? s.getDouble("v").floatValue() : Float.NaN));
 				for (int i = 0; i < timeSeriesArray.size(); i++) {
 					long time = timeSeriesArray.getTime(i);
-					if(timeSeriesArray.isValueReliable(i) && resultMap.containsKey(time)) {
+					if(!requestTimeSeriesArray.isValueReliable(i) && resultMap.containsKey(time)) {
 						timeSeriesArray.setValue(i, resultMap.get(time));
 					}
 				}
