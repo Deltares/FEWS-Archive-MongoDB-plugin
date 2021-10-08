@@ -26,7 +26,7 @@ public class TimeSeriesArrayUtil {
 	 * @param result result
 	 * @return TimeSeriesArray<TimeSeriesHeader>
 	 */
-	public static TimeSeriesArray<TimeSeriesHeader> getTimeSeriesArray(TimeSeriesValueType timeSeriesValueType, TimeSeriesType timeSeriesType, Document result){
+	public static TimeSeriesHeader getTimeSeriesHeader(TimeSeriesValueType timeSeriesValueType, TimeSeriesType timeSeriesType, Document result){
 		HeaderRequest.HeaderRequestBuilder headerRequestBuilder = new HeaderRequest.HeaderRequestBuilder();
 		headerRequestBuilder.setValueType(timeSeriesValueType);
 		headerRequestBuilder.setTimeSeriesType(timeSeriesType);
@@ -51,12 +51,21 @@ public class TimeSeriesArrayUtil {
 		//if(result.get("metaData", Document.class).containsKey("parameterType")) headerRequestBuilder.setParameterType(ParameterType.get(result.get("metaData", Document.class).getString("parameterType")));
 		//if(result.get("metaData", Document.class).containsKey("approvedTime")) headerRequestBuilder.setApprovedTime(result.get("metaData", Document.class).getDate("approvedTime").getTime());
 
-		TimeSeriesHeader timeSeriesHeader = Settings.get("headerProvider", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build());
+		return Settings.get("headerProvider", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build());
+	}
 
+	/**
+	 *
+	 * @param timeSeriesHeader timeSeriesHeader
+	 * @param events events
+	 * @return TimeSeriesArray<TimeSeriesHeader>
+	 */
+	public static TimeSeriesArray<TimeSeriesHeader> getTimeSeriesArray(TimeSeriesHeader timeSeriesHeader, List<Document> events){
 		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader, timeSeriesHeader.getTimeStep());
 		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
 
-		List<Document> events = result.getList("timeseries", Document.class);
+		if(events.isEmpty())
+			return timeSeriesArray;
 
 		long[] times = new long[events.size()];
 		for (int i = 0; i < events.size(); i++)
@@ -73,5 +82,5 @@ public class TimeSeriesArrayUtil {
 			timeSeriesArray.setComment(i, events.get(i).getString("c"));
 		}
 		return timeSeriesArray;
-	} 
+	}
 }

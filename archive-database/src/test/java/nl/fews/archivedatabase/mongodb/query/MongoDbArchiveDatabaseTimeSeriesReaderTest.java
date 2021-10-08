@@ -11,7 +11,6 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDat
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseReadResult;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseResultSearchParameters;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseSummary;
-import nl.wldelft.fews.system.data.externaldatasource.importrequests.SingleExternalForecastImportRequest;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
 import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
 import nl.wldelft.util.Period;

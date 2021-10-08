@@ -47,7 +47,9 @@ public class MongoDbArchiveDatabaseReadResult implements ArchiveDatabaseReadResu
 	@Override
 	public TimeSeriesArrays<TimeSeriesHeader> next() {
 		Document next = result.next();
-		return new TimeSeriesArrays<>(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesValueType, timeSeriesType, next));
+		TimeSeriesHeader timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(timeSeriesValueType, timeSeriesType, next);
+		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader, next.getList("timeseries", Document.class));
+		return new TimeSeriesArrays<>(timeSeriesArray);
 	}
 
 	/**

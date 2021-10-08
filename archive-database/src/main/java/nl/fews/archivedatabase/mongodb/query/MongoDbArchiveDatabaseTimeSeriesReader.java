@@ -78,7 +78,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			if(results.hasNext()){
 				Document result = results.next();
 				TimeSeriesArray<TimeSeriesHeader> requestTimeSeriesArray = mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesArray();
-				TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType(), result);
+				TimeSeriesHeader timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType(), result);
+				TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader, List.of());
 
 				for (int i = 0; i < requestTimeSeriesArray.size(); i++) {
 					timeSeriesArray.put(requestTimeSeriesArray.getTime(i), requestTimeSeriesArray.getValue(i));
@@ -326,11 +327,17 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	public TimeSeriesArrays<TimeSeriesHeader> getTimeSeriesForTaskRun(String taskRunId) {
 		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArrays = new ArrayList<>();
 
-		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), new Document("taskRunId", taskRunId)).forEach(result ->
-				timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result)));
+		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), new Document("taskRunId", taskRunId)).forEach(result -> {
+			TimeSeriesHeader timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
+			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader, result.getList("timeseries", Document.class));
+			timeSeriesArrays.add(timeSeriesArray);
+		});
 
-		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), new Document("taskRunId", taskRunId)).forEach(result ->
-				timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result)));
+		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), new Document("taskRunId", taskRunId)).forEach(result -> {
+			TimeSeriesHeader timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result);
+			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader, result.getList("timeseries", Document.class));
+			timeSeriesArrays.add(timeSeriesArray);
+		});
 
 		return new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0]));
 	}
