@@ -12,6 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  */
 public final class Filter {
+	/**
+	 *
+	 */
 	private Filter() {
 	}
 

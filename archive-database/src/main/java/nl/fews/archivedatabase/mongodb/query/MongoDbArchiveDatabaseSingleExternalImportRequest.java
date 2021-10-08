@@ -1,5 +1,6 @@
 package nl.fews.archivedatabase.mongodb.query;
 
+import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
@@ -20,7 +21,7 @@ public class MongoDbArchiveDatabaseSingleExternalImportRequest implements Single
 	/**
 	 *
 	 */
-	private final String collection;
+	private final TimeSeriesType timeSeriesType;
 
 	/**
 	 *
@@ -36,9 +37,9 @@ public class MongoDbArchiveDatabaseSingleExternalImportRequest implements Single
 	 *
 	 * @param period period
 	 */
-	public MongoDbArchiveDatabaseSingleExternalImportRequest(Period period, String collection, Map<String, List<Object>> query, TimeSeriesArray<TimeSeriesHeader> timeSeriesArray) {
+	public MongoDbArchiveDatabaseSingleExternalImportRequest(Period period, TimeSeriesType timeSeriesType, Map<String, List<Object>> query, TimeSeriesArray<TimeSeriesHeader> timeSeriesArray) {
 		this.period = period;
-		this.collection = collection;
+		this.timeSeriesType = timeSeriesType;
 		this.query = query;
 		this.timeSeriesArray = timeSeriesArray;
 	}
@@ -64,8 +65,8 @@ public class MongoDbArchiveDatabaseSingleExternalImportRequest implements Single
 	 *
 	 * @return String
 	 */
-	public String getCollection() {
-		return collection;
+	public TimeSeriesType getTimeSeriesType() {
+		return timeSeriesType;
 	}
 
 	/**

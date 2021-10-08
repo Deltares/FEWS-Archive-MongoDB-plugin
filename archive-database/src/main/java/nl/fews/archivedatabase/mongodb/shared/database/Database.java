@@ -129,7 +129,6 @@ public final class Database {
 	 *
 	 */
 	public static void updateTimeSeriesIndex(){
-		Database.dropCollection(Database.Collection.TimeSeriesIndex.toString());
 		Database.ensureCollection(Database.Collection.TimeSeriesIndex.toString());
 		List.of(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, TimeSeriesType.SCALAR_EXTERNAL_FORECASTING, TimeSeriesType.SCALAR_SIMULATED_FORECASTING, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED).forEach(timeSeriesType -> {
 			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
@@ -140,6 +139,7 @@ public final class Database {
 					new Document("$replaceRoot", new Document("newRoot", "$_id")),
 					new Document("$addFields", new Document("collection", collection))
 			)).forEach(results::add);
+			Database.deleteMany(Collection.TimeSeriesIndex.toString(), new Document("collection", collection));
 			if(!results.isEmpty())
 				Database.insertMany(Collection.TimeSeriesIndex.toString(), results);
 		});

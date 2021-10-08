@@ -4,18 +4,21 @@ import com.mongodb.client.MongoCursor;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Read;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Summarize;
 import nl.fews.archivedatabase.mongodb.query.operations.Filter;
-import nl.fews.archivedatabase.mongodb.query.operations.ReadBuckets;
-import nl.fews.archivedatabase.mongodb.query.operations.RequestExternalDataImport;
+import nl.fews.archivedatabase.mongodb.query.utils.HeaderRequestUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
+import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.SimulatedTaskRunInfo;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
+import nl.wldelft.fews.system.data.timeseries.FewsTimeSeriesHeaders;
+import nl.wldelft.util.LongUnmodifiableList;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.*;
 import org.bson.Document;
+import org.json.JSONArray;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,25 +62,31 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @return TimeSeriesArrays<FewsTimeSeriesHeader>
 	 */
 	@Override
-	public TimeSeriesArrays<TimeSeriesHeader> importObservedData(SingleExternalDataImportRequest singleExternalDataImportRequest) {
-		MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest = (MongoDbArchiveDatabaseSingleExternalImportRequest)singleExternalDataImportRequest;
-		MongoCursor<Document> results = new ReadBuckets().read(
-				mongoDbArchiveDatabaseSingleExternalImportRequest.getCollection(),
-				mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery(),
-				mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate(),
-				mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate());
-		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesArray();
-		if(results.hasNext()){
-			Document result = results.next();
-			Map<Long, Double> resultMap = result.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s.getDouble("v")));
-			for (int i = 0; i < timeSeriesArray.size(); i++) {
-				long time = timeSeriesArray.getTime(i);
-				if(timeSeriesArray.isValueReliable(i) && resultMap.containsKey(time)) {
-					timeSeriesArray.setValue(i, resultMap.get(time).floatValue());
+	public TimeSeriesArrays<TimeSeriesHeader> importSingleDataImportRequest(SingleExternalDataImportRequest singleExternalDataImportRequest) {
+		try {
+			MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest = (MongoDbArchiveDatabaseSingleExternalImportRequest)singleExternalDataImportRequest;
+			Read read = (Read)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("Read%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType())))).getConstructor().newInstance();
+			MongoCursor<Document> results = read.read(
+					TimeSeriesTypeUtil.getTimeSeriesTypeCollection(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType()),
+					mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery(),
+					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate(),
+					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate());
+			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesArray();
+			if(results.hasNext()){
+				Document result = results.next();
+				Map<Long, Double> resultMap = result.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s.getDouble("v")));
+				for (int i = 0; i < timeSeriesArray.size(); i++) {
+					long time = timeSeriesArray.getTime(i);
+					if(timeSeriesArray.isValueReliable(i) && resultMap.containsKey(time)) {
+						timeSeriesArray.setValue(i, resultMap.get(time).floatValue());
+					}
 				}
 			}
+			return new TimeSeriesArrays<>(timeSeriesArray);
 		}
-		return new TimeSeriesArrays<>(timeSeriesArray);
+		catch (Exception ex){
+			throw new RuntimeException(ex);
+		}
 	}
 
 	/**
@@ -89,9 +98,30 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	@Override
 	public List<SingleExternalDataImportRequest> getObservedDataImportRequest(Period period, TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays) {
 		if(period.getEndDate().before(period.getStartDate()))
-			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
+			throw new IllegalArgumentException("End of period must fall on or after start of period");
 
-		return RequestExternalDataImport.getExternalDataImportRequests(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), period, timeSeriesArrays);
+		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = new ArrayList<>();
+		for (int i = 0; i < timeSeriesArrays.size(); i++) {
+			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
+			if(!timeSeriesArray.isCompletelyReliable() || timeSeriesArray.getHeader().getTimeStep() == IrregularTimeStep.INSTANCE) {
+				TimeSeriesHeader timeSeriesHeader = timeSeriesArray.getHeader();
+				Map<String, List<Object>> query = new HashMap<>();
+
+				List<String> qualifierIds = new ArrayList<>();
+				for (int j = 0; j < timeSeriesHeader.getQualifierCount(); j++)
+					qualifierIds.add(timeSeriesHeader.getQualifierId(j));
+				String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+
+				query.put("moduleInstanceId", List.of(timeSeriesHeader.getModuleInstanceId()));
+				query.put("locationId", List.of(timeSeriesHeader.getLocationId()));
+				query.put("parameterId", List.of(timeSeriesHeader.getParameterId()));
+				query.put("qualifierId", List.of(qualifierId));
+				query.put("encodedTimeStepId", List.of(timeSeriesHeader.getTimeStep().getEncoded()));
+
+				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(period, TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, query, timeSeriesArray));
+			}
+		}
+		return singleExternalDataImportRequests;
 	}
 
 	/**
@@ -102,7 +132,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	@Override
 	public ArchiveDatabaseReadResult read(ArchiveDatabaseResultSearchParameters archiveDatabaseResultSearchParameters) {
 		if(archiveDatabaseResultSearchParameters.getPeriod().getEndDate().before(archiveDatabaseResultSearchParameters.getPeriod().getStartDate()))
-			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
+			throw new IllegalArgumentException("End of period must fall on or after start of period");
 
 		try{
 			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, archiveDatabaseResultSearchParameters.getTimeSeriesType());
@@ -142,7 +172,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	@Override
 	public ArchiveDatabaseSummary getSummary(ArchiveDatabaseResultSearchParameters archiveDatabaseResultSearchParameters) {
 		if(archiveDatabaseResultSearchParameters.getPeriod().getEndDate().before(archiveDatabaseResultSearchParameters.getPeriod().getStartDate()))
-			throw new IllegalArgumentException("End of Period Must Fall On or After Start of Period");
+			throw new IllegalArgumentException("End of period must fall on or after start of period");
 
 		try{
 			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, archiveDatabaseResultSearchParameters.getTimeSeriesType());
@@ -226,11 +256,49 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 
 			Set<String> sourceIdsFound = new HashSet<>();
-			Database.distinct(collection, "metaData.sourceId", new Document(), String.class).forEach(sourceIdsFound::add);
+			Database.distinct(Database.Collection.TimeSeriesIndex.toString(), "sourceId", new Document("collection", collection), String.class).forEach(sourceIdsFound::add);
 			return sourceIdsFound;
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);
 		}
+	}
+
+	/**
+	 *
+	 * @param taskRunId taskRunId
+	 * @return TimeSeriesArrays<TimeSeriesHeader>
+	 */
+	@Override
+	public TimeSeriesArrays<TimeSeriesHeader> getTimeSeriesForTaskRun(String taskRunId) {
+		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArrays = new ArrayList<>();
+
+		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), new Document("taskRunId", taskRunId)).forEach(result ->
+				timeSeriesArrays.add(HeaderRequestUtil.getTimeSeriesArray(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result)));
+
+		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), new Document("taskRunId", taskRunId)).forEach(result ->
+				timeSeriesArrays.add(HeaderRequestUtil.getTimeSeriesArray(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result)));
+
+		return new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0]));
+	}
+
+	@Override
+	public Set<String> getEnsembleMembers(String s, String s1, Set<String> set, String s2, String[] strings, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
+		return null;
+	}
+
+	@Override
+	public List<SimulatedTaskRunInfo> getSimulatedTaskRunInfos(String s, String s1, String s2, String s3, String[] strings, Period period, int i) {
+		return null;
+	}
+
+	@Override
+	public LongUnmodifiableList searchForExternalForecastTimes(String s, String s1, String s2, String s3, String[] strings, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType, Period period, int i) {
+		return null;
+	}
+
+	@Override
+	public List<SingleExternalDataImportRequest> getExternalForecastImportRequests(FewsTimeSeriesHeaders fewsTimeSeriesHeaders) {
+		return null;
 	}
 }
