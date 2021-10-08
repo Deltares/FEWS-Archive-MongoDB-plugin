@@ -16,6 +16,9 @@ import java.util.List;
 
 public class TimeSeriesArrayUtil {
 
+	/**
+	 *
+	 */
 	private TimeSeriesArrayUtil() {
 	}
 
@@ -43,6 +46,8 @@ public class TimeSeriesArrayUtil {
 		if(result.containsKey("runInfo") && result.get("runInfo", Document.class).containsKey("taskRunId")) headerRequestBuilder.setTaskRunId(result.get("runInfo", Document.class).getString("taskRunId"));
 		if(result.containsKey("runInfo") && result.get("runInfo", Document.class).containsKey("userId")) headerRequestBuilder.setUserId(result.get("runInfo", Document.class).getString("userId"));
 		if(result.containsKey("runInfo") && result.get("runInfo", Document.class).containsKey("workflowId")) headerRequestBuilder.setWorkflowId(result.get("runInfo", Document.class).getString("workflowId"));
+		if(result.containsKey("runInfo") && result.get("runInfo", Document.class).containsKey("dispatchTime")) headerRequestBuilder.setDispatchTime(result.get("runInfo", Document.class).getDate("dispatchTime").getTime());
+		if(result.containsKey("runInfo") && result.get("runInfo", Document.class).containsKey("time0")) headerRequestBuilder.setDispatchTime(result.get("runInfo", Document.class).getDate("time0").getTime());
 
 		//if(result.get("metaData", Document.class).containsKey("ensembleMemberIndex")) headerRequestBuilder.setEnsembleMemberIndex(result.get("metaData", Document.class).getInteger("ensembleMemberIndex"));
 		//if(result.get("metaData", Document.class).containsKey("unit")) headerRequestBuilder.setUnit(result.get("metaData", Document.class).getString("unit"));
