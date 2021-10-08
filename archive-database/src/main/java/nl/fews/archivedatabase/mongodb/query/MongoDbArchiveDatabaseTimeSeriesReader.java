@@ -105,7 +105,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = new ArrayList<>();
 		for (int i = 0; i < timeSeriesArrays.size(); i++) {
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
-			if(!timeSeriesArray.isCompletelyReliable() || timeSeriesArray.getHeader().getTimeStep() == IrregularTimeStep.INSTANCE) {
+			if((!timeSeriesArray.isEmpty() && !timeSeriesArray.isCompletelyReliable()) || timeSeriesArray.getHeader().getTimeStep() == IrregularTimeStep.INSTANCE) {
 				TimeSeriesHeader timeSeriesHeader = timeSeriesArray.getHeader();
 				Map<String, List<Object>> query = new HashMap<>();
 
