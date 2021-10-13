@@ -1,7 +1,8 @@
 package nl.fews.archivedatabase.mongodb;
 
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
-import nl.wldelft.fews.system.data.timeseries.FewsTimeSeriesHeader;
+import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
+import nl.wldelft.util.Box;
 import nl.wldelft.util.LogUtils;
 import nl.wldelft.util.TimeSpan;
 import nl.wldelft.util.TimeUnit;
@@ -104,14 +105,14 @@ public class TestUtil {
 	public static class HeaderProviderTestImplementation implements FewsTimeSeriesHeaderProvider{
 
 		@Override
-		public TimeSeriesHeader getHeader(HeaderRequest headerRequest) {
+		public Box<TimeSeriesHeader, SystemActivityDescriptor> getHeader(HeaderRequest headerRequest) {
 			DefaultTimeSeriesHeader defaultTimeSeriesHeader = new DefaultTimeSeriesHeader();
 			defaultTimeSeriesHeader.setLocationId(headerRequest.getLocationId());
 			defaultTimeSeriesHeader.setParameterId(headerRequest.getParameterId());
 			defaultTimeSeriesHeader.setModuleInstanceId(headerRequest.getModuleInstanceId());
 			defaultTimeSeriesHeader.setTimeStep(headerRequest.getTimeStep());
 			defaultTimeSeriesHeader.setQualifierIds(headerRequest.getQualifiersIds());
-			return defaultTimeSeriesHeader;
+			return new Box<>(defaultTimeSeriesHeader, null);
 		}
 	}
 }
