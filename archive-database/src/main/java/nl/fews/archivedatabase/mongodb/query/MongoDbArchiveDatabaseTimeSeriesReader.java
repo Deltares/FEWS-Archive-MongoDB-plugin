@@ -366,21 +366,21 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 *
 	 * @param locationId locationId
 	 * @param parameterId parameterId
-	 * @param moduleInstanceId moduleInstanceId
+	 * @param moduleInstanceIds moduleInstanceIds
 	 * @param ensembleId ensembleId
 	 * @param qualifiers qualifiers
 	 * @param timeSeriesType timeSeriesType
 	 * @return Set<String>
 	 */
 	@Override
-	public Set<String> getEnsembleMembers(String locationId, String parameterId, Set<String> moduleInstanceId, String ensembleId, String[] qualifiers, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
+	public Set<String> getEnsembleMembers(String locationId, String parameterId, Set<String> moduleInstanceIds, String ensembleId, String[] qualifiers, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
 		Set<String> ensembleMembers = new HashSet<>();
 		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType));
 		Database.distinct(collection, "ensembleMemberId", new Document("locationId", locationId).
 				append("parameterId", parameterId).
-				append("moduleInstanceId", new Document("$in", new ArrayList<>(moduleInstanceId))).
+				append("moduleInstanceId", new Document("$in", new ArrayList<>(moduleInstanceIds))).
 				append("ensembleId", ensembleId).
-				append("qualifiers", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()), String.class).forEach(ensembleMemberId -> {
+				append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()), String.class).forEach(ensembleMemberId -> {
 					if(ensembleMemberId != null && !ensembleMemberId.trim().equals(""))
 						ensembleMembers.add(ensembleMemberId);
 				});
@@ -402,20 +402,18 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	public List<SimulatedTaskRunInfo> getSimulatedTaskRunInfos(String locationId, String parameterId, String moduleInstanceId, String ensembleId, String[] qualifiers, Period period, int forecastCount) {
 		List<SimulatedTaskRunInfo> simulatedTaskRunInfos = new ArrayList<>();
 
-		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), new Document("locationId", locationId).
-				append("parameterId", parameterId).
-				append("moduleInstanceId", moduleInstanceId).
-				append("ensembleId", ensembleId).
-				append("qualifiers", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList()))).
-				append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate())), new Document("runInfo", 1)).limit(forecastCount).forEach(result ->
-				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("workflowId"), result.getString("taskRunId"), result.getDate("time0").getTime(), result.getDate("dispatchTime").getTime())));
+		Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), List.of(
+				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
+				new Document("$limit", forecastCount),
+				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$runInfo.taskRunId").append("time0", "$runInfo.time0").append("dispatchTime", "$runInfo.dispatchTime"))),
+				new Document("$replaceRoot", new Document("newRoot", "$_id")))).forEach(result ->
+				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("_id.workflowId"), result.getString("_id.taskRunId"), result.getDate("_id.time0").getTime(), result.getDate("_id.dispatchTime").getTime())));
 
-		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), new Document("locationId", locationId).
-				append("parameterId", parameterId).
-				append("moduleInstanceId", moduleInstanceId).
-				append("ensembleId", ensembleId).
-				append("qualifiers", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList()))).
-				append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate())), new Document("runInfo", 1)).limit(forecastCount).forEach(result ->
+		Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), List.of(
+				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
+				new Document("$limit", forecastCount),
+				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$runInfo.taskRunId").append("time0", "$runInfo.time0").append("dispatchTime", "$runInfo.dispatchTime"))),
+				new Document("$replaceRoot", new Document("newRoot", "$_id")))).forEach(result ->
 				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("workflowId"), result.getString("taskRunId"), result.getDate("time0").getTime(), result.getDate("dispatchTime").getTime())));
 
 		return simulatedTaskRunInfos;
@@ -436,19 +434,13 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	@Override
 	public LongUnmodifiableList searchForExternalForecastTimes(String locationId, String parameterId, String moduleInstanceId, String ensembleId, String[] qualifiers, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType, Period period, int forecastCount) {
 		LongListBuilder longListBuilder = new LongListBuilder();
-		Map<Long, Object> seen = new HashMap<>();
+
 		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType));
-		Database.find(collection, new Document("locationId", locationId).
-				append("parameterId", parameterId).
-				append("moduleInstanceId", moduleInstanceId).
-				append("ensembleId", ensembleId).
-				append("qualifiers", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList()))).
-				append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate())), new Document("forecastTime", 1)).limit(forecastCount).forEach(result -> {
-					long time = result.getDate("forecastTime").getTime();
-					if(!seen.containsKey(time)) {
-						longListBuilder.add(time);
-						seen.put(time, null);
-					}});
+		Database.aggregate(collection, List.of(
+				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
+				new Document("$limit", forecastCount),
+				new Document("$group", new Document("_id", "$forecastTime")))).forEach(result ->
+				longListBuilder.add(result.getDate("_id").getTime()));
 
 		return longListBuilder.build();
 	}

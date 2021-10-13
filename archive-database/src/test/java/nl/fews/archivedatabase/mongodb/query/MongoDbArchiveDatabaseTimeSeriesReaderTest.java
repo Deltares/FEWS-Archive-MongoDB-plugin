@@ -11,8 +11,11 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDat
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseReadResult;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseResultSearchParameters;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseSummary;
+import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.SimulatedTaskRunInfo;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
+import nl.wldelft.fews.system.data.timeseries.FewsTimeSeriesHeaders;
 import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
+import nl.wldelft.util.LongUnmodifiableList;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,10 +27,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -232,6 +232,29 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 	}
 
 	@Test
+	void getExternalForecastImportRequests() throws Exception{
+		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+
+		MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = (MongoDbArchiveDatabaseTimeSeriesReader)mongoDbArchiveDatabase.getArchiveDataBaseTimeSeriesReader();
+
+		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("external_forecasts") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		Insert.insertMetaDatas(entries, Map.of());
+		Database.updateTimeSeriesIndex();
+
+		DefaultTimeSeriesHeader timeSeriesHeader = new DefaultTimeSeriesHeader();
+		timeSeriesHeader.setModuleInstanceId("moduleInstanceId");
+		timeSeriesHeader.setLocationId("locationId");
+		timeSeriesHeader.setParameterId("parameterId");
+		timeSeriesHeader.setQualifierIds("qualifierId");
+		timeSeriesHeader.setForecastTime(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime());
+		timeSeriesHeader.setTimeStep(IrregularTimeStep.INSTANCE);
+
+//		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = mongoDbArchiveDatabaseTimeSeriesReader.getExternalForecastImportRequests(new FewsTimeSeriesHeaders(timeSeriesHeader));
+//		assertEquals(0, singleExternalDataImportRequests.size());
+	}
+
+	@Test
 	void importSingleDataImportRequest() throws Exception {
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
 		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
@@ -259,22 +282,59 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 	}
 
 	@Test
-	void getTimeSeriesForTaskRun() {
+	void getTimeSeriesForTaskRun() throws Exception{
+		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+
+		MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = (MongoDbArchiveDatabaseTimeSeriesReader)mongoDbArchiveDatabase.getArchiveDataBaseTimeSeriesReader();
+		mongoDbArchiveDatabaseTimeSeriesReader.setHeaderProvider(new TestUtil.HeaderProviderTestImplementation());
+
+		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		Insert.insertMetaDatas(entries, Map.of());
+
+		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = mongoDbArchiveDatabaseTimeSeriesReader.getTimeSeriesForTaskRun("SA11024320_1");
+		assertEquals(4309, timeSeriesArrays.size());
 	}
 
 	@Test
-	void getEnsembleMembers() {
+	void getEnsembleMembers() throws Exception{
+		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+
+		MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = (MongoDbArchiveDatabaseTimeSeriesReader)mongoDbArchiveDatabase.getArchiveDataBaseTimeSeriesReader();
+
+		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		Insert.insertMetaDatas(entries, Map.of());
+
+		Set<String> ensembleMembers = mongoDbArchiveDatabaseTimeSeriesReader.getEnsembleMembers("ALCT1", "ADIMF", Set.of("SACSMA_ALCT1_Forecast"), "GEFS.ENS", new String[]{}, TimeSeriesType.SIMULATED_FORECASTING);
+		assertEquals(31, ensembleMembers.size());
 	}
 
 	@Test
-	void getSimulatedTaskRunInfos() {
+	void getSimulatedTaskRunInfos() throws Exception{
+		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+
+		MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = (MongoDbArchiveDatabaseTimeSeriesReader)mongoDbArchiveDatabase.getArchiveDataBaseTimeSeriesReader();
+
+		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		Insert.insertMetaDatas(entries, Map.of());
+
+		List<SimulatedTaskRunInfo> simulatedTaskRunInfos = mongoDbArchiveDatabaseTimeSeriesReader.getSimulatedTaskRunInfos("ALCT1", "ADIMF", "SACSMA_ALCT1_Forecast", "GEFS.ENS", new String[]{}, new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2022-01-01").getTime()),1000);
+		assertEquals(1, simulatedTaskRunInfos.size());
 	}
 
 	@Test
-	void searchForExternalForecastTimes() {
-	}
+	void searchForExternalForecastTimes() throws Exception{
+		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
 
-	@Test
-	void getExternalForecastImportRequests() {
+		MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = (MongoDbArchiveDatabaseTimeSeriesReader)mongoDbArchiveDatabase.getArchiveDataBaseTimeSeriesReader();
+
+		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("external_forecasts") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		Insert.insertMetaDatas(entries, Map.of());
+
+		LongUnmodifiableList forecastTimes = mongoDbArchiveDatabaseTimeSeriesReader.searchForExternalForecastTimes("BARK2E", "MAP", "QPF_to_MAP", "", new String[]{"Extended", "HRRR"}, TimeSeriesType.EXTERNAL_FORECASTING, new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2022-01-01").getTime()),1000);
+		assertEquals(1, forecastTimes.size());
 	}
 }
