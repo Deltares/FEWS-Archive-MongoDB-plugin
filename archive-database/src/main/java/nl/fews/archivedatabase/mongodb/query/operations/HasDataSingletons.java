@@ -23,7 +23,14 @@ public final class HasDataSingletons implements HasData {
 	 */
 	public boolean hasData(String collection, Map<String, List<Object>> query, Date startDate, Date endDate) {
 		Document document = new Document();
-		document.append("forecastTime", new Document("$gte", startDate).append("$lte", endDate));
+
+		if(startDate != null && endDate != null)
+			document.append("forecastTime", new Document("$gte", startDate).append("$lte", endDate));
+		else if(startDate != null)
+			document.append("forecastTime", new Document("$gte", startDate));
+		else if(endDate != null)
+			document.append("forecastTime", new Document("$lte", endDate));
+
 		query.forEach((k, v) -> {
 			if(!v.isEmpty())
 				document.append(k, v.size() == 1 ? v.get(0) : new Document("$in", v));

@@ -4,7 +4,9 @@ import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.FewsTimeSeriesHeaderProvider;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.HeaderRequest;
+import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
 import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
+import nl.wldelft.util.Box;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.IrregularTimeStep;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
@@ -13,6 +15,8 @@ import nl.wldelft.util.timeseries.TimeStepUtils;
 import org.bson.Document;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class TimeSeriesArrayUtil {
 
@@ -29,10 +33,11 @@ public class TimeSeriesArrayUtil {
 	 * @param result result
 	 * @return TimeSeriesArray<TimeSeriesHeader>
 	 */
-	public static TimeSeriesHeader getTimeSeriesHeader(TimeSeriesValueType timeSeriesValueType, TimeSeriesType timeSeriesType, Document result){
+	public static Box<TimeSeriesHeader, SystemActivityDescriptor> getTimeSeriesHeader(TimeSeriesValueType timeSeriesValueType, TimeSeriesType timeSeriesType, Document result){
 		HeaderRequest.HeaderRequestBuilder headerRequestBuilder = new HeaderRequest.HeaderRequestBuilder();
 		headerRequestBuilder.setValueType(timeSeriesValueType);
 		headerRequestBuilder.setTimeSeriesType(timeSeriesType);
+
 		if(result.containsKey("moduleInstanceId")) headerRequestBuilder.setModuleInstanceId(result.getString("moduleInstanceId"));
 		if(result.containsKey("locationId")) headerRequestBuilder.setLocationId(result.getString("locationId"));
 		if(result.containsKey("parameterId")) headerRequestBuilder.setParameterId(result.getString("parameterId"));
@@ -43,20 +48,42 @@ public class TimeSeriesArrayUtil {
 		if(result.containsKey("ensembleId") && !result.getString("ensembleId").trim().equals("")) headerRequestBuilder.setEnsembleId(result.getString("ensembleId"));
 		if(result.containsKey("ensembleMemberId") && !result.getString("ensembleMemberId").trim().equals("")) headerRequestBuilder.setEnsembleMember(result.getString("ensembleMemberId"));
 
-		if(result.containsKey("runInfo") && result.get("runInfo", Document.class).containsKey("taskRunId")) headerRequestBuilder.setTaskRunId(result.get("runInfo", Document.class).getString("taskRunId"));
-		if(result.containsKey("runInfo") && result.get("runInfo", Document.class).containsKey("userId")) headerRequestBuilder.setUserId(result.get("runInfo", Document.class).getString("userId"));
-		if(result.containsKey("runInfo") && result.get("runInfo", Document.class).containsKey("workflowId")) headerRequestBuilder.setWorkflowId(result.get("runInfo", Document.class).getString("workflowId"));
-		if(result.containsKey("runInfo") && result.get("runInfo", Document.class).containsKey("dispatchTime")) headerRequestBuilder.setDispatchTime(result.get("runInfo", Document.class).getDate("dispatchTime").getTime());
-		if(result.containsKey("runInfo") && result.get("runInfo", Document.class).containsKey("time0")) headerRequestBuilder.setDispatchTime(result.get("runInfo", Document.class).getDate("time0").getTime());
-
-		//if(result.get("metaData", Document.class).containsKey("ensembleMemberIndex")) headerRequestBuilder.setEnsembleMemberIndex(result.get("metaData", Document.class).getInteger("ensembleMemberIndex"));
-		//if(result.get("metaData", Document.class).containsKey("unit")) headerRequestBuilder.setUnit(result.get("metaData", Document.class).getString("unit"));
-		//if(result.get("metaData", Document.class).containsKey("parameterName")) headerRequestBuilder.setParameterName(result.get("metaData", Document.class).getString("parameterName"));
-		//if(result.get("metaData", Document.class).containsKey("locationName")) headerRequestBuilder.setLocationName(result.get("metaData", Document.class).getString("locationName"));
-		//if(result.get("metaData", Document.class).containsKey("parameterType")) headerRequestBuilder.setParameterType(ParameterType.get(result.get("metaData", Document.class).getString("parameterType")));
-		//if(result.get("metaData", Document.class).containsKey("approvedTime")) headerRequestBuilder.setApprovedTime(result.get("metaData", Document.class).getDate("approvedTime").getTime());
+		if(result.containsKey("runInfo")){
+			Document runInfo = result.get("runInfo", Document.class);
+			if(runInfo.containsKey("taskRunId")) headerRequestBuilder.setTaskRunId(runInfo.getString("taskRunId"));
+			if(runInfo.containsKey("userId")) headerRequestBuilder.setUserId(runInfo.getString("userId"));
+			if(runInfo.containsKey("workflowId")) headerRequestBuilder.setWorkflowId(runInfo.getString("workflowId"));
+			if(runInfo.containsKey("dispatchTime")) headerRequestBuilder.setDispatchTime(runInfo.getDate("dispatchTime").getTime());
+			if(runInfo.containsKey("time0")) headerRequestBuilder.setDispatchTime(runInfo.getDate("time0").getTime());
+		}
 
 		return Settings.get("headerProvider", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build());
+	}
+
+	/**
+	 *
+	 * @param timeSeriesHeader timeSeriesHeader
+	 * @param events events
+	 * @param requestTimeSeriesArray requestTimeSeriesArray
+	 * @return TimeSeriesArray<TimeSeriesHeader>
+	 */
+	public static TimeSeriesArray<TimeSeriesHeader> getTimeSeriesArray(TimeSeriesHeader timeSeriesHeader, List<Document> events, TimeSeriesArray<TimeSeriesHeader> requestTimeSeriesArray){
+		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader, timeSeriesHeader.getTimeStep());
+		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
+
+		for (int i = 0; i < requestTimeSeriesArray.size(); i++) {
+			timeSeriesArray.put(requestTimeSeriesArray.getTime(i), requestTimeSeriesArray.getValue(i));
+			timeSeriesArray.setFlag(i, requestTimeSeriesArray.getFlag(i));
+			timeSeriesArray.setComment(i, requestTimeSeriesArray.getComment(i));
+		}
+		Map<Long, Float> resultMap = events.stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s.get("v") != null ? s.getDouble("v").floatValue() : Float.NaN));
+		for (int i = 0; i < timeSeriesArray.size(); i++) {
+			long time = timeSeriesArray.getTime(i);
+			if(!requestTimeSeriesArray.isValueReliable(i) && resultMap.containsKey(time))
+				timeSeriesArray.setValue(i, resultMap.get(time));
+		}
+
+		return timeSeriesArray;
 	}
 
 	/**
@@ -68,9 +95,6 @@ public class TimeSeriesArrayUtil {
 	public static TimeSeriesArray<TimeSeriesHeader> getTimeSeriesArray(TimeSeriesHeader timeSeriesHeader, List<Document> events){
 		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader, timeSeriesHeader.getTimeStep());
 		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
-
-		if(events.isEmpty())
-			return timeSeriesArray;
 
 		long[] times = new long[events.size()];
 		for (int i = 0; i < events.size(); i++)

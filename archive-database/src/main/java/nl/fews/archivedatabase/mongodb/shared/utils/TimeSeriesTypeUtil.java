@@ -99,8 +99,8 @@ public final class TimeSeriesTypeUtil {
 	private static final Map<Pair<TimeSeriesValueType, nl.wldelft.fews.system.data.timeseries.TimeSeriesType>, TimeSeriesType> timeSeriesTypeByArchiveType = Map.of(
 			new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING),TimeSeriesType.SCALAR_EXTERNAL_FORECASTING,
 			new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL),TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL,
-			new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING),TimeSeriesType.SCALAR_SIMULATED_FORECASTING
-			//nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL,TimeSeriesType.SCALAR_SIMULATED_HISTORICAL,
+			new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING),TimeSeriesType.SCALAR_SIMULATED_FORECASTING,
+			new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL),TimeSeriesType.SCALAR_SIMULATED_HISTORICAL
 			//nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL,TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED
 	);
 

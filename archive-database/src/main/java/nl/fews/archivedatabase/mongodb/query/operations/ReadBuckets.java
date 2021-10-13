@@ -25,8 +25,16 @@ public final class ReadBuckets implements Read {
 	 */
 	public MongoCursor<Document> read(String collection, Map<String, List<Object>> query, Date startDate, Date endDate) {
 		Document document = new Document();
-		document.append("endTime", new Document("$gte", startDate));
-		document.append("startTime", new Document("$lte", endDate));
+
+		if(startDate != null && endDate != null) {
+			document.append("endTime", new Document("$gte", startDate));
+			document.append("startTime", new Document("$lte", endDate));
+		}
+		else if(startDate != null)
+			document.append("endTime", new Document("$gte", startDate));
+		else if(endDate != null)
+			document.append("startTime", new Document("$lte", endDate));
+
 		query.forEach((k, v) -> {
 			if(!v.isEmpty())
 				document.append(k, v.size() == 1 ? v.get(0) : new Document("$in", v));

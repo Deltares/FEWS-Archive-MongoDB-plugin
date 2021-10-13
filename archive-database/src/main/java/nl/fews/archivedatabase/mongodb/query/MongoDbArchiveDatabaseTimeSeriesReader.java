@@ -14,9 +14,10 @@ import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.SimulatedTaskRunInfo;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
+import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
+import nl.wldelft.fews.system.data.timeseries.FewsTimeSeriesHeader;
 import nl.wldelft.fews.system.data.timeseries.FewsTimeSeriesHeaders;
-import nl.wldelft.util.LongUnmodifiableList;
-import nl.wldelft.util.Period;
+import nl.wldelft.util.*;
 import nl.wldelft.util.timeseries.*;
 import org.bson.Document;
 import org.json.JSONArray;
@@ -67,34 +68,22 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		try {
 			MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest = (MongoDbArchiveDatabaseSingleExternalImportRequest)singleExternalDataImportRequest;
 			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType());
+			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
+			Map<String, List<Object>> query = mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery();
+			Date startDate = mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod() == null ? null : mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate();
+			Date endDate = mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod() == null ? null : mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate();
 
 			Read read = (Read)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("Read%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
-			MongoCursor<Document> results = read.read(
-					TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType),
-					mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery(),
-					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate(),
-					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate());
+			MongoCursor<Document> results = read.read(collection, query, startDate, endDate);
 
 			if(results.hasNext()){
 				Document result = results.next();
 				TimeSeriesArray<TimeSeriesHeader> requestTimeSeriesArray = mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesArray();
-				TimeSeriesHeader timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType(), result);
-				TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader, List.of());
+				Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType(), result);
 
-				for (int i = 0; i < requestTimeSeriesArray.size(); i++) {
-					timeSeriesArray.put(requestTimeSeriesArray.getTime(i), requestTimeSeriesArray.getValue(i));
-					timeSeriesArray.setFlag(i, requestTimeSeriesArray.getFlag(i));
-					timeSeriesArray.setComment(i, requestTimeSeriesArray.getComment(i));
-				}
-
-				Map<Long, Float> resultMap = result.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s.get("v") != null ? s.getDouble("v").floatValue() : Float.NaN));
-				for (int i = 0; i < timeSeriesArray.size(); i++) {
-					long time = timeSeriesArray.getTime(i);
-					if(!requestTimeSeriesArray.isValueReliable(i) && resultMap.containsKey(time)) {
-						timeSeriesArray.setValue(i, resultMap.get(time));
-					}
-				}
-				return new TimeSeriesArrays<>(timeSeriesArray);
+				return new TimeSeriesArrays<>(requestTimeSeriesArray != null ?
+						TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class), requestTimeSeriesArray) :
+						TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
 			}
 			return null;
 		}
@@ -140,15 +129,14 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			try{
 				MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest = (MongoDbArchiveDatabaseSingleExternalImportRequest)singleExternalDataImportRequest;
 				TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType());
+				String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
+				Map<String, List<Object>> query = mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery();
+				Date startDate = mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate();
+				Date endDate = mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate();
+
 				HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
-				if(hasData.hasData(
-						TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType),
-						mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery(),
-						mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate(),
-						mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate()
-				)){
+				if(hasData.hasData(collection, query, startDate, endDate))
 					singleExternalDataImportRequestsHavingData.add(singleExternalDataImportRequest);
-				}
 			}
 			catch (Exception ex){
 				throw new RuntimeException(ex);
@@ -157,25 +145,57 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		return singleExternalDataImportRequestsHavingData;
 	}
 
+
 	/**
 	 *
-	 * @param mongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest
-	 * @return boolean
+	 * @param fewsTimeSeriesHeaders fewsTimeSeriesHeaders
+	 * @return List<SingleExternalDataImportRequest>
 	 */
-	private boolean singleDataImportRequestHasData(MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest) {
-		try {
-			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType());
-			HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
-			return hasData.hasData(
-					TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType),
-					mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery(),
-					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate(),
-					mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate()
-			);
+	@Override
+	public List<SingleExternalDataImportRequest> getExternalForecastImportRequests(FewsTimeSeriesHeaders fewsTimeSeriesHeaders) {
+		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = new ArrayList<>();
+		for (int i = 0; i < fewsTimeSeriesHeaders.size(); i++) {
+			FewsTimeSeriesHeader fewsTimeSeriesHeader = fewsTimeSeriesHeaders.get(i);
+			if(fewsTimeSeriesHeader.getTimeStep() == IrregularTimeStep.INSTANCE) {
+				Map<String, List<Object>> query = new HashMap<>();
+
+				List<String> qualifierIds = new ArrayList<>();
+				for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
+					qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
+				String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+				String ensembleId = fewsTimeSeriesHeader.getEnsembleId() != null && !fewsTimeSeriesHeader.getEnsembleId().equals("none") ? fewsTimeSeriesHeader.getEnsembleId() : "";
+				String ensembleMemberId = fewsTimeSeriesHeader.getEnsembleMemberId() != null && !fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") ? fewsTimeSeriesHeader.getEnsembleMemberId() : "";
+				Date forecastTime = new Date(fewsTimeSeriesHeader.getForecastTime());
+
+				query.put("moduleInstanceId", List.of(fewsTimeSeriesHeader.getModuleInstanceId()));
+				query.put("locationId", List.of(fewsTimeSeriesHeader.getLocationId()));
+				query.put("parameterId", List.of(fewsTimeSeriesHeader.getParameterId()));
+				query.put("qualifierId", List.of(qualifierId));
+				query.put("encodedTimeStepId", List.of(fewsTimeSeriesHeader.getTimeStep().getEncoded()));
+				query.put("ensembleId", List.of(ensembleId));
+				query.put("ensembleMemberId", List.of(ensembleMemberId));
+				query.put("forecastTime", List.of(forecastTime));
+
+				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(null, query, TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING, null));
+			}
 		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
+		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = new ArrayList<>();
+		singleExternalDataImportRequests.parallelStream().forEach(singleExternalDataImportRequest -> {
+			try{
+				MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest = (MongoDbArchiveDatabaseSingleExternalImportRequest)singleExternalDataImportRequest;
+				TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType());
+				String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
+				Map<String, List<Object>> query = mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery();
+
+				HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
+				if(hasData.hasData(collection, query,null, null))
+					singleExternalDataImportRequestsHavingData.add(singleExternalDataImportRequest);
+			}
+			catch (Exception ex){
+				throw new RuntimeException(ex);
+			}
+		});
+		return singleExternalDataImportRequestsHavingData;
 	}
 
 	/**
@@ -328,43 +348,127 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArrays = new ArrayList<>();
 
 		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), new Document("taskRunId", taskRunId)).forEach(result -> {
-			TimeSeriesHeader timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
-			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader, result.getList("timeseries", Document.class));
+			Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
+			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class));
 			timeSeriesArrays.add(timeSeriesArray);
 		});
 
 		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), new Document("taskRunId", taskRunId)).forEach(result -> {
-			TimeSeriesHeader timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result);
-			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader, result.getList("timeseries", Document.class));
+			Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result);
+			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class));
 			timeSeriesArrays.add(timeSeriesArray);
 		});
 
 		return new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0]));
 	}
 
+	/**
+	 *
+	 * @param locationId locationId
+	 * @param parameterId parameterId
+	 * @param moduleInstanceId moduleInstanceId
+	 * @param ensembleId ensembleId
+	 * @param qualifiers qualifiers
+	 * @param timeSeriesType timeSeriesType
+	 * @return Set<String>
+	 */
 	@Override
 	public Set<String> getEnsembleMembers(String locationId, String parameterId, Set<String> moduleInstanceId, String ensembleId, String[] qualifiers, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
+		Set<String> ensembleMembers = new HashSet<>();
 		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType));
-		Database.find(collection, new Document("locationId", locationId).
+		Database.distinct(collection, "ensembleMemberId", new Document("locationId", locationId).
 				append("parameterId", parameterId).
 				append("moduleInstanceId", new Document("$in", new ArrayList<>(moduleInstanceId))).
 				append("ensembleId", ensembleId).
-				append("qualifiers", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()));
-		return null;
+				append("qualifiers", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()), String.class).forEach(ensembleMemberId -> {
+					if(ensembleMemberId != null && !ensembleMemberId.trim().equals(""))
+						ensembleMembers.add(ensembleMemberId);
+				});
+		return ensembleMembers;
 	}
 
+	/**
+	 *
+	 * @param locationId locationId
+	 * @param parameterId parameterId
+	 * @param moduleInstanceId moduleInstanceId
+	 * @param ensembleId ensembleId
+	 * @param qualifiers qualifiers
+	 * @param period period
+	 * @param forecastCount forecastCount
+	 * @return List<SimulatedTaskRunInfo>
+	 */
 	@Override
-	public List<SimulatedTaskRunInfo> getSimulatedTaskRunInfos(String s, String s1, String s2, String s3, String[] strings, Period period, int i) {
-		return null;
+	public List<SimulatedTaskRunInfo> getSimulatedTaskRunInfos(String locationId, String parameterId, String moduleInstanceId, String ensembleId, String[] qualifiers, Period period, int forecastCount) {
+		List<SimulatedTaskRunInfo> simulatedTaskRunInfos = new ArrayList<>();
+
+		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), new Document("locationId", locationId).
+				append("parameterId", parameterId).
+				append("moduleInstanceId", moduleInstanceId).
+				append("ensembleId", ensembleId).
+				append("qualifiers", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList()))).
+				append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate())), new Document("runInfo", 1)).limit(forecastCount).forEach(result ->
+				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("workflowId"), result.getString("taskRunId"), result.getDate("time0").getTime(), result.getDate("dispatchTime").getTime())));
+
+		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), new Document("locationId", locationId).
+				append("parameterId", parameterId).
+				append("moduleInstanceId", moduleInstanceId).
+				append("ensembleId", ensembleId).
+				append("qualifiers", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList()))).
+				append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate())), new Document("runInfo", 1)).limit(forecastCount).forEach(result ->
+				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("workflowId"), result.getString("taskRunId"), result.getDate("time0").getTime(), result.getDate("dispatchTime").getTime())));
+
+		return simulatedTaskRunInfos;
 	}
 
+	/**
+	 *
+	 * @param locationId locationId
+	 * @param parameterId parameterId
+	 * @param moduleInstanceId moduleInstanceId
+	 * @param ensembleId ensembleId
+	 * @param qualifiers qualifiers
+	 * @param timeSeriesType timeSeriesType
+	 * @param period period
+	 * @param forecastCount forecastCount
+	 * @return LongUnmodifiableList
+	 */
 	@Override
-	public LongUnmodifiableList searchForExternalForecastTimes(String s, String s1, String s2, String s3, String[] strings, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType, Period period, int i) {
-		return null;
+	public LongUnmodifiableList searchForExternalForecastTimes(String locationId, String parameterId, String moduleInstanceId, String ensembleId, String[] qualifiers, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType, Period period, int forecastCount) {
+		LongListBuilder longListBuilder = new LongListBuilder();
+		Map<Long, Object> seen = new HashMap<>();
+		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType));
+		Database.find(collection, new Document("locationId", locationId).
+				append("parameterId", parameterId).
+				append("moduleInstanceId", moduleInstanceId).
+				append("ensembleId", ensembleId).
+				append("qualifiers", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList()))).
+				append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate())), new Document("forecastTime", 1)).limit(forecastCount).forEach(result -> {
+					long time = result.getDate("forecastTime").getTime();
+					if(!seen.containsKey(time)) {
+						longListBuilder.add(time);
+						seen.put(time, null);
+					}});
+
+		return longListBuilder.build();
+	}
+}
+
+/**
+ *
+ */
+class LongListBuilder extends LongArrayOrListBuilder {
+	/**
+	 *
+	 */
+	LongListBuilder() {
 	}
 
-	@Override
-	public List<SingleExternalDataImportRequest> getExternalForecastImportRequests(FewsTimeSeriesHeaders fewsTimeSeriesHeaders) {
-		return null;
+	/**
+	 *
+	 * @return LongUnmodifiableList
+	 */
+	LongUnmodifiableList build() {
+		return super.buildList();
 	}
 }
