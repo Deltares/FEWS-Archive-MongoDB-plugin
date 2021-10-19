@@ -202,7 +202,7 @@ public final class Insert {
 			return Insert.bulkInsertTimeseries(collection, timeSeries, netcdfFile);
 		}
 		else{
-			return Insert.insertTimeseries(collection, timeSeriesType, timeSeriesRecordsMap, netcdfFile, netcdfContent, archiveRunInfo, areaId);
+			return Insert.insertTimeSeries(collection, timeSeriesType, timeSeriesRecordsMap, netcdfFile, netcdfContent, archiveRunInfo, areaId);
 		}
 	}
 
@@ -217,7 +217,7 @@ public final class Insert {
 	 * @param areaId areaId
 	 * @return Pair<String,List<ObjectId>>
 	 */
-	private static Pair<String,List<ObjectId>> insertTimeseries(String collection, TimeSeriesType timeSeriesType, Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap, File netcdfFile, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo, String areaId){
+	private static Pair<String,List<ObjectId>> insertTimeSeries(String collection, TimeSeriesType timeSeriesType, Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap, File netcdfFile, NetcdfContent netcdfContent, ArchiveRunInfo archiveRunInfo, String areaId){
 		List<ObjectId> insertedIds = new ArrayList<>();
 
 		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = NetcdfUtil.getTimeSeriesArrays(netcdfFile);

@@ -42,7 +42,7 @@ public final class ReadBuckets implements Read {
 
 		Document sort = new Document();
 		Database.getCollectionKeys(collection).forEach(field -> sort.append(field, 1));
-		return new MongoBucketCursor(Database.find(collection, document).sort(sort).iterator(), collection, startDate, endDate);
+		return new MongoBucketCursor(Database.find(collection, document).sort(sort).allowDiskUse(true).iterator(), collection, startDate, endDate);
 	}
 
 	/**

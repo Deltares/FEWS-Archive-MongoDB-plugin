@@ -194,16 +194,24 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	@Override
 	public void finalizeMigration(boolean finalize) {
 		if(finalize) {
+
 			logger.info("Start: bucketScalarExternalHistorical");
 			bucketScalarExternalHistorical();
 			logger.info("End: bucketScalarExternalHistorical");
+
 			logger.info("Start: bucketScalarSimulatedHistorical");
 			bucketScalarSimulatedHistorical();
 			logger.info("End: bucketScalarSimulatedHistorical");
+
 			if (Settings.get("renameFinalizedCollection")) {
+
 				logger.info("Start: replaceScalarExternalHistoricalWithBucketedCollection");
 				replaceScalarExternalHistoricalWithBucketedCollection();
 				logger.info("End: replaceScalarExternalHistoricalWithBucketedCollection");
+
+				logger.info("Start: updateTimeSeriesIndex");
+				Database.updateTimeSeriesIndex();
+				logger.info("End: updateTimeSeriesIndex");
 			}
 		}
 	}

@@ -2,6 +2,7 @@ package nl.fews.archivedatabase.mongodb.shared.database;
 
 import com.mongodb.*;
 import com.mongodb.client.*;
+import com.mongodb.client.model.IndexModel;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
@@ -98,10 +99,7 @@ public final class Database {
 	 *
 	 */
 	private static void ensureCollections(){
-		for (String collection: collectionIndex.keySet()) {
-			if(getCollectionIndexes(collection).length > 0)
-				ensureCollection(collection);
-		}
+		collectionIndex.keySet().parallelStream().filter(collection -> getCollectionIndexes(collection).length > 0).forEach(Database::ensureCollection);
 	}
 
 	/**
@@ -111,18 +109,20 @@ public final class Database {
 	public static void ensureCollection(String collection){
 
 		MongoCollection<Document> mongoCollection = createInternal().getDatabase(database).getCollection(collection);
-		Map<String, Object> indexes = new HashMap<>();
-		mongoCollection.listIndexes().forEach(index -> indexes.put(index.get("key", Document.class).keySet().stream().sorted().collect(Collectors.joining("_")), index.get("key", Document.class)));
+		Map<String, Object> existingIndexes = new HashMap<>();
+		mongoCollection.listIndexes().forEach(index -> existingIndexes.put(index.get("key", Document.class).keySet().stream().sorted().collect(Collectors.joining("_")), index.get("key", Document.class)));
 
+		List<IndexModel> indexes = new ArrayList<>();
 		for (Document document: getCollectionIndexes(collection)) {
 			document = Document.parse(document.toJson());
 			Object o = document.remove("unique");
 			boolean unique = o != null && (o.equals(true) || !o.equals(0));
 			String key = document.keySet().stream().sorted().collect(Collectors.joining("_"));
-			if(!indexes.containsKey(key)) {
-				mongoCollection.createIndex(document, new IndexOptions().unique(unique));
-			}
+			if(!existingIndexes.containsKey(key))
+				indexes.add(new IndexModel(document, new IndexOptions().unique(unique)));
 		}
+		if(!indexes.isEmpty())
+			mongoCollection.createIndexes(indexes);
 	}
 
 	/**
