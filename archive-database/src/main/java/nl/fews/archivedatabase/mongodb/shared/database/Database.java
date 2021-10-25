@@ -15,6 +15,7 @@ import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -99,7 +100,24 @@ public final class Database {
 	 *
 	 */
 	private static void ensureCollections(){
-		collectionIndex.keySet().parallelStream().filter(collection -> getCollectionIndexes(collection).length > 0).forEach(Database::ensureCollection);
+		MongoDatabase mongoDatabase = createInternal().getDatabase(database);
+		List<Document> indexOperations = Database.mongoClient.getDatabase("admin").runCommand(
+				new Document("currentOp", 1).
+				append("$ownOps", 1).
+				append("$or", List.of(
+						new Document("command.reIndex", new Document("$exists", true)),
+						new Document("command.createIndexes", new Document("$exists", true))))).
+				getList("inprog", Document.class);
+		if(indexOperations.isEmpty()){
+			Set<String> collections = new HashSet<>();
+			mongoDatabase.listCollectionNames().forEach(collections::add);
+			collectionIndex.keySet().forEach(collection -> {
+				if(collections.contains(collection))
+					CompletableFuture.runAsync(() -> ensureCollection(collection));
+				else
+					Database.ensureCollection(collection);
+			});
+		}
 	}
 
 	/**
@@ -107,7 +125,6 @@ public final class Database {
 	 * @param collection collection
 	 */
 	public static void ensureCollection(String collection){
-
 		MongoCollection<Document> mongoCollection = createInternal().getDatabase(database).getCollection(collection);
 		Map<String, Object> existingIndexes = new HashMap<>();
 		mongoCollection.listIndexes().forEach(index -> existingIndexes.put(index.get("key", Document.class).keySet().stream().sorted().collect(Collectors.joining("_")), index.get("key", Document.class)));
