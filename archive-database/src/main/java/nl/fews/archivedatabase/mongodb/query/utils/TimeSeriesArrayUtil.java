@@ -14,8 +14,7 @@ import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import nl.wldelft.util.timeseries.TimeStepUtils;
 import org.bson.Document;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TimeSeriesArrayUtil {
@@ -68,22 +67,23 @@ public class TimeSeriesArrayUtil {
 	 * @return TimeSeriesArray<TimeSeriesHeader>
 	 */
 	public static TimeSeriesArray<TimeSeriesHeader> getTimeSeriesArray(TimeSeriesHeader timeSeriesHeader, List<Document> events, TimeSeriesArray<TimeSeriesHeader> requestTimeSeriesArray){
-		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader, timeSeriesHeader.getTimeStep());
-		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
-
+		Map<Long, Document> existingEvents = new LinkedHashMap<>();
+		Map<Long, Integer> existingTimeSeries = new LinkedHashMap<>();
 		for (int i = 0; i < requestTimeSeriesArray.size(); i++) {
-			timeSeriesArray.put(requestTimeSeriesArray.getTime(i), requestTimeSeriesArray.getValue(i));
-			timeSeriesArray.setFlag(i, requestTimeSeriesArray.getFlag(i));
-			timeSeriesArray.setComment(i, requestTimeSeriesArray.getComment(i));
-		}
-		Map<Long, Float> resultMap = events.stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s.get("v") != null ? s.getDouble("v").floatValue() : Float.NaN));
-		for (int i = 0; i < timeSeriesArray.size(); i++) {
-			long time = timeSeriesArray.getTime(i);
-			if(!requestTimeSeriesArray.isValueReliable(i) && resultMap.containsKey(time))
-				timeSeriesArray.setValue(i, resultMap.get(time));
+			existingEvents.put(requestTimeSeriesArray.getTime(i), new Document("v", requestTimeSeriesArray.getValue(i)).append("f", requestTimeSeriesArray.getFlag(i)).append("c", requestTimeSeriesArray.getComment(i)));
+			existingTimeSeries.put(requestTimeSeriesArray.getTime(i), i);
 		}
 
-		return timeSeriesArray;
+		Map<Long, Document> eventsMap = events.stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s, (k, v) -> v, LinkedHashMap::new));
+
+		Set<Long> distinctOrderedTimes = new TreeSet<>(eventsMap.keySet());
+		distinctOrderedTimes.addAll(existingEvents.keySet());
+
+		List<Document> mergedEvents = distinctOrderedTimes.stream().map(s ->
+			existingEvents.containsKey(s) && (requestTimeSeriesArray.isValueReliable(existingTimeSeries.get(s)) || !eventsMap.containsKey(s)) ? existingEvents.get(s) :
+			eventsMap.get(s)).collect(Collectors.toList());
+
+		return TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader, mergedEvents);
 	}
 
 	/**

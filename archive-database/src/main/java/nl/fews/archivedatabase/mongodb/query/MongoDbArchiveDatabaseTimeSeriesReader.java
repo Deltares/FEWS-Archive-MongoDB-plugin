@@ -106,23 +106,21 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = new ArrayList<>();
 		for (int i = 0; i < timeSeriesArrays.size(); i++) {
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
-			if((!timeSeriesArray.isEmpty() && !timeSeriesArray.isCompletelyReliable()) || timeSeriesArray.getHeader().getTimeStep() == IrregularTimeStep.INSTANCE) {
-				TimeSeriesHeader timeSeriesHeader = timeSeriesArray.getHeader();
-				Map<String, List<Object>> query = new HashMap<>();
+			TimeSeriesHeader timeSeriesHeader = timeSeriesArray.getHeader();
+			Map<String, List<Object>> query = new HashMap<>();
 
-				List<String> qualifierIds = new ArrayList<>();
-				for (int j = 0; j < timeSeriesHeader.getQualifierCount(); j++)
-					qualifierIds.add(timeSeriesHeader.getQualifierId(j));
-				String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+			List<String> qualifierIds = new ArrayList<>();
+			for (int j = 0; j < timeSeriesHeader.getQualifierCount(); j++)
+				qualifierIds.add(timeSeriesHeader.getQualifierId(j));
+			String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
 
-				query.put("moduleInstanceId", List.of(timeSeriesHeader.getModuleInstanceId()));
-				query.put("locationId", List.of(timeSeriesHeader.getLocationId()));
-				query.put("parameterId", List.of(timeSeriesHeader.getParameterId()));
-				query.put("qualifierId", List.of(qualifierId));
-				query.put("encodedTimeStepId", List.of(timeSeriesHeader.getTimeStep().getEncoded()));
+			query.put("moduleInstanceId", List.of(timeSeriesHeader.getModuleInstanceId()));
+			query.put("locationId", List.of(timeSeriesHeader.getLocationId()));
+			query.put("parameterId", List.of(timeSeriesHeader.getParameterId()));
+			query.put("qualifierId", List.of(qualifierId));
+			query.put("encodedTimeStepId", List.of(timeSeriesHeader.getTimeStep().getEncoded()));
 
-				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(period, query, TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, timeSeriesArray));
-			}
+			singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(period, query, TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, timeSeriesArray));
 		}
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = new ArrayList<>();
 		singleExternalDataImportRequests.parallelStream().forEach(singleExternalDataImportRequest -> {
@@ -156,28 +154,26 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = new ArrayList<>();
 		for (int i = 0; i < fewsTimeSeriesHeaders.size(); i++) {
 			FewsTimeSeriesHeader fewsTimeSeriesHeader = fewsTimeSeriesHeaders.get(i);
-			if(fewsTimeSeriesHeader.getTimeStep() == IrregularTimeStep.INSTANCE) {
-				Map<String, List<Object>> query = new HashMap<>();
+			Map<String, List<Object>> query = new HashMap<>();
 
-				List<String> qualifierIds = new ArrayList<>();
-				for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
-					qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
-				String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
-				String ensembleId = fewsTimeSeriesHeader.getEnsembleId() != null && !fewsTimeSeriesHeader.getEnsembleId().equals("none") ? fewsTimeSeriesHeader.getEnsembleId() : "";
-				String ensembleMemberId = fewsTimeSeriesHeader.getEnsembleMemberId() != null && !fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") ? fewsTimeSeriesHeader.getEnsembleMemberId() : "";
-				Date forecastTime = new Date(fewsTimeSeriesHeader.getForecastTime());
+			List<String> qualifierIds = new ArrayList<>();
+			for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
+				qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
+			String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+			String ensembleId = fewsTimeSeriesHeader.getEnsembleId() != null && !fewsTimeSeriesHeader.getEnsembleId().equals("none") ? fewsTimeSeriesHeader.getEnsembleId() : "";
+			String ensembleMemberId = fewsTimeSeriesHeader.getEnsembleMemberId() != null && !fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") ? fewsTimeSeriesHeader.getEnsembleMemberId() : "";
+			Date forecastTime = new Date(fewsTimeSeriesHeader.getForecastTime());
 
-				query.put("moduleInstanceId", List.of(fewsTimeSeriesHeader.getModuleInstanceId()));
-				query.put("locationId", List.of(fewsTimeSeriesHeader.getLocationId()));
-				query.put("parameterId", List.of(fewsTimeSeriesHeader.getParameterId()));
-				query.put("qualifierId", List.of(qualifierId));
-				query.put("encodedTimeStepId", List.of(fewsTimeSeriesHeader.getTimeStep().getEncoded()));
-				query.put("ensembleId", List.of(ensembleId));
-				query.put("ensembleMemberId", List.of(ensembleMemberId));
-				query.put("forecastTime", List.of(forecastTime));
+			query.put("moduleInstanceId", List.of(fewsTimeSeriesHeader.getModuleInstanceId()));
+			query.put("locationId", List.of(fewsTimeSeriesHeader.getLocationId()));
+			query.put("parameterId", List.of(fewsTimeSeriesHeader.getParameterId()));
+			query.put("qualifierId", List.of(qualifierId));
+			query.put("encodedTimeStepId", List.of(fewsTimeSeriesHeader.getTimeStep().getEncoded()));
+			query.put("ensembleId", List.of(ensembleId));
+			query.put("ensembleMemberId", List.of(ensembleMemberId));
+			query.put("forecastTime", List.of(forecastTime));
 
-				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(null, query, TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING, null));
-			}
+			singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(null, query, TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING, null));
 		}
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = new ArrayList<>();
 		singleExternalDataImportRequests.parallelStream().forEach(singleExternalDataImportRequest -> {
