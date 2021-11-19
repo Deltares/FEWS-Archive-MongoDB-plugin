@@ -101,7 +101,7 @@ public final class TimeSeriesTypeUtil {
 			new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL),TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL,
 			new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING),TimeSeriesType.SCALAR_SIMULATED_FORECASTING,
 			new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL),TimeSeriesType.SCALAR_SIMULATED_HISTORICAL
-			//nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL,TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED
+			//new Pair<>(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL),TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED
 	);
 
 	/**

@@ -89,7 +89,7 @@ public abstract class SynchronizeBase implements Synchronize {
 		missingTimeSeriesIndexes.forEach((k, v) -> {
 			try{
 				Database.insertOne(Database.Collection.TimeSeriesIndex.toString(), k);
-				timeSeriesIndex.put(k, null);
+				timeSeriesIndex.put(k, "");
 			}
 			catch (MongoWriteException ex){
 				//IGNORE
