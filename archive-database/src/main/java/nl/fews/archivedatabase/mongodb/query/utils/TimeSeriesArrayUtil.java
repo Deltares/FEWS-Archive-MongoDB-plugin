@@ -59,7 +59,7 @@ public class TimeSeriesArrayUtil {
 	}
 
 	/**
-	 *
+	 * ASSUMPTION: events and requestTimeSeriesArray are monotonically increasing
 	 * @param timeSeriesHeader timeSeriesHeader
 	 * @param events events
 	 * @param requestTimeSeriesArray requestTimeSeriesArray
@@ -69,41 +69,49 @@ public class TimeSeriesArrayUtil {
 		List<Document> mergedEvents = new ArrayList<>(events.size() + requestTimeSeriesArray.size());
 		int x = 0;
 		int  y = 0;
-		long last = Long.MIN_VALUE;
+		long lastDate = Long.MIN_VALUE;
 
 		while(x < events.size() && y < requestTimeSeriesArray.size()) {
 			long a = events.get(x).getDate("t").getTime();
 			long b = requestTimeSeriesArray.getTime(y);
 			if(a < b){
-				if (a > last) {
+				if (a > lastDate) {
 					mergedEvents.add(events.get(x));
-					x++;
-					last = a;
+					lastDate = a;
 				}
+				x++;
+			}
+			else if (b < a){
+				if(b > lastDate){
+					mergedEvents.add(new Document("t", new Date(b)).append("v", requestTimeSeriesArray.getValue(y)).append("f", requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)));
+					lastDate = b;
+				}
+				y++;
 			}
 			else{
-				if(b > last){
-					mergedEvents.add(new Document("t", new Date(b)).append("v", requestTimeSeriesArray.getValue(y)).append("f", requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)));
-					y++;
-					last = b;
+				if (a > lastDate) {
+					mergedEvents.add(requestTimeSeriesArray.isValueReliable(y) ? new Document("t", new Date(b)).append("v", requestTimeSeriesArray.getValue(y)).append("f", requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)) : events.get(x));
+					lastDate = a;
 				}
+				x++;
+				y++;
 			}
 		}
 		while(x < events.size()) {
 			long a = events.get(x).getDate("t").getTime();
-			if (a > last) {
+			if (a > lastDate) {
 				mergedEvents.add(events.get(x));
-				x++;
-				last = a;
+				lastDate = a;
 			}
+			x++;
 		}
 		while(y < requestTimeSeriesArray.size()) {
 			long b = requestTimeSeriesArray.getTime(y);
-			if(b > last) {
+			if(b > lastDate) {
 				mergedEvents.add(new Document("t", new Date(b)).append("v", requestTimeSeriesArray.getValue(y)).append("f", requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)));
-				y++;
-				last = b;
+				lastDate = b;
 			}
+			y++;
 		}
 		return TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader, mergedEvents);
 	}
