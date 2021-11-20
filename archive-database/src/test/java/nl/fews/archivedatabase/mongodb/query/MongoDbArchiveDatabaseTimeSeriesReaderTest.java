@@ -13,8 +13,9 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDat
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseSummary;
 import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.SimulatedTaskRunInfo;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
-import nl.wldelft.fews.system.data.timeseries.FewsTimeSeriesHeaders;
+import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
 import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
+import nl.wldelft.util.Box;
 import nl.wldelft.util.LongUnmodifiableList;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.*;
@@ -292,8 +293,8 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		Insert.insertMetaDatas(entries, Map.of());
 
-		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = mongoDbArchiveDatabaseTimeSeriesReader.getTimeSeriesForTaskRun("SA11024320_1");
-		assertEquals(4309, timeSeriesArrays.size());
+		Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrays = mongoDbArchiveDatabaseTimeSeriesReader.getTimeSeriesForTaskRun("SA11024320_1", TimeSeriesType.EXTERNAL_HISTORICAL);
+		assertEquals(4309, timeSeriesArrays.getObject0().size());
 	}
 
 	@Test

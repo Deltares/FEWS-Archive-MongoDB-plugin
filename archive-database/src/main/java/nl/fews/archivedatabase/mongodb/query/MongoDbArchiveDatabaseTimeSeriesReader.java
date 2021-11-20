@@ -337,10 +337,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	/**
 	 *
 	 * @param taskRunId taskRunId
+	 * @param timeSeriesType timeSeriesType
 	 * @return TimeSeriesArrays<TimeSeriesHeader>
 	 */
 	@Override
-	public TimeSeriesArrays<TimeSeriesHeader> getTimeSeriesForTaskRun(String taskRunId) {
+	public Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor> getTimeSeriesForTaskRun(String taskRunId, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
 		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArrays = new ArrayList<>();
 
 		Database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), new Document("taskRunId", taskRunId)).forEach(result -> {
@@ -355,7 +356,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			timeSeriesArrays.add(timeSeriesArray);
 		});
 
-		return new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0]));
+		return new Box<>(new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0])), null);
 	}
 
 	/**

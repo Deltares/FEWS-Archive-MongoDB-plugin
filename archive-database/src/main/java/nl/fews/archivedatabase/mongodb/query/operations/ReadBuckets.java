@@ -176,6 +176,11 @@ public final class ReadBuckets implements Read {
 			return r;
 		}
 
+		@Override
+		public int available() {
+			return result.available();
+		}
+
 		/**
 		 * return the 'next' cached document, advancing the iterator. returns null when empty
 		 * @return Document

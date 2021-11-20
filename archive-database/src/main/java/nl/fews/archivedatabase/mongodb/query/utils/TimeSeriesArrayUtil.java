@@ -15,7 +15,6 @@ import nl.wldelft.util.timeseries.TimeStepUtils;
 import org.bson.Document;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class TimeSeriesArrayUtil {
 
@@ -67,22 +66,45 @@ public class TimeSeriesArrayUtil {
 	 * @return TimeSeriesArray<TimeSeriesHeader>
 	 */
 	public static TimeSeriesArray<TimeSeriesHeader> getTimeSeriesArray(TimeSeriesHeader timeSeriesHeader, List<Document> events, TimeSeriesArray<TimeSeriesHeader> requestTimeSeriesArray){
-		Map<Long, Document> existingEvents = new LinkedHashMap<>();
-		Map<Long, Integer> existingTimeSeries = new LinkedHashMap<>();
-		for (int i = 0; i < requestTimeSeriesArray.size(); i++) {
-			existingEvents.put(requestTimeSeriesArray.getTime(i), new Document("v", requestTimeSeriesArray.getValue(i)).append("f", requestTimeSeriesArray.getFlag(i)).append("c", requestTimeSeriesArray.getComment(i)));
-			existingTimeSeries.put(requestTimeSeriesArray.getTime(i), i);
+		List<Document> mergedEvents = new ArrayList<>(events.size() + requestTimeSeriesArray.size());
+		int x = 0;
+		int  y = 0;
+		long last = Long.MIN_VALUE;
+
+		while(x < events.size() && y < requestTimeSeriesArray.size()) {
+			long a = events.get(x).getDate("t").getTime();
+			long b = requestTimeSeriesArray.getTime(y);
+			if(a < b){
+				if (a > last) {
+					mergedEvents.add(events.get(x));
+					x++;
+					last = a;
+				}
+			}
+			else{
+				if(b > last){
+					mergedEvents.add(new Document("t", new Date(b)).append("v", requestTimeSeriesArray.getValue(y)).append("f", requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)));
+					y++;
+					last = b;
+				}
+			}
 		}
-
-		Map<Long, Document> eventsMap = events.stream().collect(Collectors.toMap(s -> s.getDate("t").getTime(), s -> s, (k, v) -> v, LinkedHashMap::new));
-
-		Set<Long> distinctOrderedTimes = new TreeSet<>(eventsMap.keySet());
-		distinctOrderedTimes.addAll(existingEvents.keySet());
-
-		List<Document> mergedEvents = distinctOrderedTimes.stream().map(s ->
-			existingEvents.containsKey(s) && (requestTimeSeriesArray.isValueReliable(existingTimeSeries.get(s)) || !eventsMap.containsKey(s)) ? existingEvents.get(s) :
-			eventsMap.get(s)).collect(Collectors.toList());
-
+		while(x < events.size()) {
+			long a = events.get(x).getDate("t").getTime();
+			if (a > last) {
+				mergedEvents.add(events.get(x));
+				x++;
+				last = a;
+			}
+		}
+		while(y < requestTimeSeriesArray.size()) {
+			long b = requestTimeSeriesArray.getTime(y);
+			if(b > last) {
+				mergedEvents.add(new Document("t", new Date(b)).append("v", requestTimeSeriesArray.getValue(y)).append("f", requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)));
+				y++;
+				last = b;
+			}
+		}
 		return TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader, mergedEvents);
 	}
 
@@ -96,19 +118,21 @@ public class TimeSeriesArrayUtil {
 		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader, timeSeriesHeader.getTimeStep());
 		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
 
-		long[] times = new long[events.size()];
-		for (int i = 0; i < events.size(); i++)
-			times[i] = events.get(i).getDate("t").getTime();
+		if (events.size() > 0){
+			long[] times = new long[events.size()];
+			for (int i = 0; i < events.size(); i++)
+				times[i] = events.get(i).getDate("t").getTime();
 
-		if(timeSeriesHeader.getTimeStep() == IrregularTimeStep.INSTANCE)
-			timeSeriesArray.ensureTimes(times);
-		else
-			timeSeriesArray.ensurePeriod(new Period(times[0], times[times.length-1]));
+			if(timeSeriesHeader.getTimeStep() == IrregularTimeStep.INSTANCE)
+				timeSeriesArray.ensureTimes(times);
+			else
+				timeSeriesArray.ensurePeriod(new Period(times[0], times[times.length-1]));
 
-		for (int i = 0; i < events.size(); i++)  {
-			timeSeriesArray.setValue(i,  events.get(i).get("v") != null ? events.get(i).getDouble("v").floatValue() : Float.NaN);
-			timeSeriesArray.setFlag(i, events.get(i).getInteger("f").byteValue());
-			timeSeriesArray.setComment(i, events.get(i).getString("c"));
+			for (int i = 0; i < events.size(); i++)  {
+				timeSeriesArray.setValue(i,  events.get(i).get("v") != null ? events.get(i).getDouble("v").floatValue() : Float.NaN);
+				timeSeriesArray.setFlag(i, events.get(i).getInteger("f").byteValue());
+				timeSeriesArray.setComment(i, events.get(i).getString("c"));
+			}
 		}
 		return timeSeriesArray;
 	}
