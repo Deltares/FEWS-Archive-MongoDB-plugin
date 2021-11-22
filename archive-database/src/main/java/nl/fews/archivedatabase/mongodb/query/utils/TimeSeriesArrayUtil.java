@@ -71,6 +71,7 @@ public class TimeSeriesArrayUtil {
 		int  y = 0;
 		long lastDate = Long.MIN_VALUE;
 
+		// MERGE AND DEDUPLICATE, PREFER EXISTING RELIABLE OVER ARCHIVE
 		while(x < events.size() && y < requestTimeSeriesArray.size()) {
 			long a = events.get(x).getDate("t").getTime();
 			long b = requestTimeSeriesArray.getTime(y);
@@ -83,14 +84,14 @@ public class TimeSeriesArrayUtil {
 			}
 			else if (b < a){
 				if(b > lastDate){
-					mergedEvents.add(new Document("t", new Date(b)).append("v", requestTimeSeriesArray.getValue(y)).append("f", requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)));
+					mergedEvents.add(new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)));
 					lastDate = b;
 				}
 				y++;
 			}
 			else{
 				if (a > lastDate) {
-					mergedEvents.add(requestTimeSeriesArray.isValueReliable(y) ? new Document("t", new Date(b)).append("v", requestTimeSeriesArray.getValue(y)).append("f", requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)) : events.get(x));
+					mergedEvents.add(requestTimeSeriesArray.isValueReliable(y) ? new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)) : events.get(x));
 					lastDate = a;
 				}
 				x++;
@@ -108,7 +109,7 @@ public class TimeSeriesArrayUtil {
 		while(y < requestTimeSeriesArray.size()) {
 			long b = requestTimeSeriesArray.getTime(y);
 			if(b > lastDate) {
-				mergedEvents.add(new Document("t", new Date(b)).append("v", requestTimeSeriesArray.getValue(y)).append("f", requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)));
+				mergedEvents.add(new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)));
 				lastDate = b;
 			}
 			y++;
