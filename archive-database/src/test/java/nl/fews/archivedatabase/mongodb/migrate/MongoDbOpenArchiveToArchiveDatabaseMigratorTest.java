@@ -2,6 +2,7 @@ package nl.fews.archivedatabase.mongodb.migrate;
 
 import nl.fews.archivedatabase.mongodb.MongoDbArchiveDatabase;
 import nl.fews.archivedatabase.mongodb.TestUtil;
+import nl.fews.archivedatabase.mongodb.shared.logging.MongoDbAppender;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.OpenArchiveToArchiveDatabaseMigrationSettings;
 import nl.wldelft.util.LogUtils;
@@ -55,6 +56,7 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 				testSettings.getJSONObject("properties").toMap().forEach((k, v) -> builder.addObject(k, v.toString()));
 				migrateDatabase.setProperties(builder.build());
 			}
+			LogUtils.addAppender(MongoDbAppender.createAppender("databaseLogAppender", Settings.get("connectionString"), null));
 			migrateDatabase.migrate(
 					testSettings.get("areaId") != JSONObject.NULL ? testSettings.getString("areaId") : null,
 					testSettings.get("sourceId") != JSONObject.NULL ? testSettings.getString("sourceId") : null);

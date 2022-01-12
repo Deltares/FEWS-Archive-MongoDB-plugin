@@ -1,11 +1,6 @@
 package nl.fews.archivedatabase.mongodb.shared.utils;
 
 import com.mongodb.MongoWriteException;
-import nl.fews.archivedatabase.mongodb.shared.logging.MongoDbAppender;
-import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.bson.Document;
 
 import java.util.Arrays;
