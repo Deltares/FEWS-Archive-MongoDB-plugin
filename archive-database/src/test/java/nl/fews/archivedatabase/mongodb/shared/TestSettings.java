@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class TestSettings {
 
@@ -34,6 +35,7 @@ public class TestSettings {
 			Settings.put("netcdfReadThreads", 32);
 			Settings.put("folderMaxDepth", 4);
 			Settings.put("metadataFileName", "metaData.xml");
+			Settings.put("valueTypes", List.of("scalar"));
 			Settings.put("runInfoFileName", "runInfo.xml");
 			Settings.put("archiveDatabaseUserName", "fews_admin");
 			String testType = testSettings != null && InetAddress.getLocalHost().getHostName().equalsIgnoreCase(testSettings.getString("hostName")) ? "full" : "minimal";
