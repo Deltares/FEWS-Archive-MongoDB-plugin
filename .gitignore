@@ -24,3 +24,4 @@ hs_err_pid*
 /archive-database/target
 /archive-database/out
 /archive-database/src/test/resources/TestSettings.json
+/archive-database/src/test/TestSettings.json
