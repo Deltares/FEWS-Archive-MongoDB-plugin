@@ -112,7 +112,7 @@ public class TestUtil {
 			defaultTimeSeriesHeader.setModuleInstanceId(headerRequest.getModuleInstanceId());
 			defaultTimeSeriesHeader.setTimeStep(headerRequest.getTimeStep());
 			defaultTimeSeriesHeader.setQualifierIds(headerRequest.getQualifiersIds());
-			return new Box<>(defaultTimeSeriesHeader, null);
+			return new Box<>(defaultTimeSeriesHeader, SystemActivityDescriptor.NONE);
 		}
 	}
 }
