@@ -384,6 +384,26 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 *
 	 * @param locationId locationId
 	 * @param parameterId parameterId
+	 * @param ensembleId ensembleId
+	 * @param qualifiers qualifiers
+	 * @param timeSeriesType timeSeriesType
+	 * @return Set<String>
+	 */
+	@Override
+	public Set<String> getModuleInstanceIds(String locationId, String parameterId, String ensembleId, String[] qualifiers, nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
+		Set<String> moduleInstanceIds = new HashSet<>();
+		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType));
+		Database.distinct(collection, "moduleInstanceId", new Document("locationId", locationId).
+				append("parameterId", parameterId).
+				append("ensembleId", ensembleId).
+				append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()), String.class).forEach(moduleInstanceIds::add);
+		return moduleInstanceIds;
+	}
+
+	/**
+	 *
+	 * @param locationId locationId
+	 * @param parameterId parameterId
 	 * @param moduleInstanceId moduleInstanceId
 	 * @param ensembleId ensembleId
 	 * @param qualifiers qualifiers
