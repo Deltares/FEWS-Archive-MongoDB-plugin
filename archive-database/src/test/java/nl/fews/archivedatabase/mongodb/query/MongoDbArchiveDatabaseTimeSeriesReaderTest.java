@@ -312,6 +312,20 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 	}
 
 	@Test
+	void getModuleInstanceIds() throws Exception{
+		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+
+		MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = (MongoDbArchiveDatabaseTimeSeriesReader)mongoDbArchiveDatabase.getArchiveDataBaseTimeSeriesReader();
+
+		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		Insert.insertMetaDatas(entries, Map.of());
+
+		Set<String> moduleInstanceIds = mongoDbArchiveDatabaseTimeSeriesReader.getModuleInstanceIds("ALCT1", "ADIMF", "GEFS.ENS", new String[]{}, TimeSeriesType.SIMULATED_FORECASTING);
+		assertEquals(1, moduleInstanceIds.size());
+	}
+
+	@Test
 	void getSimulatedTaskRunInfos() throws Exception{
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
 		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
