@@ -10,6 +10,7 @@ import nl.wldelft.netcdf.NetcdfTimeSeriesParser;
 import nl.wldelft.util.timeseries.*;
 import org.javatuples.Pair;
 import ucar.nc2.NetcdfFile;
+import ucar.nc2.NetcdfFiles;
 
 import java.io.File;
 import java.util.Date;
@@ -91,7 +92,7 @@ public final class NetcdfUtil {
 	public static Map<String, Map<String, TimeSeriesRecord>> getTimeSeriesRecordsMap(File netcdfFile, NetcdfContent netcdfContent){
 		try {
 			Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = new HashMap<>();
-			try (NetcdfFile dataSet = NetcdfFile.open(netcdfFile.getAbsolutePath())) {
+			try (NetcdfFile dataSet = NetcdfFiles.open(netcdfFile.getAbsolutePath())) {
 				for (TimeSeriesRecord timeSeriesRecord : ElasticSearchIndexUtil.createTimeSeries(dataSet, netcdfContent, false).getObject0()) {
 					timeSeriesRecordsMap.putIfAbsent(timeSeriesRecord.getArchiveLocationId(), new HashMap<>());
 					timeSeriesRecordsMap.get(timeSeriesRecord.getArchiveLocationId()).putIfAbsent(timeSeriesRecord.getArchiveParameterId(), timeSeriesRecord);
