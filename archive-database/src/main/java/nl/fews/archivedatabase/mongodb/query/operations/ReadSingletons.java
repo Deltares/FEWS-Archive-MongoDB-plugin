@@ -36,4 +36,14 @@ public final class ReadSingletons implements Read {
 		});
 		return Database.find(collection, document).iterator();
 	}
+
+	/**
+	 *
+	 * @param collection the collection in the database from which the result was derived
+	 * @param query the query filter having 'and' field keys with 1..n values to 'or' match
+	 * @return MongoCursor<Document>
+	 */
+	public MongoCursor<Document> read(String collection, Map<String, List<Object>> query) {
+		return read(collection, query, null, null);
+	}
 }

@@ -46,6 +46,16 @@ public final class ReadBuckets implements Read {
 	}
 
 	/**
+	 *
+	 * @param collection the collection in the database from which the result was derived
+	 * @param query the query filter having 'and' field keys with 1..n values to 'or' match
+	 * @return MongoCursor<Document>
+	 */
+	public MongoCursor<Document> read(String collection, Map<String, List<Object>> query) {
+		return read(collection, query, null, null);
+	}
+
+	/**
 	 * an iterator whose next method returns a merged and ranged timeseries composed it its constituent buckets
 	 */
 	public static final class MongoBucketCursor extends MongoPeekingCursor implements MongoCursor<Document>{

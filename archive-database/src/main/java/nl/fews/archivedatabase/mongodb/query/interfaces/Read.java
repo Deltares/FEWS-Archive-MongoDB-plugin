@@ -18,4 +18,12 @@ public interface Read {
 	 * @return Map<String, List<Object>>
 	 */
 	MongoCursor<Document> read(String collection, Map<String, List<Object>> query, Date startDate, Date endDate);
+
+	/**
+	 *
+	 * @param collection the collection in the database from which the result was derived
+	 * @param query the query filter having 'and' field keys with 1..n values to 'or' match
+	 * @return Map<String, List<Object>>
+	 */
+	MongoCursor<Document> read(String collection, Map<String, List<Object>> query);
 }
