@@ -11,7 +11,7 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDat
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseReadResult;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseResultSearchParameters;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseSummary;
-import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseImportRequest;
+import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseForecastImportRequest;
 import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.SimulatedTaskRunInfo;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
 import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
@@ -254,7 +254,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		timeSeriesHeader.setEnsembleMemberId("ensembleMemberId");
 		timeSeriesHeader.setForecastTime(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime());
 
-		List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> timeSeriesHeaders = mongoDbArchiveDatabaseTimeSeriesReader.importForecastDataImportRequests(Set.of(new ArchiveDatabaseImportRequest(List.of(timeSeriesHeader))));
+		List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> timeSeriesHeaders = mongoDbArchiveDatabaseTimeSeriesReader.importForecastData(Set.of(new ArchiveDatabaseForecastImportRequest(List.of(timeSeriesHeader))));
 		//TimeSeriesArrays<TimeSeriesHeader> results = mongoDbArchiveDatabaseTimeSeriesReader.importSingleDataImportRequest(singleExternalDataImportRequests.get(0));
 		assertEquals(0, timeSeriesHeaders.size());
 	}
