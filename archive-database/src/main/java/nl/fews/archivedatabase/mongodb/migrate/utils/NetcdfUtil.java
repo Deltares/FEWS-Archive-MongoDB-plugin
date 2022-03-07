@@ -60,7 +60,7 @@ public final class NetcdfUtil {
 		DefaultTimeSeriesHeader timeSeriesHeader = new DefaultTimeSeriesHeader();
 
 		timeSeriesHeader.setUnit(timeSeriesArray.getHeader().getUnit());
-		timeSeriesHeader.setEnsembleMemberId(timeSeriesArray.getHeader().getEnsembleMemberId() == null || timeSeriesArray.getHeader().getEnsembleMemberId().equals("none") || timeSeriesArray.getHeader().getEnsembleMemberId().equals("0") ? "" : timeSeriesArray.getHeader().getEnsembleMemberId());
+		timeSeriesHeader.setEnsembleMemberId(timeSeriesArray.getHeader().getEnsembleMemberId() == null || timeSeriesArray.getHeader().getEnsembleMemberId().equals("none") || timeSeriesArray.getHeader().getEnsembleMemberId().equals("0") ? null : timeSeriesArray.getHeader().getEnsembleMemberId());
 		timeSeriesHeader.setEnsembleMemberIndex(timeSeriesArray.getHeader().getEnsembleMemberIndex());
 		timeSeriesHeader.setForecastTime(timeSeriesArray.getHeader().getForecastTime());
 
@@ -68,7 +68,7 @@ public final class NetcdfUtil {
 		timeSeriesHeader.setParameterId(timeSeriesRecord.getParameterId());
 		timeSeriesHeader.setTimeStep(TimeStepUtils.decode(timeSeriesRecord.getTimeStepId()));
 		timeSeriesHeader.setQualifierIds(timeSeriesRecord.getQualifierIds() == null || timeSeriesRecord.getQualifierIds().equals("none") || timeSeriesRecord.getQualifierIds().equals("") ?  new String[]{} : qualifierSplit.split(timeSeriesRecord.getQualifierIds()));
-		timeSeriesHeader.setEnsembleId(timeSeriesRecord.getEnsembleId() == null || timeSeriesRecord.getEnsembleId().equals("none") || timeSeriesRecord.getEnsembleId().equals("main") ? "" : timeSeriesRecord.getEnsembleId());
+		timeSeriesHeader.setEnsembleId(timeSeriesRecord.getEnsembleId() == null || timeSeriesRecord.getEnsembleId().equals("none") || timeSeriesRecord.getEnsembleId().equals("main") ? null : timeSeriesRecord.getEnsembleId());
 		timeSeriesHeader.setModuleInstanceId(timeSeriesRecord.getModuleInstanceId());
 
 		TimeSeriesArray<TimeSeriesHeader> mergedTimeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader);
