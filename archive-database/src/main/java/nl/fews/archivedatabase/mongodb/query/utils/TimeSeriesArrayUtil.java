@@ -43,8 +43,8 @@ public class TimeSeriesArrayUtil {
 		if(result.containsKey("encodedTimeStepId")) headerRequestBuilder.setTimeStep(TimeStepUtils.decode(result.getString("encodedTimeStepId")));
 
 		if(result.containsKey("forecastTime")) headerRequestBuilder.setExternalForecastTime(result.getDate("forecastTime").getTime());
-		if(result.containsKey("ensembleId") && !result.getString("ensembleId").trim().equals("")) headerRequestBuilder.setEnsembleId(result.getString("ensembleId"));
-		if(result.containsKey("ensembleMemberId") && !result.getString("ensembleMemberId").trim().equals("")) headerRequestBuilder.setEnsembleMember(result.getString("ensembleMemberId"));
+		if(result.containsKey("ensembleId") && !result.getString("ensembleId").trim().equals("") && !result.getString("ensembleId").equals("none") && !result.getString("ensembleId").equals("main")) headerRequestBuilder.setEnsembleId(result.getString("ensembleId"));
+		if(result.containsKey("ensembleMemberId") && !result.getString("ensembleMemberId").trim().equals("") && !result.getString("ensembleMemberId").equals("none") && !result.getString("ensembleMemberId").equals("0")) headerRequestBuilder.setEnsembleMember(result.getString("ensembleMemberId"));
 
 		if(result.containsKey("runInfo")){
 			Document runInfo = result.get("runInfo", Document.class);

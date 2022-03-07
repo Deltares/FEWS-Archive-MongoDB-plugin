@@ -112,8 +112,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			query.put("parameterId", List.of(fewsTimeSeriesHeader.getParameterId()));
 			query.put("qualifierId", List.of(qualifierId));
 			query.put("encodedTimeStepId", List.of(fewsTimeSeriesHeader.getTimeStep().getEncoded()));
-			query.put("ensembleId", List.of(fewsTimeSeriesHeader.getEnsembleId() == null ? "" : fewsTimeSeriesHeader.getEnsembleId()));
-			query.put("ensembleMemberId", List.of(fewsTimeSeriesHeader.getEnsembleMemberId() == null ? "" : fewsTimeSeriesHeader.getEnsembleMemberId()));
+			query.put("ensembleId", List.of(fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId()));
+			query.put("ensembleMemberId", List.of(fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId()));
 			query.put("forecastTime", List.of(new Date(fewsTimeSeriesHeader.getForecastTime())));
 
 			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING);
@@ -390,7 +390,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public Set<String> getEnsembleMembers(@NonNull String locationId, @NonNull String parameterId, @NonNull Set<String> moduleInstanceIds, String ensembleId, String[] qualifiers, @NonNull nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
-		ensembleId = ensembleId == null || ensembleId.equals("main") ? "" : ensembleId;
+		ensembleId = ensembleId == null || ensembleId.equals("none") || ensembleId.equals("main") ? "" : ensembleId;
 		qualifiers = qualifiers == null ? new String[]{} : qualifiers;
 
 		Set<String> ensembleMembers = new HashSet<>();
@@ -400,7 +400,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				append("moduleInstanceId", new Document("$in", new ArrayList<>(moduleInstanceIds))).
 				append("ensembleId", ensembleId).
 				append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()), String.class).forEach(ensembleMemberId -> {
-					if(ensembleMemberId != null && !ensembleMemberId.trim().equals(""))
+					if(ensembleMemberId != null && !ensembleMemberId.trim().equals("none") && !ensembleMemberId.trim().equals("0") && !ensembleMemberId.trim().equals(""))
 						ensembleMembers.add(ensembleMemberId);
 				});
 		return ensembleMembers;
@@ -428,7 +428,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public Set<String> getModuleInstanceIds(@NonNull String locationId, @NonNull String parameterId, String ensembleId, String[] qualifiers, @NonNull nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
-		ensembleId = ensembleId == null || ensembleId.equals("main") ? "" : ensembleId;
+		ensembleId = ensembleId == null || ensembleId.equals("none") || ensembleId.equals("main") ? "" : ensembleId;
 		qualifiers = qualifiers == null ? new String[]{} : qualifiers;
 
 		Set<String> moduleInstanceIds = new HashSet<>();
@@ -458,7 +458,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public List<SimulatedTaskRunInfo> getSimulatedTaskRunInfos(@NonNull String locationId, @NonNull String parameterId, @NonNull String moduleInstanceId, String ensembleId, String[] qualifiers, @NonNull Period period, int forecastCount) {
-		ensembleId = ensembleId == null || ensembleId.equals("main") ? "" : ensembleId;
+		ensembleId = ensembleId == null || ensembleId.equals("none") || ensembleId.equals("main") ? "" : ensembleId;
 		qualifiers = qualifiers == null ? new String[]{} : qualifiers;
 
 		List<SimulatedTaskRunInfo> simulatedTaskRunInfos = new ArrayList<>();
@@ -494,7 +494,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public LongUnmodifiableList searchForExternalForecastTimes(@NonNull String locationId, @NonNull String parameterId, @NonNull String moduleInstanceId, String ensembleId, String[] qualifiers, @NonNull nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType, Period period, int forecastCount) {
-		ensembleId = ensembleId == null || ensembleId.equals("main") ? "" : ensembleId;
+		ensembleId = ensembleId == null || ensembleId.equals("none") || ensembleId.equals("main") ? "" : ensembleId;
 		qualifiers = qualifiers == null ? new String[]{} : qualifiers;
 
 		LongListBuilder longListBuilder = new LongListBuilder();
