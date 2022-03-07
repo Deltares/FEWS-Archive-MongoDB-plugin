@@ -312,7 +312,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		Insert.insertMetaDatas(entries, Map.of());
 
 		Set<String> ensembleMembers = mongoDbArchiveDatabaseTimeSeriesReader.getEnsembleMembers("ALCT1", "ADIMF", Set.of("SACSMA_ALCT1_Forecast"), "GEFS.ENS", new String[]{}, TimeSeriesType.SIMULATED_FORECASTING);
-		assertEquals(31, ensembleMembers.size());
+		assertEquals(30, ensembleMembers.size());
 	}
 
 	@Test
