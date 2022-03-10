@@ -15,7 +15,8 @@ import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 
 import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
-import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseImportRequest;
+import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseForecastImportRequest;
+import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseObservedImportRequest;
 import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.SimulatedTaskRunInfo;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
 import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
@@ -64,13 +65,13 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 
 	/**
 	 *
-	 * @param archiveDatabaseImportRequests archiveDatabaseImportRequests
+	 * @param archiveDatabaseForecastImportRequests archiveDatabaseForecastImportRequests
 	 * @return List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>>
 	 */
 	@Override
-	public List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> importForecastDataImportRequests(Set<ArchiveDatabaseImportRequest> archiveDatabaseImportRequests) {
+	public List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> importForecastData(Set<ArchiveDatabaseForecastImportRequest> archiveDatabaseForecastImportRequests) {
 		List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> timeSeriesArrays = new ArrayList<>();
-		archiveDatabaseImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> {
+		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> {
 			try {
 				Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor> result = importForecastDataImportRequest(archiveDatabaseImportRequest.getFewsTimeSeriesHeaders());
 				if(!result.getObject0().isEmpty())
@@ -81,6 +82,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			}
 		});
 		return timeSeriesArrays;
+	}
+
+	@Override
+	public List<TimeSeriesArrays<TimeSeriesHeader>> importObservedData(Set<ArchiveDatabaseObservedImportRequest> archiveDatabaseObservedImportRequest) {
+		return List.of();
 	}
 
 	/**
@@ -106,8 +112,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			query.put("parameterId", List.of(fewsTimeSeriesHeader.getParameterId()));
 			query.put("qualifierId", List.of(qualifierId));
 			query.put("encodedTimeStepId", List.of(fewsTimeSeriesHeader.getTimeStep().getEncoded()));
-			query.put("ensembleId", List.of(fewsTimeSeriesHeader.getEnsembleId() == null ? "" : fewsTimeSeriesHeader.getEnsembleId()));
-			query.put("ensembleMemberId", List.of(fewsTimeSeriesHeader.getEnsembleMemberId() == null ? "" : fewsTimeSeriesHeader.getEnsembleMemberId()));
+			query.put("ensembleId", List.of(fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId()));
+			query.put("ensembleMemberId", List.of(fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId()));
 			query.put("forecastTime", List.of(new Date(fewsTimeSeriesHeader.getForecastTime())));
 
 			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING);
@@ -384,7 +390,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public Set<String> getEnsembleMembers(@NonNull String locationId, @NonNull String parameterId, @NonNull Set<String> moduleInstanceIds, String ensembleId, String[] qualifiers, @NonNull nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
-		ensembleId = ensembleId == null ? "" : ensembleId;
+		ensembleId = ensembleId == null || ensembleId.equals("none") || ensembleId.equals("main") ? "" : ensembleId;
 		qualifiers = qualifiers == null ? new String[]{} : qualifiers;
 
 		Set<String> ensembleMembers = new HashSet<>();
@@ -394,10 +400,21 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				append("moduleInstanceId", new Document("$in", new ArrayList<>(moduleInstanceIds))).
 				append("ensembleId", ensembleId).
 				append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()), String.class).forEach(ensembleMemberId -> {
-					if(ensembleMemberId != null && !ensembleMemberId.trim().equals(""))
+					if(ensembleMemberId != null && !ensembleMemberId.trim().equals("none") && !ensembleMemberId.trim().equals("0") && !ensembleMemberId.trim().equals(""))
 						ensembleMembers.add(ensembleMemberId);
 				});
 		return ensembleMembers;
+	}
+
+	/**
+	 *
+	 * @param timeSeriesHeaders timeSeriesHeaders
+	 * @param period period
+	 * @return Set<Integer>
+	 */
+	@Override
+	public Set<Integer> getAvailableYears(List<TimeSeriesHeader> timeSeriesHeaders, Period period) {
+		return Set.of();
 	}
 
 	/**
@@ -411,15 +428,20 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public Set<String> getModuleInstanceIds(@NonNull String locationId, @NonNull String parameterId, String ensembleId, String[] qualifiers, @NonNull nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType) {
-		ensembleId = ensembleId == null ? "" : ensembleId;
+		ensembleId = ensembleId == null || ensembleId.equals("none") || ensembleId.equals("main") ? "" : ensembleId;
 		qualifiers = qualifiers == null ? new String[]{} : qualifiers;
 
 		Set<String> moduleInstanceIds = new HashSet<>();
 		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType));
-		Database.distinct(collection, "moduleInstanceId", new Document("locationId", locationId).
-				append("parameterId", parameterId).
-				append("ensembleId", ensembleId).
-				append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()), String.class).forEach(moduleInstanceIds::add);
+		List<String> collectionKeys = Database.getCollectionKeys(collection);
+
+		Document query = new Document("locationId", locationId);
+		query.append("parameterId", parameterId);
+		query.append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString());
+		if(collectionKeys.contains("ensembleId"))
+			query.append("ensembleId", ensembleId);
+
+		Database.distinct(collection, "moduleInstanceId", query, String.class).forEach(moduleInstanceIds::add);
 		return moduleInstanceIds;
 	}
 
@@ -436,7 +458,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public List<SimulatedTaskRunInfo> getSimulatedTaskRunInfos(@NonNull String locationId, @NonNull String parameterId, @NonNull String moduleInstanceId, String ensembleId, String[] qualifiers, @NonNull Period period, int forecastCount) {
-		ensembleId = ensembleId == null ? "" : ensembleId;
+		ensembleId = ensembleId == null || ensembleId.equals("none") || ensembleId.equals("main") ? "" : ensembleId;
 		qualifiers = qualifiers == null ? new String[]{} : qualifiers;
 
 		List<SimulatedTaskRunInfo> simulatedTaskRunInfos = new ArrayList<>();
@@ -472,7 +494,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 */
 	@Override
 	public LongUnmodifiableList searchForExternalForecastTimes(@NonNull String locationId, @NonNull String parameterId, @NonNull String moduleInstanceId, String ensembleId, String[] qualifiers, @NonNull nl.wldelft.fews.system.data.timeseries.TimeSeriesType timeSeriesType, Period period, int forecastCount) {
-		ensembleId = ensembleId == null ? "" : ensembleId;
+		ensembleId = ensembleId == null || ensembleId.equals("none") || ensembleId.equals("main") ? "" : ensembleId;
 		qualifiers = qualifiers == null ? new String[]{} : qualifiers;
 
 		LongListBuilder longListBuilder = new LongListBuilder();
