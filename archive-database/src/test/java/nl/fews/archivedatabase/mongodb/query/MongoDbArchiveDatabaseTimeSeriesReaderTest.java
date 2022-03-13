@@ -254,7 +254,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		timeSeriesHeader.setEnsembleMemberId("ensembleMemberId");
 		timeSeriesHeader.setForecastTime(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime());
 
-		List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> timeSeriesHeaders = mongoDbArchiveDatabaseTimeSeriesReader.importForecastData(Set.of(new ArchiveDatabaseForecastImportRequest(List.of(timeSeriesHeader))));
+		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesHeaders = mongoDbArchiveDatabaseTimeSeriesReader.importExternalForecasting(Set.of(new ArchiveDatabaseForecastImportRequest(List.of(timeSeriesHeader))));
 		//TimeSeriesArrays<TimeSeriesHeader> results = mongoDbArchiveDatabaseTimeSeriesReader.importSingleDataImportRequest(singleExternalDataImportRequests.get(0));
 		assertEquals(0, timeSeriesHeaders.size());
 	}
