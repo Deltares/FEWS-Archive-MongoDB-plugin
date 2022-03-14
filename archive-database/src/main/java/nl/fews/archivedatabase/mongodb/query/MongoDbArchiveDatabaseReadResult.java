@@ -1,7 +1,7 @@
 package nl.fews.archivedatabase.mongodb.query;
 
 import com.mongodb.client.MongoCursor;
-import nl.fews.archivedatabase.mongodb.query.utils.TimeSeriesArrayUtil;
+import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesArrayUtil;
 import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseReadResult;
 import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;

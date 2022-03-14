@@ -9,7 +9,7 @@ import nl.fews.archivedatabase.mongodb.query.interfaces.Summarize;
 import nl.fews.archivedatabase.mongodb.query.operations.Filter;
 import nl.fews.archivedatabase.mongodb.query.operations.ReadBuckets;
 import nl.fews.archivedatabase.mongodb.query.operations.ReadSingletons;
-import nl.fews.archivedatabase.mongodb.query.utils.TimeSeriesArrayUtil;
+import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesArrayUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
@@ -675,16 +675,16 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), List.of(
 				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
 				new Document("$limit", forecastCount),
-				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$runInfo.taskRunId").append("time0", "$runInfo.time0").append("dispatchTime", "$runInfo.dispatchTime"))),
+				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$runInfo.taskRunId").append("forecastTime", "$forecastTime").append("dispatchTime", "$runInfo.dispatchTime"))),
 				new Document("$replaceRoot", new Document("newRoot", "$_id")))).forEach(result ->
-				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("_id.workflowId"), result.getString("_id.taskRunId"), result.getDate("_id.time0").getTime(), result.getDate("_id.dispatchTime").getTime())));
+				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("workflowId"), result.getString("taskRunId"), result.getDate("forecastTime").getTime(), result.getDate("dispatchTime").getTime())));
 
 		Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), List.of(
 				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
 				new Document("$limit", forecastCount),
-				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$runInfo.taskRunId").append("time0", "$runInfo.time0").append("dispatchTime", "$runInfo.dispatchTime"))),
+				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$runInfo.taskRunId").append("forecastTime", "$forecastTime").append("dispatchTime", "$runInfo.dispatchTime"))),
 				new Document("$replaceRoot", new Document("newRoot", "$_id")))).forEach(result ->
-				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("workflowId"), result.getString("taskRunId"), result.getDate("time0").getTime(), result.getDate("dispatchTime").getTime())));
+				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("workflowId"), result.getString("taskRunId"), result.getDate("forecastTime").getTime(), result.getDate("dispatchTime").getTime())));
 
 		return simulatedTaskRunInfos;
 	}

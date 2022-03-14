@@ -33,11 +33,9 @@ public class ScalarSimulatedForecasting extends ScalarTimeSeries implements Time
 		String ensembleId = header.getEnsembleId() == null || header.getEnsembleId().equals("none") || header.getEnsembleId().equals("main") ? "" : header.getEnsembleId();
 		String ensembleMemberId = header.getEnsembleMemberId() == null || header.getEnsembleMemberId().equals("none") || header.getEnsembleMemberId().equals("0") ? "" : header.getEnsembleMemberId();
 		Date forecastTime = runInfo.get("time0") instanceof Date ? runInfo.getDate("time0") : new Date(Long.MIN_VALUE);
+		forecastTime = forecastTime.getTime() == Long.MIN_VALUE ? new Date(header.getForecastTime()) : forecastTime;
 		Date localForecastTime = Settings.get("archiveDatabaseTimeConverter") == null ? null : DateUtil.getDates(Settings.get("archiveDatabaseTimeConverter", ArchiveDatabaseTimeConverter.class).convert(new long[]{header.getForecastTime()}))[0];
 		String taskRunId = runInfo.getString("taskRunId");
-
-		if (forecastTime.getTime() == Long.MIN_VALUE)
-			forecastTime = new Date(header.getForecastTime());
 
 		if (forecastTime.getTime() == Long.MIN_VALUE)
 			throw new IllegalArgumentException("header.getForecastTime() cannot be null or default");

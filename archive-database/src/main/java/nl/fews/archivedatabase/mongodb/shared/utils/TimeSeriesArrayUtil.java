@@ -1,4 +1,4 @@
-package nl.fews.archivedatabase.mongodb.query.utils;
+package nl.fews.archivedatabase.mongodb.shared.utils;
 
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
