@@ -339,7 +339,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		Insert.insertMetaDatas(entries, Map.of());
 
-		List<SimulatedTaskRunInfo> simulatedTaskRunInfos = mongoDbArchiveDatabaseTimeSeriesReader.getSimulatedTaskRunInfos("ALCT1", "ADIMF", "SACSMA_ALCT1_Forecast", "GEFS.ENS", new String[]{}, "", new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2022-01-01").getTime()),1000);
+		List<SimulatedTaskRunInfo> simulatedTaskRunInfos = mongoDbArchiveDatabaseTimeSeriesReader.getSimulatedTaskRunInfos("ALCT1", "ADIMF", "SACSMA_ALCT1_Forecast", "GEFS.ENS", new String[]{}, "DTOD_0_6_12_18TZ_CST", new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2022-01-01").getTime()),1000);
 		assertEquals(1, simulatedTaskRunInfos.size());
 	}
 
