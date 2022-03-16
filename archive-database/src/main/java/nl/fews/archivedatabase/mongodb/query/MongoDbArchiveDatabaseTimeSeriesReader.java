@@ -30,6 +30,7 @@ import org.bson.Document;
 import org.json.JSONArray;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -122,7 +123,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	public List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> importSimulatedForecasting(Set<ArchiveDatabaseForecastImportRequest> archiveDatabaseForecastImportRequests) {
 		List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> timeSeriesArrays = new ArrayList<>();
 		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> {
-			Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor> result = importSimulatedForecasting(archiveDatabaseImportRequest.getFewsTimeSeriesHeaders());
+			Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor> result = importSimulatedForecasting(archiveDatabaseImportRequest.getFewsTimeSeriesHeaders(), archiveDatabaseImportRequest.getTaskRunIds());
 			if(!result.getObject0().isEmpty())
 				timeSeriesArrays.add(result);
 		});
@@ -134,11 +135,16 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @param fewsTimeSeriesHeaders fewsTimeSeriesHeaders
 	 * @return Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>
 	 */
-	private Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor> importSimulatedForecasting(@NonNull List<TimeSeriesHeader> fewsTimeSeriesHeaders) {
+	private Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor> importSimulatedForecasting(@NonNull List<TimeSeriesHeader> fewsTimeSeriesHeaders, List<String> taskRunIds) {
 		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArrays = new ArrayList<>();
 		List<SystemActivityDescriptor> systemActivityDescriptors = new ArrayList<>();
 
+		if(fewsTimeSeriesHeaders.size() != taskRunIds.size())
+			throw new IllegalArgumentException("fewsTimeSeriesHeaders.size() != taskRunIds.size()");
+
+		AtomicInteger index = new AtomicInteger();
 		fewsTimeSeriesHeaders.parallelStream().forEach(fewsTimeSeriesHeader -> {
+			String taskRunId = taskRunIds.get(index.getAndIncrement());
 			Map<String, List<Object>> query = new HashMap<>();
 
 			List<String> qualifierIds = new ArrayList<>();
@@ -154,6 +160,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			query.put("ensembleId", List.of(fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId()));
 			query.put("ensembleMemberId", List.of(fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId()));
 			query.put("forecastTime", List.of(new Date(fewsTimeSeriesHeader.getForecastTime())));
+			query.put("taskRunId", new ArrayList<>(taskRunIds));
+			query.put("taskRunId", List.of(taskRunId));
 
 			MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), query);
 			if (results.hasNext()) {
@@ -661,26 +669,27 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @param moduleInstanceId moduleInstanceId
 	 * @param ensembleId ensembleId
 	 * @param qualifiers qualifiers
+	 * @param taskRunId taskRunId
 	 * @param period period
 	 * @param forecastCount forecastCount
 	 * @return List<SimulatedTaskRunInfo>
 	 */
 	@Override
-	public List<SimulatedTaskRunInfo> getSimulatedTaskRunInfos(@NonNull String locationId, @NonNull String parameterId, @NonNull String moduleInstanceId, String ensembleId, String[] qualifiers, @NonNull Period period, int forecastCount) {
+	public List<SimulatedTaskRunInfo> getSimulatedTaskRunInfos(@NonNull String locationId, @NonNull String parameterId, @NonNull String moduleInstanceId, String ensembleId, String[] qualifiers, String taskRunId, @NonNull Period period, int forecastCount) {
 		ensembleId = ensembleId == null || ensembleId.equals("none") || ensembleId.equals("main") ? "" : ensembleId;
 		qualifiers = qualifiers == null ? new String[]{} : qualifiers;
 
 		List<SimulatedTaskRunInfo> simulatedTaskRunInfos = new ArrayList<>();
 
 		Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), List.of(
-				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
+				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("taskRunId", taskRunId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
 				new Document("$limit", forecastCount),
 				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$runInfo.taskRunId").append("forecastTime", "$forecastTime").append("dispatchTime", "$runInfo.dispatchTime"))),
 				new Document("$replaceRoot", new Document("newRoot", "$_id")))).forEach(result ->
 				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("workflowId"), result.getString("taskRunId"), result.getDate("forecastTime").getTime(), result.getDate("dispatchTime").getTime())));
 
 		Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), List.of(
-				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
+				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("taskRunId", taskRunId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
 				new Document("$limit", forecastCount),
 				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$runInfo.taskRunId").append("forecastTime", "$forecastTime").append("dispatchTime", "$runInfo.dispatchTime"))),
 				new Document("$replaceRoot", new Document("newRoot", "$_id")))).forEach(result ->
