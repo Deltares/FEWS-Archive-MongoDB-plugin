@@ -3,12 +3,19 @@ package nl.fews.archivedatabase.mongodb.shared.utils;
 import com.mongodb.client.AggregateIterable;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.BucketSize;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public final class TimeSeriesUtil {
+
+	/**
+	 *
+	 */
+	private static final Logger logger = LogManager.getLogger(TimeSeriesUtil.class);
 
 	/**
 	 * Static Class
@@ -70,6 +77,12 @@ public final class TimeSeriesUtil {
 		return timeSeriesDocuments;
 	}
 
+	/**
+	 *
+	 * @param bucketKeyDocument bucketKeyDocument
+	 * @param collection collection
+	 * @return List<Document>
+	 */
 	public static List<Document> getStitchedTimeSeries(Document bucketKeyDocument, String collection){
 		Map<Date, Document> timeSeries = new HashMap<>();
 
@@ -101,9 +114,14 @@ public final class TimeSeriesUtil {
 		for (Document result: results)
 			timeSeries.add(result);
 
-		timeSeries.sort(Comparator.comparing(c -> c.getDate("t")));
+		List<Document> timeSeriesDeduplicate = timeSeries.stream().collect(Collectors.groupingBy(t -> t.getDate("t"))).values().stream().map(s -> s.get(0)).sorted(Comparator.comparing(s -> s.getDate("t"))).collect(Collectors.toList());
 
-		return timeSeries;
+		if(timeSeries.size() != timeSeriesDeduplicate.size()){
+			Exception ex = new Exception(String.format("Duplicate event dates found and removed -> [%s]", timeSeries.stream().collect(Collectors.groupingBy(t -> t.getDate("t"))).entrySet().stream().filter(f -> f.getValue().size() > 1).map(s -> String.format("%s: %s", s.getKey().toString(), s.getValue().size()))));
+			logger.warn(LogUtil.getLogMessageJson(ex, Map.of("collection", collection, "bucketKeyDocument", bucketKeyDocument)).toJson(), ex);
+		}
+
+		return timeSeriesDeduplicate;
 	}
 
 	/**

@@ -56,6 +56,7 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 				testSettings.getJSONObject("properties").toMap().forEach((k, v) -> builder.addObject(k, v.toString()));
 				migrateDatabase.setProperties(builder.build());
 			}
+
 			LogUtils.addAppender(MongoDbAppender.createAppender("databaseLogAppender", Settings.get("connectionString"), null));
 			migrateDatabase.migrate(
 					testSettings.get("areaId") != JSONObject.NULL ? testSettings.getString("areaId") : null,
@@ -72,7 +73,7 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 			mongoDbArchiveDatabase.setArchiveDatabaseUrl(testSettings.getString("archiveDatabaseUrl"));
 			mongoDbArchiveDatabase.setUserNamePassword(testSettings.isNull("userName") ? "" : testSettings.getString("userName"), testSettings.isNull("password") ? "" : testSettings.getString("password"));
 
-			MongoDbOpenArchiveToArchiveDatabaseMigrator migrateDatabase = MongoDbOpenArchiveToArchiveDatabaseMigrator.create();
+			MongoDbOpenArchiveToArchiveDatabaseMigrator migrateDatabase = (MongoDbOpenArchiveToArchiveDatabaseMigrator)mongoDbArchiveDatabase.getOpenArchiveToArchiveDatabaseMigrator();
 			OpenArchiveToArchiveDatabaseMigrationSettings openArchiveToArchiveDatabaseMigrationSettings = new OpenArchiveToArchiveDatabaseMigrationSettings(
 					testSettings.getInt("databaseBaseThreads"),
 					testSettings.getInt("netcdfReadThreads"),
@@ -82,6 +83,7 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 			migrateDatabase.setTimeConverter(new TestUtil.ArchiveDatabaseTimeConverterTestImplementation());
 			migrateDatabase.setUnitConverter(new TestUtil.ArchiveDatabaseUnitConverterTestImplementation());
 			migrateDatabase.setRegionConfigInfoProvider(new TestUtil.ArchiveDatabaseRegionConfigInfoProviderTestImplementation());
+
 			migrateDatabase.finalizeMigration(true);
 		}
 	}

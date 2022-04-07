@@ -731,6 +731,7 @@ public final class Database {
 					new Document(Stream.of("parameterId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("moduleInstanceId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("metaData.areaId", "forecastTime", "moduleInstanceId", "parameterId", "encodedTimeStepId","metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+					new Document(Stream.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
 			}),
 			Map.entry(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), new Document[]{
@@ -762,6 +763,7 @@ public final class Database {
 					new Document(Stream.of("parameterId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("moduleInstanceId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("metaData.areaId", "startTime", "endTime", "moduleInstanceId", "parameterId", "encodedTimeStepId","metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+					new Document(Stream.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
 			}),
 			Map.entry(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET), new Document[]{
@@ -829,6 +831,7 @@ public final class Database {
 					new Document(Stream.of("parameterId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("moduleInstanceId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("metaData.areaId", "forecastTime", "moduleInstanceId", "parameterId", "encodedTimeStepId","metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+					new Document(Stream.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
 			}),
 			Map.entry(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), new Document[]{
@@ -868,6 +871,7 @@ public final class Database {
 					new Document(Stream.of("parameterId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("moduleInstanceId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("metaData.areaId", "forecastTime", "moduleInstanceId", "parameterId", "encodedTimeStepId","metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+					new Document(Stream.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
 			}),
 			Map.entry(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED), new Document[]{
@@ -897,6 +901,7 @@ public final class Database {
 					new Document(Stream.of("parameterId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("moduleInstanceId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("metaData.areaId", "startTime", "endTime", "moduleInstanceId", "parameterId", "encodedTimeStepId","metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+					new Document(Stream.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
 			}),
 			Map.entry(Collection.MigrateMetaData.toString(), new Document[]{

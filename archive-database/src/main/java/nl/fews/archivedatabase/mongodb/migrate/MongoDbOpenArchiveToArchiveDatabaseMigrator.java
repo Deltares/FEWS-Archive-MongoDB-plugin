@@ -159,8 +159,8 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 
 		Database.dropCollection(bucketCollection);
 		Database.ensureCollection(bucketCollection);
-		BucketHistorical bucketHistorical = new BucketScalarExternalHistorical();
-		bucketHistorical.bucketGroups(singletonCollection, bucketCollection);
+		BucketScalarExternalHistorical bucketScalarExternalHistorical = new BucketScalarExternalHistorical();
+		bucketScalarExternalHistorical.bucketGroups(singletonCollection, bucketCollection);
 	}
 
 	/**
@@ -172,8 +172,8 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 
 		Database.dropCollection(bucketCollection);
 		Database.ensureCollection(bucketCollection);
-		BucketHistorical bucketHistorical = new BucketScalarSimulatedHistorical();
-		bucketHistorical.bucketGroups(singletonCollection, bucketCollection);
+		BucketScalarSimulatedHistorical bucketScalarSimulatedHistorical = new BucketScalarSimulatedHistorical();
+		bucketScalarSimulatedHistorical.bucketGroups(singletonCollection, bucketCollection);
 	}
 
 	/**

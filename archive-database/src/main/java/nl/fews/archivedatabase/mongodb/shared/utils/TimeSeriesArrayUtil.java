@@ -12,11 +12,19 @@ import nl.wldelft.util.timeseries.IrregularTimeStep;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import nl.wldelft.util.timeseries.TimeStepUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TimeSeriesArrayUtil {
+
+	/**
+	 *
+	 */
+	private static final Logger logger = LogManager.getLogger(TimeSeriesArrayUtil.class);
 
 	/**
 	 *
@@ -128,19 +136,26 @@ public class TimeSeriesArrayUtil {
 		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
 
 		if (!events.isEmpty()){
-			long[] times = new long[events.size()];
-			for (int i = 0; i < events.size(); i++)
-				times[i] = events.get(i).getDate("t").getTime();
+			List<Document> eventsDeduplicate = events.stream().collect(Collectors.groupingBy(t -> t.getDate("t"))).values().stream().map(s -> s.get(0)).collect(Collectors.toList());
+
+			if(events.size() != eventsDeduplicate.size()) {
+				Exception ex = new Exception(String.format("Duplicate event dates found and removed -> [%s]", events.stream().collect(Collectors.groupingBy(t -> t.getDate("t"))).entrySet().stream().filter(f -> f.getValue().size() > 1).map(s -> String.format("%s: %s", s.getKey().toString(), s.getValue().size()))));
+				logger.warn(LogUtil.getLogMessageJson(ex, Map.of("timeSeriesHeader", timeSeriesHeader.toString())).toJson(), ex);
+			}
+
+			long[] times = new long[eventsDeduplicate.size()];
+			for (int i = 0; i < eventsDeduplicate.size(); i++)
+				times[i] = eventsDeduplicate.get(i).getDate("t").getTime();
 
 			if(timeSeriesHeader.getTimeStep() == IrregularTimeStep.INSTANCE)
 				timeSeriesArray.ensureTimes(times);
 			else
 				timeSeriesArray.ensurePeriod(new Period(times[0], times[times.length-1]));
 
-			for (int i = 0; i < events.size(); i++)  {
-				timeSeriesArray.setValue(i,  events.get(i).get("v") != null ? events.get(i).getDouble("v").floatValue() : Float.NaN);
-				timeSeriesArray.setFlag(i, events.get(i).getInteger("f").byteValue());
-				timeSeriesArray.setComment(i, events.get(i).getString("c"));
+			for (int i = 0; i < eventsDeduplicate.size(); i++)  {
+				timeSeriesArray.setValue(i,  eventsDeduplicate.get(i).get("v") != null ? eventsDeduplicate.get(i).getDouble("v").floatValue() : Float.NaN);
+				timeSeriesArray.setFlag(i, eventsDeduplicate.get(i).getInteger("f").byteValue());
+				timeSeriesArray.setComment(i, eventsDeduplicate.get(i).getString("c"));
 			}
 		}
 		return timeSeriesArray;
