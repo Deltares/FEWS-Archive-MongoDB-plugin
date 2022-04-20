@@ -8,10 +8,7 @@ import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
 import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
 import nl.wldelft.util.Box;
 import nl.wldelft.util.Period;
-import nl.wldelft.util.timeseries.IrregularTimeStep;
-import nl.wldelft.util.timeseries.TimeSeriesArray;
-import nl.wldelft.util.timeseries.TimeSeriesHeader;
-import nl.wldelft.util.timeseries.TimeStepUtils;
+import nl.wldelft.util.timeseries.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
@@ -92,14 +89,14 @@ public class TimeSeriesArrayUtil {
 			}
 			else if (b < a){
 				if(b > lastDate){
-					mergedEvents.add(new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)));
+					mergedEvents.add(new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)).append("fs", FlagSource.get(requestTimeSeriesArray.getFlagSource(y)).getId()));
 					lastDate = b;
 				}
 				y++;
 			}
 			else{
 				if (a > lastDate) {
-					mergedEvents.add(requestTimeSeriesArray.isValueReliable(y) ? new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)) : events.get(x));
+					mergedEvents.add(requestTimeSeriesArray.isValueReliable(y) ? new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)).append("fs", FlagSource.get(requestTimeSeriesArray.getFlagSource(y)).getId()) : events.get(x));
 					lastDate = a;
 				}
 				x++;
@@ -117,7 +114,7 @@ public class TimeSeriesArrayUtil {
 		while(y < requestTimeSeriesArray.size()) {
 			long b = requestTimeSeriesArray.getTime(y);
 			if(b > lastDate) {
-				mergedEvents.add(new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)));
+				mergedEvents.add(new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)).append("fs", FlagSource.get(requestTimeSeriesArray.getFlagSource(y)).getId()));
 				lastDate = b;
 			}
 			y++;

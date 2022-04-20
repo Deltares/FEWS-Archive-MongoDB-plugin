@@ -78,6 +78,7 @@ public final class NetcdfUtil {
 			mergedTimeSeriesArray.setValue(i,  timeSeriesArray.getValue(i));
 			mergedTimeSeriesArray.setFlag(i, timeSeriesArray.getFlag(i));
 			mergedTimeSeriesArray.setComment(i, timeSeriesArray.getComment(i));
+			mergedTimeSeriesArray.setFlagSource(i, timeSeriesArray.getFlagSource(i));
 		}
 
 		return mergedTimeSeriesArray;

@@ -7,6 +7,7 @@ import nl.fews.archivedatabase.mongodb.shared.utils.LogUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
+import nl.wldelft.util.timeseries.FlagSource;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.apache.logging.log4j.LogManager;
@@ -154,6 +155,7 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 
 			int flag = timeSeriesArray.getFlag(i);
 			String comment = timeSeriesArray.getComment(i);
+			String flagSource = FlagSource.get(timeSeriesArray.getFlagSource(i)).getId();
 
 			Document document = new Document();
 
@@ -165,6 +167,7 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 
 			document.append("f", flag);
 			if (comment != null) document.append("c", comment);
+			if (flagSource != null) document.append("fs", flagSource);
 
 			documents.add(document);
 		}
