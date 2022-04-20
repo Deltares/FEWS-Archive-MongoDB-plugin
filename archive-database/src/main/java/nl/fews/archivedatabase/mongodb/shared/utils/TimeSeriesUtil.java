@@ -117,7 +117,7 @@ public final class TimeSeriesUtil {
 		List<Document> timeSeriesDeduplicate = timeSeries.stream().collect(Collectors.groupingBy(t -> t.getDate("t"))).values().stream().map(s -> s.get(0)).sorted(Comparator.comparing(s -> s.getDate("t"))).collect(Collectors.toList());
 
 		if(timeSeries.size() != timeSeriesDeduplicate.size()){
-			Exception ex = new Exception(String.format("Duplicate event dates found and removed -> [%s]", timeSeries.stream().collect(Collectors.groupingBy(t -> t.getDate("t"))).entrySet().stream().filter(f -> f.getValue().size() > 1).map(s -> String.format("%s: %s", s.getKey().toString(), s.getValue().size()))));
+			Exception ex = new Exception(String.format("Duplicate event dates found and removed -> [%s]", timeSeries.stream().collect(Collectors.groupingBy(t -> t.getDate("t"))).entrySet().stream().filter(f -> f.getValue().size() > 1).map(s -> String.format("%s: %s", s.getKey().toString(), s.getValue().size())).collect(Collectors.joining(","))));
 			logger.warn(LogUtil.getLogMessageJson(ex, Map.of("collection", collection, "bucketKeyDocument", bucketKeyDocument)).toJson(), ex);
 		}
 
