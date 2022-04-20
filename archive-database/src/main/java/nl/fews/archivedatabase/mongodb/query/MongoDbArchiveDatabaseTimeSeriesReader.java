@@ -30,7 +30,6 @@ import org.bson.Document;
 import org.json.JSONArray;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -125,11 +124,9 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 
 		List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> timeSeriesArrays = new ArrayList<>();
 		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> {
-			AtomicInteger index = new AtomicInteger();
-			archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().parallelStream().forEach(fewsTimeSeriesHeader -> {
-				String taskRunId = archiveDatabaseImportRequest.getTaskRunIds().get(index.getAndIncrement());
-				timeSeriesArrays.addAll(importSimulatedForecasting(fewsTimeSeriesHeader, taskRunId));
-			});
+			IntStream.range(0, archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().size()).parallel().forEach(i ->
+				timeSeriesArrays.addAll(importSimulatedForecasting(archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().get(i), archiveDatabaseImportRequest.getTaskRunIds().get(i)))
+			);
 		});
 		return timeSeriesArrays;
 	}
@@ -156,7 +153,6 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		query.put("encodedTimeStepId", List.of(fewsTimeSeriesHeader.getTimeStep().getEncoded()));
 		query.put("ensembleId", List.of(fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId()));
 		query.put("ensembleMemberId", List.of(fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId()));
-		query.put("forecastTime", List.of(new Date(fewsTimeSeriesHeader.getForecastTime())));
 		query.put("taskRunId", List.of(taskRunId));
 
 		MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), query);
