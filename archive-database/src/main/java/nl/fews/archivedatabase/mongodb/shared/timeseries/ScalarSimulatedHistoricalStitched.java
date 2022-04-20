@@ -22,7 +22,7 @@ public final class ScalarSimulatedHistoricalStitched extends ScalarTimeSeries im
 		Document document = super.getRoot(header, eventDocuments, runInfo);
 
 		String ensembleId = header.getEnsembleId() == null || header.getEnsembleId().equals("none") || header.getEnsembleId().equals("main") ? "" : header.getEnsembleId();
-		String ensembleMemberId = header.getEnsembleMemberId() == null || header.getEnsembleMemberId().equals("none") || header.getEnsembleMemberId().equals("0") ? "" : header.getEnsembleMemberId();
+		String ensembleMemberId = header.getEnsembleMemberId() == null || header.getEnsembleMemberId().equals("none") || header.getEnsembleMemberId().equals("0") ? ensembleId : header.getEnsembleMemberId();
 
 		document.append("ensembleId", ensembleId);
 		document.append("ensembleMemberId", ensembleMemberId);

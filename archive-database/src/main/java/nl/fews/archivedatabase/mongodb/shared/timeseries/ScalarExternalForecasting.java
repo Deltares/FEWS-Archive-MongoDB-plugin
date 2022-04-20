@@ -27,7 +27,7 @@ public class ScalarExternalForecasting extends ScalarTimeSeries implements TimeS
 		Document document = super.getRoot(header, eventDocuments, runInfo);
 
 		String ensembleId = header.getEnsembleId() == null || header.getEnsembleId().equals("none") || header.getEnsembleId().equals("main") ? "" : header.getEnsembleId();
-		String ensembleMemberId = header.getEnsembleMemberId() == null || header.getEnsembleMemberId().equals("none") || header.getEnsembleMemberId().equals("0") ? "" : header.getEnsembleMemberId();
+		String ensembleMemberId = header.getEnsembleMemberId() == null || header.getEnsembleMemberId().equals("none") || header.getEnsembleMemberId().equals("0") ? ensembleId : header.getEnsembleMemberId();
 		Date forecastTime = new Date(header.getForecastTime());
 		Date localForecastTime = Settings.get("archiveDatabaseTimeConverter") == null ? null : DateUtil.getDates(Settings.get("archiveDatabaseTimeConverter", ArchiveDatabaseTimeConverter.class).convert(new long[]{header.getForecastTime()}))[0];
 
