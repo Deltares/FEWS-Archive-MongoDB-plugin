@@ -9,8 +9,15 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDat
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.OpenArchiveToArchiveDatabaseMigrator;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeSeriesReader;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader> {
+
+	/**
+	 *
+	 */
+	private static final Logger logger = LogManager.getLogger(MongoDbArchiveDatabase.class);
 
 	/**
 	 *
@@ -44,6 +51,7 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 	public static MongoDbArchiveDatabase create(){
 		if(mongoDbArchiveDatabase == null)
 			mongoDbArchiveDatabase = new MongoDbArchiveDatabase();
+		logger.info("{} Version: {}", MongoDbArchiveDatabase.class.getSimpleName(), MongoDbArchiveDatabase.class.getPackage().getImplementationVersion());
 		return mongoDbArchiveDatabase;
 	}
 
@@ -78,7 +86,6 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 			mongoDbOpenArchiveToArchiveDatabaseMigrator = MongoDbOpenArchiveToArchiveDatabaseMigrator.create();
 		return mongoDbOpenArchiveToArchiveDatabaseMigrator;
 	}
-
 
 	/**
 	 * 
