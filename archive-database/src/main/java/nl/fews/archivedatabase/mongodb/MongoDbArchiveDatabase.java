@@ -44,6 +44,10 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 	 */
 	private MongoDbArchiveDatabase(){}
 
+	static{
+		logger.info("{} Version: {}", MongoDbArchiveDatabase.class.getSimpleName(), MongoDbArchiveDatabase.class.getPackage().getImplementationVersion());
+	}
+
 	/**
 	 *
 	 * @return MongoDbArchiveDatabase
@@ -51,7 +55,6 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 	public static MongoDbArchiveDatabase create(){
 		if(mongoDbArchiveDatabase == null)
 			mongoDbArchiveDatabase = new MongoDbArchiveDatabase();
-		logger.info("{} Version: {}", MongoDbArchiveDatabase.class.getSimpleName(), MongoDbArchiveDatabase.class.getPackage().getImplementationVersion());
 		return mongoDbArchiveDatabase;
 	}
 
