@@ -33,11 +33,19 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  *
  */
 @SuppressWarnings("unchecked")
 public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTimeSeriesReader {
+
+	/**
+	 *
+	 */
+	private static final Logger logger = LogManager.getLogger(MongoDbArchiveDatabaseTimeSeriesReader.class);
 
 	/**
 	 *
@@ -94,19 +102,29 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
 			qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
 		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
+		String locationId = fewsTimeSeriesHeader.getLocationId();
+		String parameterId = fewsTimeSeriesHeader.getParameterId();
+		String encodedTimeStepId = fewsTimeSeriesHeader.getTimeStep() == null ? null : fewsTimeSeriesHeader.getTimeStep().getEncoded();
 
-		Map<String, List<Object>> query = new HashMap<>();
-		query.put("moduleInstanceId", List.of(fewsTimeSeriesHeader.getModuleInstanceId()));
-		query.put("locationId", List.of(fewsTimeSeriesHeader.getLocationId()));
-		query.put("parameterId", List.of(fewsTimeSeriesHeader.getParameterId()));
-		query.put("qualifierId", List.of(qualifierId));
-		query.put("encodedTimeStepId", List.of(fewsTimeSeriesHeader.getTimeStep().getEncoded()));
+		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
+			logger.warn(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s",
+					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId));
+		}
+		else {
+			Map<String, List<Object>> query = new HashMap<>();
+			query.put("moduleInstanceId", List.of(moduleInstanceId));
+			query.put("locationId", List.of(locationId));
+			query.put("parameterId", List.of(parameterId));
+			query.put("qualifierId", List.of(qualifierId));
+			query.put("encodedTimeStepId", List.of(encodedTimeStepId));
 
-		MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), query, period.getStartDate(), period.getEndDate());
-		if (results.hasNext()) {
-			Document result = results.next();
-			Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, result);
-			timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), query, period.getStartDate(), period.getEndDate());
+			if (results.hasNext()) {
+				Document result = results.next();
+				Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, result);
+				timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			}
 		}
 		return new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0]));
 	}
@@ -144,23 +162,35 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
 			qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
 		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
+		String locationId = fewsTimeSeriesHeader.getLocationId();
+		String parameterId = fewsTimeSeriesHeader.getParameterId();
+		String encodedTimeStepId = fewsTimeSeriesHeader.getTimeStep() == null ? null : fewsTimeSeriesHeader.getTimeStep().getEncoded();
+		String ensembleId = fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId();
+		String ensembleMemberId = fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId();
 
-		Map<String, List<Object>> query = new HashMap<>();
-		query.put("moduleInstanceId", List.of(fewsTimeSeriesHeader.getModuleInstanceId()));
-		query.put("locationId", List.of(fewsTimeSeriesHeader.getLocationId()));
-		query.put("parameterId", List.of(fewsTimeSeriesHeader.getParameterId()));
-		query.put("qualifierId", List.of(qualifierId));
-		query.put("encodedTimeStepId", List.of(fewsTimeSeriesHeader.getTimeStep().getEncoded()));
-		query.put("ensembleId", List.of(fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId()));
-		query.put("ensembleMemberId", List.of(fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId()));
-		query.put("taskRunId", List.of(taskRunId));
+		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
+			logger.warn(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s, taskRunId=%s",
+					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId, taskRunId));
+		}
+		else {
+			Map<String, List<Object>> query = new HashMap<>();
+			query.put("moduleInstanceId", List.of(moduleInstanceId));
+			query.put("locationId", List.of(locationId));
+			query.put("parameterId", List.of(parameterId));
+			query.put("qualifierId", List.of(qualifierId));
+			query.put("encodedTimeStepId", List.of(encodedTimeStepId));
+			query.put("ensembleId", List.of(ensembleId));
+			query.put("ensembleMemberId", List.of(ensembleMemberId));
+			query.put("taskRunId", List.of(taskRunId));
 
-		MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), query);
-		if (results.hasNext()) {
-			Document result = results.next();
-			Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result);
-			timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
-			timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), query);
+			if (results.hasNext()) {
+				Document result = results.next();
+				Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result);
+				timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
+				timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			}
 		}
 		return timeSeriesArrays.entrySet().stream().map(k -> new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(k.getValue().toArray(new TimeSeriesArray[0])), k.getKey())).collect(Collectors.toList());
 	}
@@ -192,22 +222,35 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
 			qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
 		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
+		String locationId = fewsTimeSeriesHeader.getLocationId();
+		String parameterId = fewsTimeSeriesHeader.getParameterId();
+		String encodedTimeStepId = fewsTimeSeriesHeader.getTimeStep() == null ? null : fewsTimeSeriesHeader.getTimeStep().getEncoded();
+		String ensembleId = fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId();
+		String ensembleMemberId = fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId();
+		Date forecastTime = new Date(fewsTimeSeriesHeader.getForecastTime());
 
-		query.put("moduleInstanceId", List.of(fewsTimeSeriesHeader.getModuleInstanceId()));
-		query.put("locationId", List.of(fewsTimeSeriesHeader.getLocationId()));
-		query.put("parameterId", List.of(fewsTimeSeriesHeader.getParameterId()));
-		query.put("qualifierId", List.of(qualifierId));
-		query.put("encodedTimeStepId", List.of(fewsTimeSeriesHeader.getTimeStep().getEncoded()));
-		query.put("ensembleId", List.of(fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId()));
-		query.put("ensembleMemberId", List.of(fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId()));
-		query.put("forecastTime", List.of(new Date(fewsTimeSeriesHeader.getForecastTime())));
+		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
+			logger.warn(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s, forecastTime=%s",
+					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId, forecastTime));
+		}
+		else {
+			query.put("moduleInstanceId", List.of(moduleInstanceId));
+			query.put("locationId", List.of(locationId));
+			query.put("parameterId", List.of(parameterId));
+			query.put("qualifierId", List.of(qualifierId));
+			query.put("encodedTimeStepId", List.of(encodedTimeStepId));
+			query.put("ensembleId", List.of(ensembleId));
+			query.put("ensembleMemberId", List.of(ensembleMemberId));
+			query.put("forecastTime", List.of(forecastTime));
 
-		MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), query);
-		if (results.hasNext()) {
-			Document result = results.next();
-			Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
-			timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
-			timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), query);
+			if (results.hasNext()) {
+				Document result = results.next();
+				Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
+				timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
+				timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			}
 		}
 		return timeSeriesArrays.entrySet().stream().map(k -> new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(k.getValue().toArray(new TimeSeriesArray[0])), k.getKey())).collect(Collectors.toList());
 	}
@@ -229,21 +272,33 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
 			qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
 		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
+		String locationId = fewsTimeSeriesHeader.getLocationId();
+		String parameterId = fewsTimeSeriesHeader.getParameterId();
+		String encodedTimeStepId = fewsTimeSeriesHeader.getTimeStep() == null ? null : fewsTimeSeriesHeader.getTimeStep().getEncoded();
+		String ensembleId = fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId();
+		String ensembleMemberId = fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId();
 
-		query.put("moduleInstanceId", List.of(fewsTimeSeriesHeader.getModuleInstanceId()));
-		query.put("locationId", List.of(fewsTimeSeriesHeader.getLocationId()));
-		query.put("parameterId", List.of(fewsTimeSeriesHeader.getParameterId()));
-		query.put("qualifierId", List.of(qualifierId));
-		query.put("encodedTimeStepId", List.of(fewsTimeSeriesHeader.getTimeStep().getEncoded()));
-		query.put("ensembleId", List.of(fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId()));
-		query.put("ensembleMemberId", List.of(fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId()));
+		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
+			logger.warn(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s",
+					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId));
+		}
+		else {
+			query.put("moduleInstanceId", List.of(moduleInstanceId));
+			query.put("locationId", List.of(locationId));
+			query.put("parameterId", List.of(parameterId));
+			query.put("qualifierId", List.of(qualifierId));
+			query.put("encodedTimeStepId", List.of(encodedTimeStepId));
+			query.put("ensembleId", List.of(ensembleId));
+			query.put("ensembleMemberId", List.of(ensembleMemberId));
 
-		MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED), query, period.getStartDate(), period.getEndDate());
-		if (results.hasNext()) {
-			Document result = results.next();
-			Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
-			timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
-			timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED), query, period.getStartDate(), period.getEndDate());
+			if (results.hasNext()) {
+				Document result = results.next();
+				Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
+				timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
+				timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			}
 		}
 		return timeSeriesArrays.keySet().stream().map(k -> new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArrays.get(k).toArray(new TimeSeriesArray[0])), k)).collect(Collectors.toList());
 	}
@@ -278,21 +333,34 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
 			qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
 		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
+		String locationId = fewsTimeSeriesHeader.getLocationId();
+		String parameterId = fewsTimeSeriesHeader.getParameterId();
+		String encodedTimeStepId = fewsTimeSeriesHeader.getTimeStep() == null ? null : fewsTimeSeriesHeader.getTimeStep().getEncoded();
+		String ensembleId = fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId();
+		String ensembleMemberId = fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId();
+		Date forecastTime = new Date(fewsTimeSeriesHeader.getForecastTime());
 
-		query.put("moduleInstanceId", List.of(fewsTimeSeriesHeader.getModuleInstanceId()));
-		query.put("locationId", List.of(fewsTimeSeriesHeader.getLocationId()));
-		query.put("parameterId", List.of(fewsTimeSeriesHeader.getParameterId()));
-		query.put("qualifierId", List.of(qualifierId));
-		query.put("encodedTimeStepId", List.of(fewsTimeSeriesHeader.getTimeStep().getEncoded()));
-		query.put("ensembleId", List.of(fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId()));
-		query.put("ensembleMemberId", List.of(fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId()));
-		query.put("forecastTime", List.of(new Date(fewsTimeSeriesHeader.getForecastTime())));
+		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
+			logger.warn(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s, forecastTime=%s",
+					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId, forecastTime));
+		}
+		else {
+			query.put("moduleInstanceId", List.of(moduleInstanceId));
+			query.put("locationId", List.of(locationId));
+			query.put("parameterId", List.of(parameterId));
+			query.put("qualifierId", List.of(qualifierId));
+			query.put("encodedTimeStepId", List.of(encodedTimeStepId));
+			query.put("ensembleId", List.of(ensembleId));
+			query.put("ensembleMemberId", List.of(ensembleMemberId));
+			query.put("forecastTime", List.of(forecastTime));
 
-		MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING), query);
-		if (results.hasNext()) {
-			Document result = results.next();
-			Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING, result);
-			timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING), query);
+			if (results.hasNext()) {
+				Document result = results.next();
+				Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING, result);
+				timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			}
 		}
 		return new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0]));
 	}
@@ -318,14 +386,24 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			for (int j = 0; j < timeSeriesHeader.getQualifierCount(); j++)
 				qualifierIds.add(timeSeriesHeader.getQualifierId(j));
 			String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+			String moduleInstanceId = timeSeriesHeader.getModuleInstanceId();
+			String locationId = timeSeriesHeader.getLocationId();
+			String parameterId = timeSeriesHeader.getParameterId();
+			String encodedTimeStepId = timeSeriesHeader.getTimeStep() == null ? null : timeSeriesHeader.getTimeStep().getEncoded();
 
-			query.put("moduleInstanceId", List.of(timeSeriesHeader.getModuleInstanceId()));
-			query.put("locationId", List.of(timeSeriesHeader.getLocationId()));
-			query.put("parameterId", List.of(timeSeriesHeader.getParameterId()));
-			query.put("qualifierId", List.of(qualifierId));
-			query.put("encodedTimeStepId", List.of(timeSeriesHeader.getTimeStep().getEncoded()));
+			if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
+				logger.warn(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s",
+						moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId));
+			}
+			else {
+				query.put("moduleInstanceId", List.of(moduleInstanceId));
+				query.put("locationId", List.of(locationId));
+				query.put("parameterId", List.of(parameterId));
+				query.put("qualifierId", List.of(qualifierId));
+				query.put("encodedTimeStepId", List.of(encodedTimeStepId));
 
-			singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(period, query, TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, timeSeriesArray));
+				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(period, query, TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, timeSeriesArray));
+			}
 		}
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = new ArrayList<>();
 		singleExternalDataImportRequests.parallelStream().forEach(singleExternalDataImportRequest -> {
@@ -394,31 +472,42 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			for (int j = 0; j < timeSeriesHeader.getQualifierCount(); j++)
 				qualifierIds.add(timeSeriesHeader.getQualifierId(j));
 			String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+			String moduleInstanceId = timeSeriesHeader.getModuleInstanceId();
+			String locationId = timeSeriesHeader.getLocationId();
+			String parameterId = timeSeriesHeader.getParameterId();
+			String encodedTimeStepId = timeSeriesHeader.getTimeStep() == null ? null : timeSeriesHeader.getTimeStep().getEncoded();
 
-			query.put("moduleInstanceId", List.of(timeSeriesHeader.getModuleInstanceId()));
-			query.put("locationId", List.of(timeSeriesHeader.getLocationId()));
-			query.put("parameterId", List.of(timeSeriesHeader.getParameterId()));
-			query.put("qualifierId", List.of(qualifierId));
-			query.put("encodedTimeStepId", List.of(timeSeriesHeader.getTimeStep().getEncoded()));
+			if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
+				logger.warn(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s",
+						moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId));
+			}
+			else {
 
-			Date startDate = period.getStartDate();
-			Date endDate = period.getEndDate();
+				query.put("moduleInstanceId", List.of(moduleInstanceId));
+				query.put("locationId", List.of(locationId));
+				query.put("parameterId", List.of(parameterId));
+				query.put("qualifierId", List.of(qualifierId));
+				query.put("encodedTimeStepId", List.of(encodedTimeStepId));
 
-			Document document = new Document();
-			document.append("endTime", new Document("$gte", startDate));
-			document.append("startTime", new Document("$lte", endDate));
-			query.forEach((k, v) -> {
-				if(!v.isEmpty())
-					document.append(k, v.size() == 1 ? v.get(0) : new Document("$in", v));
-			});
-			Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), List.of(
-					new Document("$sort", new Document("startTime", 1).append("endTime", 1)),
-					new Document("$group", new Document("_id", new Document("startTime", "$startTime").append("endTime", "$endTime"))))).forEach(result -> {
-				Document root = result.get("_id", Document.class);
-				int startYear = DateUtil.getLocalDateTime(root.getDate("startDate")).getYear();
-				int endYear = DateUtil.getLocalDateTime(root.getDate("endDate")).getYear();
-				IntStream.rangeClosed(startYear, endYear).forEach(availableYears::add);
-			});
+				Date startDate = period.getStartDate();
+				Date endDate = period.getEndDate();
+
+				Document document = new Document();
+				document.append("endTime", new Document("$gte", startDate));
+				document.append("startTime", new Document("$lte", endDate));
+				query.forEach((k, v) -> {
+					if (!v.isEmpty())
+						document.append(k, v.size() == 1 ? v.get(0) : new Document("$in", v));
+				});
+				Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), List.of(
+						new Document("$sort", new Document("startTime", 1).append("endTime", 1)),
+						new Document("$group", new Document("_id", new Document("startTime", "$startTime").append("endTime", "$endTime"))))).forEach(result -> {
+					Document root = result.get("_id", Document.class);
+					int startYear = DateUtil.getLocalDateTime(root.getDate("startDate")).getYear();
+					int endYear = DateUtil.getLocalDateTime(root.getDate("endDate")).getYear();
+					IntStream.rangeClosed(startYear, endYear).forEach(availableYears::add);
+				});
+			}
 		});
 		return availableYears;
 	}
