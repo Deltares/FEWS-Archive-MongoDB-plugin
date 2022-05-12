@@ -661,15 +661,17 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 
 		Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), List.of(
 				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("encodedTimeStepId", encodedTimeStepId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
-				new Document("$limit", forecastCount),
 				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$taskRunId").append("forecastTime", "$forecastTime").append("dispatchTime", "$runInfo.dispatchTime"))),
+				new Document("$sort", new Document("_id.forecastTime", 0).append("_id.taskRunId", 1).append("_id.workflowId", 1).append("_id.dispatchTime", 1)),
+				new Document("$limit", forecastCount),
 				new Document("$replaceRoot", new Document("newRoot", "$_id")))).forEach(result ->
 				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("workflowId"), result.getString("taskRunId"), result.getDate("forecastTime").getTime(), result.getDate("dispatchTime").getTime())));
 
 		Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), List.of(
 				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("encodedTimeStepId", encodedTimeStepId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
-				new Document("$limit", forecastCount),
 				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$taskRunId").append("forecastTime", "$forecastTime").append("dispatchTime", "$runInfo.dispatchTime"))),
+				new Document("$sort", new Document("_id.forecastTime", 0).append("_id.taskRunId", 1).append("_id.workflowId", 1).append("_id.dispatchTime", 1)),
+				new Document("$limit", forecastCount),
 				new Document("$replaceRoot", new Document("newRoot", "$_id")))).forEach(result ->
 				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("workflowId"), result.getString("taskRunId"), result.getDate("forecastTime").getTime(), result.getDate("dispatchTime").getTime())));
 
@@ -698,8 +700,9 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType));
 		Database.aggregate(collection, List.of(
 				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
-				new Document("$limit", forecastCount),
-				new Document("$group", new Document("_id", "$forecastTime")))).forEach(result ->
+				new Document("$group", new Document("_id", "$forecastTime")),
+				new Document("$sort", new Document("_id", 0)),
+				new Document("$limit", forecastCount))).forEach(result ->
 				longListBuilder.add(result.getDate("_id").getTime()));
 
 		return longListBuilder.build();
