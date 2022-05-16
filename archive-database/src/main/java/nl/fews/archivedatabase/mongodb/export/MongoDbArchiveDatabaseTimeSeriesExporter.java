@@ -13,9 +13,11 @@ import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;
+import org.javatuples.Triplet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Iterates through a series of timeseries arrays converting them to bson documents for mongodb consumption.
@@ -58,6 +60,16 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 	 *
 	 */
 	private static MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = null;
+
+	/**
+	 *
+	 */
+	private static SynchronizeBuckets synchronizeBuckets = new SynchronizeBuckets();
+
+	/**
+	 *
+	 */
+	private static SynchronizeSingletons synchronizeSingletons = new SynchronizeSingletons();
 
 	/**
 	 *
