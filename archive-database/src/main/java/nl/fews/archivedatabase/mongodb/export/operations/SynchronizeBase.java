@@ -21,7 +21,7 @@ public abstract class SynchronizeBase implements Synchronize {
 	private static final Map<Document, Object> timeSeriesIndex = new ConcurrentHashMap<>();
 
 	static{
-		Database.find(Database.Collection.TimeSeriesIndex.toString(), new Document(), new Document("_id", 0)).forEach(document -> timeSeriesIndex.put(document, null));
+		Database.find(Database.Collection.TimeSeriesIndex.toString(), new Document(), new Document("_id", 0)).forEach(document -> timeSeriesIndex.put(document, "null"));
 	}
 
 	/**
