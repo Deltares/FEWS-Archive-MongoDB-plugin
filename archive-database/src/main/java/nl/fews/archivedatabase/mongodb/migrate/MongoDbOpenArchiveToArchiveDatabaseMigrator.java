@@ -12,6 +12,7 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bson.Document;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -148,6 +149,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	public void replaceScalarExternalHistoricalWithBucketedCollection(){
 		Database.replaceCollection(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET), TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
+		Database.updateMany(Settings.get("bucketSizeCollection"), new Document("bucketCollection", "ExternalHistoricalScalarTimeSeriesBucket"), new Document("$set", new Document("bucketCollection", "ExternalHistoricalScalarTimeSeries")));
 	}
 
 	/**

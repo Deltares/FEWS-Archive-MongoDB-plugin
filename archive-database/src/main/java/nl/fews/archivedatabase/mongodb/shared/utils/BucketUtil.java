@@ -63,11 +63,7 @@ public final class BucketUtil {
 	 */
 	public static synchronized BucketSize getNetsBucketSize(String bucketCollection, String bucketKey){
 		Document bucketSize = Database.findOne(Settings.get("bucketSizeCollection"), new Document("bucketCollection", bucketCollection).append("bucketKey", bucketKey), new Document("_id", 0).append("bucketSize", 1));
-		if (bucketSize == null){
-			Database.insertOne(Settings.get("bucketSizeCollection"), new Document("bucketCollection", bucketCollection).append("bucketKey", bucketKey).append("bucketSize", BucketSize.YEAR.toString()));
-			return BucketSize.YEAR;
-		}
-		return BucketSize.valueOf(bucketSize.getString("bucketSize"));
+		return bucketSize == null ? BucketSize.YEAR : BucketSize.valueOf(bucketSize.getString("bucketSize"));
 	}
 
 	/**
