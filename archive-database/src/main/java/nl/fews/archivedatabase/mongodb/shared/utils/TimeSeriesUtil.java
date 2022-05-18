@@ -104,7 +104,7 @@ public final class TimeSeriesUtil {
 	 * @return List<Document>
 	 */
 	public static List<Document> getUnwoundTimeSeries(Document bucketKeyDocument, String collection){
-		List<Document> timeSeries = new ArrayList<>();
+		List<Document> events = new ArrayList<>();
 
 		AggregateIterable<Document> results = Database.aggregate(collection, List.of(
 				new Document("$match", bucketKeyDocument),
@@ -112,16 +112,16 @@ public final class TimeSeriesUtil {
 				new Document("$replaceRoot", new Document("newRoot", "$timeseries"))));
 
 		for (Document result: results)
-			timeSeries.add(result);
+			events.add(result);
 
-		List<Document> timeSeriesDeduplicate = timeSeries.stream().collect(Collectors.groupingBy(t -> t.getDate("t"))).values().stream().map(s -> s.get(0)).sorted(Comparator.comparing(s -> s.getDate("t"))).collect(Collectors.toList());
+		List<Document> eventsDeduplicate = TimeSeriesArrayUtil.deduplicateEvents(events);
 
-		if(timeSeries.size() != timeSeriesDeduplicate.size()){
-			Exception ex = new Exception(String.format("Duplicate event dates found and removed -> [%s]", timeSeries.stream().collect(Collectors.groupingBy(t -> t.getDate("t"))).entrySet().stream().filter(f -> f.getValue().size() > 1).map(s -> String.format("%s: %s", s.getKey().toString(), s.getValue().size())).collect(Collectors.joining(","))));
+		if(events.size() != eventsDeduplicate.size()){
+			Exception ex = new Exception("Duplicate event dates found and removed");
 			logger.warn(LogUtil.getLogMessageJson(ex, Map.of("collection", collection, "bucketKeyDocument", bucketKeyDocument)).toJson(), ex);
 		}
 
-		return timeSeriesDeduplicate;
+		return eventsDeduplicate;
 	}
 
 	/**

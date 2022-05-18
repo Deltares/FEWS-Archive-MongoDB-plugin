@@ -133,10 +133,10 @@ public class TimeSeriesArrayUtil {
 		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
 
 		if (!events.isEmpty()){
-			List<Document> eventsDeduplicate = events.stream().collect(Collectors.groupingBy(t -> t.getDate("t"))).values().stream().map(s -> s.get(0)).sorted(Comparator.comparing(s -> s.getDate("t"))).collect(Collectors.toList());
+			List<Document> eventsDeduplicate = TimeSeriesArrayUtil.deduplicateEvents(events);
 
 			if(events.size() != eventsDeduplicate.size()) {
-				Exception ex = new Exception(String.format("Duplicate event dates found and removed -> [%s]", events.stream().collect(Collectors.groupingBy(t -> t.getDate("t"))).entrySet().stream().filter(f -> f.getValue().size() > 1).map(s -> String.format("%s: %s", s.getKey().toString(), s.getValue().size())).collect(Collectors.joining(","))));
+				Exception ex = new Exception("Duplicate event dates found and removed");
 				logger.warn(LogUtil.getLogMessageJson(ex, Map.of("timeSeriesHeader", timeSeriesHeader.toString())).toJson(), ex);
 			}
 
@@ -156,5 +156,33 @@ public class TimeSeriesArrayUtil {
 			}
 		}
 		return timeSeriesArray;
+	}
+
+	/**
+	 *
+	 * @param events events
+	 * @return List<Document>
+	 */
+	public static List<Document> deduplicateEvents(List<Document> events){
+		Map<Date, Document> eventsDuplicate  = new HashMap<>();
+		List<Document> eventsDeduplicate = new ArrayList<>();
+
+		boolean sorted = true;
+		Date lastDate = new Date(Long.MIN_VALUE);
+
+		for (Document e: events) {
+			Date eventDate = e.getDate("t");
+			if(!eventsDuplicate.containsKey(eventDate)) {
+				eventsDuplicate.put(eventDate, e);
+				eventsDeduplicate.add(e);
+
+				if(eventDate.compareTo(lastDate) < 0)
+					sorted = false;
+				lastDate = eventDate;
+			}
+		}
+		if(!sorted)
+			eventsDeduplicate.sort(Comparator.comparing(s -> s.getDate("t")));
+		return eventsDeduplicate;
 	}
 }
