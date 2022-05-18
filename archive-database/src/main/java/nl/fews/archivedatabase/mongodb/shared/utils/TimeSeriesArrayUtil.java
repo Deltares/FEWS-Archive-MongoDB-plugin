@@ -9,19 +9,11 @@ import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
 import nl.wldelft.util.Box;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class TimeSeriesArrayUtil {
-
-	/**
-	 *
-	 */
-	private static final Logger logger = LogManager.getLogger(TimeSeriesArrayUtil.class);
 
 	/**
 	 *
@@ -133,56 +125,21 @@ public class TimeSeriesArrayUtil {
 		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
 
 		if (!events.isEmpty()){
-			List<Document> eventsDeduplicate = TimeSeriesArrayUtil.deduplicateEvents(events);
-
-			if(events.size() != eventsDeduplicate.size()) {
-				Exception ex = new Exception("Duplicate event dates found and removed");
-				logger.warn(LogUtil.getLogMessageJson(ex, Map.of("timeSeriesHeader", timeSeriesHeader.toString())).toJson(), ex);
-			}
-
-			long[] times = new long[eventsDeduplicate.size()];
-			for (int i = 0; i < eventsDeduplicate.size(); i++)
-				times[i] = eventsDeduplicate.get(i).getDate("t").getTime();
+			long[] times = new long[events.size()];
+			for (int i = 0; i < events.size(); i++)
+				times[i] = events.get(i).getDate("t").getTime();
 
 			if(timeSeriesHeader.getTimeStep() == IrregularTimeStep.INSTANCE)
 				timeSeriesArray.ensureTimes(times);
 			else
 				timeSeriesArray.ensurePeriod(new Period(times[0], times[times.length-1]));
 
-			for (int i = 0; i < eventsDeduplicate.size(); i++)  {
-				timeSeriesArray.setValue(i,  eventsDeduplicate.get(i).get("v") != null ? eventsDeduplicate.get(i).getDouble("v").floatValue() : Float.NaN);
-				timeSeriesArray.setFlag(i, eventsDeduplicate.get(i).getInteger("f").byteValue());
-				timeSeriesArray.setComment(i, eventsDeduplicate.get(i).getString("c"));
+			for (int i = 0; i < events.size(); i++)  {
+				timeSeriesArray.setValue(i,  events.get(i).get("v") != null ? events.get(i).getDouble("v").floatValue() : Float.NaN);
+				timeSeriesArray.setFlag(i, events.get(i).getInteger("f").byteValue());
+				timeSeriesArray.setComment(i, events.get(i).getString("c"));
 			}
 		}
 		return timeSeriesArray;
-	}
-
-	/**
-	 *
-	 * @param events events
-	 * @return List<Document>
-	 */
-	public static List<Document> deduplicateEvents(List<Document> events){
-		Map<Date, Document> eventsDuplicate  = new HashMap<>();
-		List<Document> eventsDeduplicate = new ArrayList<>();
-
-		boolean sorted = true;
-		Date lastDate = new Date(Long.MIN_VALUE);
-
-		for (Document e: events) {
-			Date eventDate = e.getDate("t");
-			if(!eventsDuplicate.containsKey(eventDate)) {
-				eventsDuplicate.put(eventDate, e);
-				eventsDeduplicate.add(e);
-
-				if(eventDate.compareTo(lastDate) < 0)
-					sorted = false;
-				lastDate = eventDate;
-			}
-		}
-		if(!sorted)
-			eventsDeduplicate.sort(Comparator.comparing(s -> s.getDate("t")));
-		return eventsDeduplicate;
 	}
 }

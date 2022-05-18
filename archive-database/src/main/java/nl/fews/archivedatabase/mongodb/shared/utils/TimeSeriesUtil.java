@@ -114,7 +114,7 @@ public final class TimeSeriesUtil {
 		for (Document result: results)
 			events.add(result);
 
-		List<Document> eventsDeduplicate = TimeSeriesArrayUtil.deduplicateEvents(events);
+		List<Document> eventsDeduplicate = TimeSeriesUtil.deduplicateEvents(events);
 
 		if(events.size() != eventsDeduplicate.size()){
 			Exception ex = new Exception("Duplicate event dates found and removed");
@@ -140,5 +140,33 @@ public final class TimeSeriesUtil {
 		}
 
 		return timeSeriesBuckets;
+	}
+
+	/**
+	 *
+	 * @param events events
+	 * @return List<Document>
+	 */
+	private static List<Document> deduplicateEvents(List<Document> events){
+		Map<Date, Document> eventsDuplicate  = new HashMap<>();
+		List<Document> eventsDeduplicate = new ArrayList<>();
+
+		boolean sorted = true;
+		Date lastDate = new Date(Long.MIN_VALUE);
+
+		for (Document e: events) {
+			Date eventDate = e.getDate("t");
+			if(!eventsDuplicate.containsKey(eventDate)) {
+				eventsDuplicate.put(eventDate, e);
+				eventsDeduplicate.add(e);
+
+				if(eventDate.compareTo(lastDate) < 0)
+					sorted = false;
+				lastDate = eventDate;
+			}
+		}
+		if(!sorted)
+			eventsDeduplicate.sort(Comparator.comparing(s -> s.getDate("t")));
+		return eventsDeduplicate;
 	}
 }
