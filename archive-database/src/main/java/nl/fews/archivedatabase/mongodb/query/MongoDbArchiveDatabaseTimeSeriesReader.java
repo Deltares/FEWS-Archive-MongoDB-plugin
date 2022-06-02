@@ -75,10 +75,15 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		Settings.put("headerProvider", fewsTimeSeriesHeaderProvider);
 	}
 
+	/**
+	 *
+	 * @param archiveDatabaseObservedImportRequests archiveDatabaseObservedImportRequests
+	 * @return List<TimeSeriesArrays<TimeSeriesHeader>>
+	 */
 	@Override
-	public List<TimeSeriesArrays<TimeSeriesHeader>> importObservedData(@NonNull Set<ArchiveDatabaseObservedImportRequest> archiveDatabaseObservedImportRequest) {
+	public List<TimeSeriesArrays<TimeSeriesHeader>> importExternalHistorical(@NonNull Set<ArchiveDatabaseObservedImportRequest> archiveDatabaseObservedImportRequests) {
 		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesArrays = new ArrayList<>();
-		archiveDatabaseObservedImportRequest.parallelStream().forEach(archiveDatabaseImportRequest -> archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().parallelStream().forEach(fewsTimeSeriesHeader -> {
+		archiveDatabaseObservedImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().parallelStream().forEach(fewsTimeSeriesHeader -> {
 			TimeSeriesArrays<TimeSeriesHeader> result = importObservedData(archiveDatabaseImportRequest.getPeriod(), fewsTimeSeriesHeader);
 			if(!result.isEmpty())
 				timeSeriesArrays.add(result);
@@ -119,11 +124,12 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			query.put("qualifierId", List.of(qualifierId));
 			query.put("encodedTimeStepId", List.of(encodedTimeStepId));
 
-			MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), query, period.getStartDate(), period.getEndDate());
-			if (results.hasNext()) {
-				Document result = results.next();
-				Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, result);
-				timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			try(MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), query, period.getStartDate(), period.getEndDate())) {
+				if (results.hasNext()) {
+					Document result = results.next();
+					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, result);
+					timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+				}
 			}
 		}
 		return new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0]));
@@ -141,11 +147,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				throw new IllegalArgumentException("archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().size() != archiveDatabaseImportRequest.getTaskRunIds().size()");});
 
 		List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> timeSeriesArrays = new ArrayList<>();
-		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> {
+		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest ->
 			IntStream.range(0, archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().size()).parallel().forEach(i ->
 				timeSeriesArrays.addAll(importSimulatedForecasting(archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().get(i), archiveDatabaseImportRequest.getTaskRunIds().get(i)))
-			);
-		});
+			)
+		);
 		return timeSeriesArrays;
 	}
 
@@ -184,12 +190,13 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			query.put("ensembleMemberId", List.of(ensembleMemberId));
 			query.put("taskRunId", List.of(taskRunId));
 
-			MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), query);
-			if (results.hasNext()) {
-				Document result = results.next();
-				Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result);
-				timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
-				timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			try(MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), query)) {
+				if (results.hasNext()) {
+					Document result = results.next();
+					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result);
+					timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
+					timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+				}
 			}
 		}
 		return timeSeriesArrays.entrySet().stream().map(k -> new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(k.getValue().toArray(new TimeSeriesArray[0])), k.getKey())).collect(Collectors.toList());
@@ -244,12 +251,13 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			query.put("ensembleMemberId", List.of(ensembleMemberId));
 			query.put("forecastTime", List.of(forecastTime));
 
-			MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), query);
-			if (results.hasNext()) {
-				Document result = results.next();
-				Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
-				timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
-				timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			try(MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), query)) {
+				if (results.hasNext()) {
+					Document result = results.next();
+					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
+					timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
+					timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+				}
 			}
 		}
 		return timeSeriesArrays.entrySet().stream().map(k -> new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(k.getValue().toArray(new TimeSeriesArray[0])), k.getKey())).collect(Collectors.toList());
@@ -292,12 +300,13 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			query.put("ensembleId", List.of(ensembleId));
 			query.put("ensembleMemberId", List.of(ensembleMemberId));
 
-			MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED), query, period.getStartDate(), period.getEndDate());
-			if (results.hasNext()) {
-				Document result = results.next();
-				Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
-				timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
-				timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			try(MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED), query, period.getStartDate(), period.getEndDate())) {
+				if (results.hasNext()) {
+					Document result = results.next();
+					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
+					timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
+					timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+				}
 			}
 		}
 		return timeSeriesArrays.keySet().stream().map(k -> new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArrays.get(k).toArray(new TimeSeriesArray[0])), k)).collect(Collectors.toList());
@@ -355,11 +364,12 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			query.put("ensembleMemberId", List.of(ensembleMemberId));
 			query.put("forecastTime", List.of(forecastTime));
 
-			MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING), query);
-			if (results.hasNext()) {
-				Document result = results.next();
-				Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING, result);
-				timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+			try(MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING), query)) {
+				if (results.hasNext()) {
+					Document result = results.next();
+					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING, result);
+					timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+				}
 			}
 		}
 		return new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0]));
@@ -371,8 +381,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @param timeSeriesArrays timeSeriesArrays
 	 * @return List<SingleExternalDataImportRequest>
 	 */
-	@Override @Deprecated(since = "2022-03-12", forRemoval = true)
-	public List<SingleExternalDataImportRequest> getObservedDataImportRequest(@NonNull Period period, @NonNull TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays) {
+	@Override
+	public List<SingleExternalDataImportRequest> getExternalHistoricalImportRequest(@NonNull Period period, @NonNull TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays) {
 		if(period.getEndDate().before(period.getStartDate()))
 			throw new IllegalArgumentException("End of period must fall on or after start of period");
 
@@ -424,33 +434,6 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			}
 		});
 		return singleExternalDataImportRequestsHavingData;
-	}
-
-	/**
-	 *
-	 * @param singleExternalDataImportRequest singleExternalDataImportRequest
-	 * @return TimeSeriesArrays<TimeSeriesHeader>
-	 */
-	@Override @Deprecated(since = "2022-03-12", forRemoval = true)
-	public TimeSeriesArrays<TimeSeriesHeader> importSingleObservedDataImportRequest(SingleExternalDataImportRequest singleExternalDataImportRequest) {
-		MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest = (MongoDbArchiveDatabaseSingleExternalImportRequest)singleExternalDataImportRequest;
-		TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType());
-		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
-		Map<String, List<Object>> query = mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery();
-		Date startDate = mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod() == null ? null : mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate();
-		Date endDate = mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod() == null ? null : mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate();
-
-		MongoCursor<Document> results = new ReadBuckets().read(collection, query, startDate, endDate);
-		if(results.hasNext()){
-			Document result = results.next();
-			TimeSeriesArray<TimeSeriesHeader> requestTimeSeriesArray = mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesArray();
-			Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType(), result);
-
-			return new TimeSeriesArrays<>(requestTimeSeriesArray != null ?
-					TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class), requestTimeSeriesArray) :
-					TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
-		}
-		return null;
 	}
 
 	/**

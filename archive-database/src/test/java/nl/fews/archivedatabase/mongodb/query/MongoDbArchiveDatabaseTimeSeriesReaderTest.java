@@ -229,7 +229,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = new TimeSeriesArrays<>(timeSeriesArray);
 		Period period = new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime());
 
-		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = mongoDbArchiveDatabaseTimeSeriesReader.getObservedDataImportRequest(period, timeSeriesArrays);
+		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = mongoDbArchiveDatabaseTimeSeriesReader.getExternalHistoricalImportRequest(period, timeSeriesArrays);
 		assertEquals(0, singleExternalDataImportRequests.size());
 	}
 
@@ -281,7 +281,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = new TimeSeriesArrays<>(timeSeriesArray);
 		Period period = new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime());
 
-		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = mongoDbArchiveDatabaseTimeSeriesReader.getObservedDataImportRequest(period, timeSeriesArrays);
+		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = mongoDbArchiveDatabaseTimeSeriesReader.getExternalHistoricalImportRequest(period, timeSeriesArrays);
 		//TimeSeriesArrays<TimeSeriesHeader> results = mongoDbArchiveDatabaseTimeSeriesReader.importSingleDataImportRequest(singleExternalDataImportRequests.get(0));
 		assertEquals(0, singleExternalDataImportRequests.size());
 	}
