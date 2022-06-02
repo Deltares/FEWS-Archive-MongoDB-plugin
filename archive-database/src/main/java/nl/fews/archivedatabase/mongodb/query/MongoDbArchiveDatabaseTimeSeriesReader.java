@@ -84,7 +84,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	public List<TimeSeriesArrays<TimeSeriesHeader>> importExternalHistorical(@NonNull Set<ArchiveDatabaseObservedImportRequest> archiveDatabaseObservedImportRequests) {
 		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesArrays = new ArrayList<>();
 		archiveDatabaseObservedImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().parallelStream().forEach(fewsTimeSeriesHeader -> {
-			TimeSeriesArrays<TimeSeriesHeader> result = importObservedData(archiveDatabaseImportRequest.getPeriod(), fewsTimeSeriesHeader);
+			TimeSeriesArrays<TimeSeriesHeader> result = importExternalHistorical(archiveDatabaseImportRequest.getPeriod(), fewsTimeSeriesHeader);
 			if(!result.isEmpty())
 				timeSeriesArrays.add(result);
 		}));
@@ -97,7 +97,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @param fewsTimeSeriesHeader fewsTimeSeriesHeader
 	 * @return TimeSeriesArrays<TimeSeriesHeader>
 	 */
-	private TimeSeriesArrays<TimeSeriesHeader> importObservedData(@NonNull Period period, @NonNull TimeSeriesHeader fewsTimeSeriesHeader) {
+	private TimeSeriesArrays<TimeSeriesHeader> importExternalHistorical(@NonNull Period period, @NonNull TimeSeriesHeader fewsTimeSeriesHeader) {
 		if(period.getEndDate().before(period.getStartDate()))
 			throw new IllegalArgumentException("End of period must fall on or after start of period");
 
@@ -412,20 +412,19 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				query.put("qualifierId", List.of(qualifierId));
 				query.put("encodedTimeStepId", List.of(encodedTimeStepId));
 
-				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseSingleExternalImportRequest(period, query, TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, timeSeriesArray));
+				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseObservedImportRequest(List.of(timeSeriesHeader), period, query));
 			}
 		}
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = new ArrayList<>();
 		singleExternalDataImportRequests.parallelStream().forEach(singleExternalDataImportRequest -> {
 			try{
-				MongoDbArchiveDatabaseSingleExternalImportRequest mongoDbArchiveDatabaseSingleExternalImportRequest = (MongoDbArchiveDatabaseSingleExternalImportRequest)singleExternalDataImportRequest;
-				TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesValueType(), mongoDbArchiveDatabaseSingleExternalImportRequest.getTimeSeriesType());
-				String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
-				Map<String, List<Object>> query = mongoDbArchiveDatabaseSingleExternalImportRequest.getQuery();
-				Date startDate = mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getStartDate();
-				Date endDate = mongoDbArchiveDatabaseSingleExternalImportRequest.getPeriod().getEndDate();
+				MongoDbArchiveDatabaseObservedImportRequest archiveDatabaseObservedImportRequest = (MongoDbArchiveDatabaseObservedImportRequest)singleExternalDataImportRequest;
+				String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
+				Map<String, List<Object>> query = archiveDatabaseObservedImportRequest.getQuery();
+				Date startDate = archiveDatabaseObservedImportRequest.getPeriod().getStartDate();
+				Date endDate = archiveDatabaseObservedImportRequest.getPeriod().getEndDate();
 
-				HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
+				HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)))).getConstructor().newInstance();
 				if(hasData.hasData(collection, query, startDate, endDate))
 					singleExternalDataImportRequestsHavingData.add(singleExternalDataImportRequest);
 			}
