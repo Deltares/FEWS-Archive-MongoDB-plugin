@@ -65,13 +65,13 @@ public abstract class SynchronizeBase implements Synchronize {
 		Map<Document, Object> missingTimeSeriesIndexes = new ConcurrentHashMap<>();
 		if(!insert.isEmpty())
 		{
-			Database.insertMany(collection, insert);
+			insert.parallelStream().forEach(ts -> Database.insertOne(collection, ts));
 			missingTimeSeriesIndexes.putAll(insert.stream().map(s -> SynchronizeBase.getTimeSeriesIndexKey(s, collection)).filter(key -> !timeSeriesIndex.containsKey(key)).distinct().collect(Collectors.toMap(s -> s, s -> s)));
 		}
 
 		if(!replace.isEmpty()) {
 			Database.deleteMany(collection, new Document("_id", new Document("$in", replace.stream().map(s -> s.get("_id")).collect(Collectors.toList()))));
-			Database.insertMany(collection, replace);
+			replace.parallelStream().forEach(ts -> Database.insertOne(collection, ts));
 			missingTimeSeriesIndexes.putAll(replace.stream().map(s -> SynchronizeBase.getTimeSeriesIndexKey(s, collection)).filter(key -> !timeSeriesIndex.containsKey(key)).distinct().collect(Collectors.toMap(s -> s, s -> s)));
 		}
 

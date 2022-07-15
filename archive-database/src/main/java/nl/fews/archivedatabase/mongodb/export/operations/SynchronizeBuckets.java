@@ -8,9 +8,11 @@ import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.utils.BucketUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,8 +54,10 @@ public final class SynchronizeBuckets extends SynchronizeBase implements Synchro
 	private Map<String, Triplet<List<Document>, List<Document>, List<Document>>> _getInsertUpdateRemove(List<Document> timeSeries, TimeSeriesType timeSeriesType){
 		String bucketCollection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 		List<String> keys = Database.getCollectionKeys(bucketCollection);
-		Map<String, Triplet<List<Document>, List<Document>, List<Document>>> insertUpdateRemove = new HashMap<>();
-		DatabaseBucketUtil.getDocumentsByKeyBucket(timeSeries, bucketCollection).forEach((key, buckets) -> {
+		Map<String, Triplet<List<Document>, List<Document>, List<Document>>> insertUpdateRemove = new ConcurrentHashMap<>();
+		DatabaseBucketUtil.getDocumentsByKeyBucket(timeSeries, bucketCollection).entrySet().parallelStream().forEach(e -> {
+			String key = e.getKey();
+			Map<Pair<BucketSize, Long>, List<Document>> buckets = e.getValue();
 
 			List<Document> insert = new ArrayList<>();
 			List<Document> replace = new ArrayList<>();
