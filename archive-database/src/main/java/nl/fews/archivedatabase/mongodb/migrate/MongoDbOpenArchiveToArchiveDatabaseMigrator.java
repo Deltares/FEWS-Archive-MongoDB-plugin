@@ -111,7 +111,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 * @param sourceId sourceId
 	 */
 	@Override
-	public void migrate(String areaId, String sourceId) {
+	public void migrate(String[] areaId, String sourceId) {
 		try{
 			logger.info("Settings: {}", Settings.toJsonString(1));
 			logger.info("Start: deleteUncommitted");
@@ -119,7 +119,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 			logger.info("End: deleteUncommitted");
 
 			logger.info("Start: getExistingMetaDataFilesFs");
-			Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs(areaId);
+			Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs(Arrays.asList(areaId));
 			logger.info("End: getExistingMetaDataFilesFs");
 
 			logger.info("Start: existingMetaDataFilesDb");
