@@ -92,10 +92,10 @@ public final class MetaDataUtil {
 	}
 
 	/**
-	 * @param areaId areaId
+	 * @param areaIds areaIds
 	 * @return Map<File, Date>
 	 */
-	public static Map<File, Date> getExistingMetaDataFilesFs (String areaId) {
+	public static Map<File, Date> getExistingMetaDataFilesFs (List<String> areaIds) {
 		Map<File, Date> existingMetaDataFilesFs = new HashMap<>();
 		Path start = Paths.get(Settings.get("baseDirectoryArchive", String.class));
 		int rootDepth = start.getNameCount();
@@ -105,7 +105,7 @@ public final class MetaDataUtil {
 		try {
 			ForkJoinPool pool = new ForkJoinPool(Settings.get("netcdfReadThreads"));
 			ArrayList<Callable<Map<File, Date>>> tasks = new ArrayList<>();
-			List<Path> folders = Files.find(start, folderMaxDepth, (p, a) -> a.isDirectory() && p.getNameCount()-rootDepth == folderMaxDepth).filter(f -> areaId == null || areaId.isEmpty() || PathUtil.containsSegment(f, areaId)).collect(Collectors.toList());
+			List<Path> folders = Files.find(start, folderMaxDepth, (p, a) -> a.isDirectory() && p.getNameCount()-rootDepth == folderMaxDepth).filter(f -> areaIds == null || areaIds.isEmpty() || areaIds.stream().anyMatch(areaId -> PathUtil.containsSegment(f, areaId))).collect(Collectors.toList());
 			progressExpected = folders.size();
 			progressCurrent = 0;
 			folders.forEach(folder -> tasks.add(() -> {

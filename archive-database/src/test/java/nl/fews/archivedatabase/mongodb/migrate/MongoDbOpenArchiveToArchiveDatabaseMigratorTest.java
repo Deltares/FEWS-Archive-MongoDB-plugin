@@ -59,7 +59,7 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 
 			LogUtils.addAppender(MongoDbAppender.createAppender("databaseLogAppender", Settings.get("connectionString"), null));
 			migrateDatabase.migrate(
-					testSettings.get("areaId") != JSONObject.NULL ? testSettings.getString("areaId") : null,
+					testSettings.get("areaId") != JSONObject.NULL ? new String[]{testSettings.getString("areaId")} : null,
 					testSettings.get("sourceId") != JSONObject.NULL ? testSettings.getString("sourceId") : null);
 
 		}
