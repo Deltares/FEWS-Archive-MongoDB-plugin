@@ -20,6 +20,7 @@ import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseForecastImportRequest;
 import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseObservedImportRequest;
+import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseStitchedSimulatedHistoricalImportRequest;
 import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.SimulatedTaskRunInfo;
 import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
 import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
@@ -89,6 +90,85 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				timeSeriesArrays.add(result);
 		}));
 		return timeSeriesArrays;
+	}
+
+	/**
+	 * @param archiveDatabaseStitchedSimulatedHistoricalImportRequest archiveDatabaseStitchedSimulatedHistoricalImportRequest
+	 * @return List<TimeSeriesArrays<TimeSeriesHeader>>
+	 */
+	@Override
+	public List<TimeSeriesArrays<TimeSeriesHeader>> importStitchedSimulatedHistorical(@NonNull Set<ArchiveDatabaseStitchedSimulatedHistoricalImportRequest> archiveDatabaseStitchedSimulatedHistoricalImportRequest) {
+		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesArrays = new ArrayList<>();
+		archiveDatabaseStitchedSimulatedHistoricalImportRequest.parallelStream().forEach(archiveDatabaseImportRequest -> archiveDatabaseImportRequest.getTimeSeriesHeaders().parallelStream().forEach(timeSeriesHeader -> {
+			for (Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor> result:importSimulatedHistoricalStitched(archiveDatabaseImportRequest.getPeriod(), timeSeriesHeader)) {
+				if(!result.getObject0().isEmpty())
+					timeSeriesArrays.add(result.getObject0());
+			}
+		}));
+		return timeSeriesArrays;
+	}
+
+	/**
+	 * @param period period
+	 * @param timeSeriesArrays timeSeriesArrays
+	 * @return List<SingleExternalDataImportRequest>
+	 */
+	@Override
+	public List<SingleExternalDataImportRequest> getStitchedSimulatedDataImportRequest(@NonNull Period period, @NonNull TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays) {
+		if(period.getEndDate().before(period.getStartDate()))
+			throw new IllegalArgumentException("End of period must fall on or after start of period");
+
+		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = new ArrayList<>();
+		for (int i = 0; i < timeSeriesArrays.size(); i++) {
+			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
+			TimeSeriesHeader timeSeriesHeader = timeSeriesArray.getHeader();
+			Map<String, List<Object>> query = new HashMap<>();
+
+			List<String> qualifierIds = new ArrayList<>();
+			for (int j = 0; j < timeSeriesHeader.getQualifierCount(); j++)
+				qualifierIds.add(timeSeriesHeader.getQualifierId(j));
+			String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+			String moduleInstanceId = timeSeriesHeader.getModuleInstanceId();
+			String locationId = timeSeriesHeader.getLocationId();
+			String parameterId = timeSeriesHeader.getParameterId();
+			String encodedTimeStepId = timeSeriesHeader.getTimeStep() == null ? null : timeSeriesHeader.getTimeStep().getEncoded();
+			String ensembleId = timeSeriesHeader.getEnsembleId() == null || timeSeriesHeader.getEnsembleId().equals("none") || timeSeriesHeader.getEnsembleId().equals("main") ? "" : timeSeriesHeader.getEnsembleId();
+			String ensembleMemberId = timeSeriesHeader.getEnsembleMemberId() == null || timeSeriesHeader.getEnsembleMemberId().equals("none") || timeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : timeSeriesHeader.getEnsembleMemberId();
+
+			if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
+				logger.info(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s",
+						moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId));
+			}
+			else {
+				query.put("moduleInstanceId", List.of(moduleInstanceId));
+				query.put("locationId", List.of(locationId));
+				query.put("parameterId", List.of(parameterId));
+				query.put("qualifierId", List.of(qualifierId));
+				query.put("encodedTimeStepId", List.of(encodedTimeStepId));
+				query.put("ensembleId", List.of(ensembleId));
+				query.put("ensembleMemberId", List.of(ensembleMemberId));
+
+				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseObservedImportRequest(List.of(timeSeriesHeader), period, query));
+			}
+		}
+		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = new ArrayList<>();
+		singleExternalDataImportRequests.parallelStream().forEach(singleExternalDataImportRequest -> {
+			try{
+				MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest archiveDatabaseStitchedSimulatedHistoricalImportRequest = (MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest)singleExternalDataImportRequest;
+				String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED);
+				Map<String, List<Object>> query = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getQuery();
+				Date startDate = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getPeriod().getStartDate();
+				Date endDate = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getPeriod().getEndDate();
+
+				HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED)))).getConstructor().newInstance();
+				if(hasData.hasData(collection, query, startDate, endDate))
+					singleExternalDataImportRequestsHavingData.add(singleExternalDataImportRequest);
+			}
+			catch (Exception ex){
+				throw new RuntimeException(ex);
+			}
+		});
+		return singleExternalDataImportRequestsHavingData;
 	}
 
 	/**
