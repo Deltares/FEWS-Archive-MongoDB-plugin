@@ -119,7 +119,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 			logger.info("End: deleteUncommitted");
 
 			logger.info("Start: getExistingMetaDataFilesFs");
-			Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs(Arrays.asList(areaId));
+			Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs(areaId == null ? null : Arrays.asList(areaId));
 			logger.info("End: getExistingMetaDataFilesFs");
 
 			logger.info("Start: existingMetaDataFilesDb");
