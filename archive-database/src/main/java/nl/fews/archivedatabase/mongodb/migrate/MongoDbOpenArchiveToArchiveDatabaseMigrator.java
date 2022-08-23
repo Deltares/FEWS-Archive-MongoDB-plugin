@@ -1,5 +1,6 @@
 package nl.fews.archivedatabase.mongodb.migrate;
 
+import com.mongodb.lang.NonNull;
 import nl.fews.archivedatabase.mongodb.migrate.interfaces.BucketHistorical;
 import nl.fews.archivedatabase.mongodb.migrate.operations.*;
 import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
@@ -62,7 +63,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 * @param archiveDatabaseUnitConverter archiveDatabaseUnitConverter
 	 */
 	@Override
-	public void setUnitConverter(ArchiveDatabaseUnitConverter archiveDatabaseUnitConverter) {
+	public void setUnitConverter(@NonNull ArchiveDatabaseUnitConverter archiveDatabaseUnitConverter) {
 		Settings.put("archiveDatabaseUnitConverter", archiveDatabaseUnitConverter);
 	}
 
@@ -71,7 +72,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 * @param  archiveDatabaseTimeConverter archiveDatabaseTimeConverter
 	 */
 	@Override
-	public void setTimeConverter(ArchiveDatabaseTimeConverter archiveDatabaseTimeConverter) {
+	public void setTimeConverter(@NonNull ArchiveDatabaseTimeConverter archiveDatabaseTimeConverter) {
 		Settings.put("archiveDatabaseTimeConverter", archiveDatabaseTimeConverter);
 	}
 
@@ -80,7 +81,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 * @param archiveDatabaseRegionConfigInfoProvider archiveDatabaseRegionConfigInfoProvider
 	 */
 	@Override
-	public void setRegionConfigInfoProvider(ArchiveDatabaseRegionConfigInfoProvider archiveDatabaseRegionConfigInfoProvider) {
+	public void setRegionConfigInfoProvider(@NonNull ArchiveDatabaseRegionConfigInfoProvider archiveDatabaseRegionConfigInfoProvider) {
 		Settings.put("archiveDatabaseRegionConfigInfoProvider", archiveDatabaseRegionConfigInfoProvider);
 	}
 
@@ -89,7 +90,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 * @param properties properties
 	 */
 	@Override
-	public void setProperties(Properties properties) {
+	public void setProperties(@NonNull Properties properties) {
 		Settings.put("folderMaxDepth", properties.indexOf("folderMaxDepth") == -1 ? 4 : properties.getObject(properties.indexOf("folderMaxDepth")) instanceof Integer ? properties.getInt("folderMaxDepth", 4) : Integer.parseInt(properties.getString("folderMaxDepth", "4")));
 		Settings.put("valueTypes", properties.indexOf("valueTypes") == -1 ? "scalar" : Arrays.stream(properties.getString("valueTypes", "scalar").split(",")).map(String::trim).collect(Collectors.toList()));
 		Settings.put("useBulkInsert", properties.indexOf("useBulkInsert") != -1 && (properties.getObject(properties.indexOf("useBulkInsert")) instanceof Boolean ? properties.getBool("useBulkInsert", false) : Boolean.parseBoolean(properties.getString("useBulkInsert", "false"))));
@@ -102,7 +103,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 */
 	@Override
 	public void setConfigRevision(String configRevision) {
-		Settings.put("configRevision", configRevision);
+		Settings.put("configRevision", configRevision == null ? "" : configRevision);
 	}
 
 	/**
@@ -183,7 +184,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 * @param openArchiveToArchiveDatabaseMigrationSettings openArchiveToArchiveDatabaseMigrationSettings
 	 */
 	@Override
-	public void setOpenArchiveToDatabaseSettings(OpenArchiveToArchiveDatabaseMigrationSettings openArchiveToArchiveDatabaseMigrationSettings) {
+	public void setOpenArchiveToDatabaseSettings(@NonNull OpenArchiveToArchiveDatabaseMigrationSettings openArchiveToArchiveDatabaseMigrationSettings) {
 		Settings.put("baseDirectoryArchive", Paths.get(openArchiveToArchiveDatabaseMigrationSettings.getBaseDirectoryArchive()).toString());
 		Settings.put("databaseBaseThreads", openArchiveToArchiveDatabaseMigrationSettings.getDatabaseBaseThreads());
 		Settings.put("netcdfReadThreads", openArchiveToArchiveDatabaseMigrationSettings.getNetcdfReadThreads());
