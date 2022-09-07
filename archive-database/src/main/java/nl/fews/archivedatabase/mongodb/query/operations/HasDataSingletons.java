@@ -1,6 +1,5 @@
 package nl.fews.archivedatabase.mongodb.query.operations;
 
-import nl.fews.archivedatabase.mongodb.query.interfaces.HasData;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import org.bson.Document;
 
@@ -11,7 +10,14 @@ import java.util.Map;
 /**
  * Provides streaming capability for singleton timeseries
  */
-public final class HasDataSingletons implements HasData {
+public final class HasDataSingletons {
+
+	/**
+	 * Static Class
+	 */
+	private HasDataSingletons(){
+
+	}
 
 	/**
 	 *
@@ -21,7 +27,7 @@ public final class HasDataSingletons implements HasData {
 	 * @param endDate forecast endDate, inclusive
 	 * @return MongoCursor<Document>
 	 */
-	public boolean hasData(String collection, Map<String, List<Object>> query, Date startDate, Date endDate) {
+	public static boolean hasData(String collection, Map<String, List<Object>> query, Date startDate, Date endDate) {
 		Document document = new Document();
 
 		if(startDate != null && endDate != null)
