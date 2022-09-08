@@ -26,7 +26,7 @@ class InsertTest {
 	@BeforeEach
 	public void setUpClass(){
 		TestSettings.setTestSettings();
-		Settings.put("connectionString", String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+		Settings.put("connectionString", String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 	}
 
 	@Test

@@ -1,13 +1,11 @@
 package nl.fews.archivedatabase.mongodb.query.operations;
 
-import com.mongodb.client.MongoCursor;
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
 import nl.fews.archivedatabase.mongodb.migrate.operations.Insert;
 import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
-import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -32,7 +30,7 @@ class HasDataSingletonsTest {
 	@BeforeEach
 	public void setUpClass(){
 		TestSettings.setTestSettings();
-		Settings.put("connectionString", String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+		Settings.put("connectionString", String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 	}
 
 	@Test

@@ -20,6 +20,6 @@ public class TestSettings {
 		Settings.put("archiveDatabaseUnitConverter", new TestUtil.ArchiveDatabaseUnitConverterTestImplementation());
 		Settings.put("archiveDatabaseTimeConverter", new TestUtil.ArchiveDatabaseTimeConverterTestImplementation());
 		Settings.put("archiveDatabaseRegionConfigInfoProvider", new TestUtil.ArchiveDatabaseRegionConfigInfoProviderTestImplementation());
-		Settings.put("databaseUrl", "mongodb://%s:%s/FEWS_ARCHIVE_TEST");
+		Settings.put("databaseUrl", "%s/FEWS_ARCHIVE_TEST");
 	}
 }

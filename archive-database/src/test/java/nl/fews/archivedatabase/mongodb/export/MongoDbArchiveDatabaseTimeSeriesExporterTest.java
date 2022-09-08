@@ -66,7 +66,7 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		TimeSeriesArrays timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();
 
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
-		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 
 		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = (MongoDbArchiveDatabaseTimeSeriesExporter)mongoDbArchiveDatabase.getArchiveTimeSeriesExporter();
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertExternalHistoricalTimeSeries(timeSeriesArrays, "areaId", "sourceId");
@@ -124,7 +124,7 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		TimeSeriesArrays timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();
 
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
-		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 
 		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = (MongoDbArchiveDatabaseTimeSeriesExporter)mongoDbArchiveDatabase.getArchiveTimeSeriesExporter();
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertExternalForecastingTimeSeries(timeSeriesArrays, "areaId", "sourceId");
@@ -181,7 +181,7 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		TimeSeriesArrays timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();
 
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
-		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 
 		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = (MongoDbArchiveDatabaseTimeSeriesExporter)mongoDbArchiveDatabase.getArchiveTimeSeriesExporter();
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertSimulatedForecastingTimeSeries(timeSeriesArrays, "areaId", "sourceId");
@@ -263,7 +263,7 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 		TimeSeriesArrays timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();
 
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
-		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getContainerIpAddress(), mongoDBContainer.getFirstMappedPort()));
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 
 		MongoDbArchiveDatabaseTimeSeriesExporter mongoDbArchiveDatabaseTimeSeriesExporter = (MongoDbArchiveDatabaseTimeSeriesExporter)mongoDbArchiveDatabase.getArchiveTimeSeriesExporter();
 		mongoDbArchiveDatabaseTimeSeriesExporter.insertSimulatedHistoricalTimeSeries(timeSeriesArrays, "areaId", "sourceId");
