@@ -3,10 +3,10 @@ package nl.fews.archivedatabase.mongodb.query;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.lang.NonNull;
 
-import nl.fews.archivedatabase.mongodb.query.interfaces.HasData;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Read;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Summarize;
 import nl.fews.archivedatabase.mongodb.query.operations.Filter;
+import nl.fews.archivedatabase.mongodb.query.operations.HasDataBuckets;
 import nl.fews.archivedatabase.mongodb.query.operations.ReadBuckets;
 import nl.fews.archivedatabase.mongodb.query.operations.ReadSingletons;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesArrayUtil;
@@ -160,8 +160,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				Date startDate = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getPeriod().getStartDate();
 				Date endDate = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getPeriod().getEndDate();
 
-				HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED)))).getConstructor().newInstance();
-				if(hasData.hasData(collection, query, startDate, endDate))
+				if(HasDataBuckets.hasData(collection, query, startDate, endDate))
 					singleExternalDataImportRequestsHavingData.add(singleExternalDataImportRequest);
 			}
 			catch (Exception ex){
@@ -504,8 +503,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				Date startDate = archiveDatabaseObservedImportRequest.getPeriod().getStartDate();
 				Date endDate = archiveDatabaseObservedImportRequest.getPeriod().getEndDate();
 
-				HasData hasData = (HasData)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("HasData%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)))).getConstructor().newInstance();
-				if(hasData.hasData(collection, query, startDate, endDate))
+				if(HasDataBuckets.hasData(collection, query, startDate, endDate))
 					singleExternalDataImportRequestsHavingData.add(singleExternalDataImportRequest);
 			}
 			catch (Exception ex){
