@@ -148,7 +148,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				query.put("ensembleId", List.of(ensembleId));
 				query.put("ensembleMemberId", List.of(ensembleMemberId));
 
-				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseObservedImportRequest(List.of(timeSeriesHeader), period, query));
+				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest(List.of(timeSeriesHeader), period, query));
 			}
 		}
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = new ArrayList<>();
