@@ -560,11 +560,12 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 						document.append(k, v.size() == 1 ? v.get(0) : new Document("$in", v));
 				});
 				Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), List.of(
+						new Document("$match", document),
 						new Document("$sort", new Document("startTime", 1).append("endTime", 1)),
 						new Document("$group", new Document("_id", new Document("startTime", "$startTime").append("endTime", "$endTime"))))).forEach(result -> {
 					Document root = result.get("_id", Document.class);
-					int startYear = DateUtil.getLocalDateTime(root.getDate("startDate")).getYear();
-					int endYear = DateUtil.getLocalDateTime(root.getDate("endDate")).getYear();
+					int startYear = DateUtil.getLocalDateTime(root.getDate("startTime")).getYear();
+					int endYear = DateUtil.getLocalDateTime(root.getDate("endTime")).getYear();
 					IntStream.rangeClosed(startYear, endYear).forEach(availableYears::add);
 				});
 			}
