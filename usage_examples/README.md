@@ -1,6 +1,6 @@
 ## Example Queries for MongoDB FEWS_ARCHIVE
 ### Native Shell Script Examples
-- **Forecasting** 
+- **Forecasting**
     - Forecast collections are organized at the forecast date granularity, containing one complete forecast per database entry. These collections include:
     - ExternalForecastingScalarTimeSeries(.js)
     - SimulatedForecastingScalarTimeSeries(.js)
@@ -112,7 +112,7 @@ db.ExternalHistoricalScalarTimeSeries.distinct("moduleInstanceId").forEach(m => 
 35 await main();`</pre>
 - **Python**
   - Python provide process-based parallelism that achieves the same performant results as the NodeJS threading.
-  - `parallel.py` illustrate this approach <pre>`1  import pymongo
+  - `parallel.py` illustrates this approach <pre>`1  import pymongo
 2  import multiprocessing as mp
 3
 4  client = pymongo.MongoClient("mongodb://mongo:[PASSWORD]@mongo.infisys.net/admin")
