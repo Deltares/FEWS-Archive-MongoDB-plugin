@@ -205,7 +205,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			query.put("qualifierId", List.of(qualifierId));
 			query.put("encodedTimeStepId", List.of(encodedTimeStepId));
 
-			try(MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), query, period.getStartDate(), period.getEndDate())) {
+			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
+			try(MongoCursor<Document> results = new ReadBuckets().read(collection, query, period.getStartDate(), period.getEndDate())) {
 				if (results.hasNext()) {
 					Document result = results.next();
 					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, result);
@@ -526,6 +527,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		if(period.getEndDate().before(period.getStartDate()))
 			throw new IllegalArgumentException("End of period must fall on or after start of period");
 
+		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
+
 		Set<Integer> availableYears = Collections.synchronizedSet(new HashSet<>());
 		timeSeriesHeaders.parallelStream().forEach(timeSeriesHeader -> {
 			Map<String, List<Object>> query = new HashMap<>();
@@ -560,18 +563,18 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				});
 
 				Set<Integer> years = new HashSet<>();
-				Database.distinct(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), "startTime", document, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
-				Database.distinct(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), "endTime", document, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
-				List<Document> yearQueries = new ArrayList<>();
+				Database.distinct(collection, "startTime", document, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
+				Database.distinct(collection, "endTime", document, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
 
 				if(!years.isEmpty()){
+					List<Document> yearQueries = new ArrayList<>();
 					LongStream.rangeClosed(Collections.min(years), Collections.max(years)).forEach(year -> yearQueries.add(new Document("$and", List.of(
 							new Document("endTime", new Document("$gte", DateUtil.getDate(startDate.plusYears(year - startDate.getYear())))),
 							new Document("startTime", new Document("$lte", DateUtil.getDate(endDate.plusYears(year - startDate.getYear()))))
 					))));
 					document.append("$or", yearQueries);
 
-					Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), List.of(
+					Database.aggregate(collection, List.of(
 							new Document("$match", document),
 							new Document("$sort", new Document("startTime", 1).append("endTime", 1)),
 							new Document("$group", new Document("_id", new Document("startTime", "$startTime").append("endTime", "$endTime"))))).forEach(result -> {
