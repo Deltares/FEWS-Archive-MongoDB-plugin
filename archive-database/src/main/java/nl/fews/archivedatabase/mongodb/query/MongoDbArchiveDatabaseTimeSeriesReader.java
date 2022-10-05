@@ -30,9 +30,11 @@ import nl.wldelft.util.timeseries.*;
 import org.bson.Document;
 import org.json.JSONArray;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -542,32 +544,45 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 						moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId));
 			}
 			else {
-
 				query.put("moduleInstanceId", List.of(moduleInstanceId));
 				query.put("locationId", List.of(locationId));
 				query.put("parameterId", List.of(parameterId));
 				query.put("qualifierId", List.of(qualifierId));
 				query.put("encodedTimeStepId", List.of(encodedTimeStepId));
 
-				Date startDate = period.getStartDate();
-				Date endDate = period.getEndDate();
+				LocalDateTime startDate = DateUtil.getLocalDateTime(period.getStartDate());
+				LocalDateTime endDate = DateUtil.getLocalDateTime(period.getEndDate());
 
 				Document document = new Document();
-				document.append("endTime", new Document("$gte", startDate));
-				document.append("startTime", new Document("$lte", endDate));
 				query.forEach((k, v) -> {
 					if (!v.isEmpty())
 						document.append(k, v.size() == 1 ? v.get(0) : new Document("$in", v));
 				});
-				Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), List.of(
-						new Document("$match", document),
-						new Document("$sort", new Document("startTime", 1).append("endTime", 1)),
-						new Document("$group", new Document("_id", new Document("startTime", "$startTime").append("endTime", "$endTime"))))).forEach(result -> {
-					Document root = result.get("_id", Document.class);
-					int startYear = DateUtil.getLocalDateTime(root.getDate("startTime")).getYear();
-					int endYear = DateUtil.getLocalDateTime(root.getDate("endTime")).getYear();
-					IntStream.rangeClosed(startYear, endYear).forEach(availableYears::add);
-				});
+
+				document.clear();
+
+				Set<Integer> years = new HashSet<>();
+				Database.distinct(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), "startTime", document, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
+				Database.distinct(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), "endTime", document, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
+				List<Document> yearQueries = new ArrayList<>();
+
+				if(!years.isEmpty()){
+					LongStream.rangeClosed(Collections.min(years), Collections.max(years)).forEach(year -> yearQueries.add(new Document("$and", List.of(
+							new Document("endTime", new Document("$gte", DateUtil.getDate(startDate.plusYears(year - startDate.getYear())))),
+							new Document("startTime", new Document("$lte", DateUtil.getDate(endDate.plusYears(year - startDate.getYear()))))
+					))));
+					document.append("$or", yearQueries);
+
+					Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), List.of(
+							new Document("$match", document),
+							new Document("$sort", new Document("startTime", 1).append("endTime", 1)),
+							new Document("$group", new Document("_id", new Document("startTime", "$startTime").append("endTime", "$endTime"))))).forEach(result -> {
+						Document root = result.get("_id", Document.class);
+						int startYear = DateUtil.getLocalDateTime(root.getDate("startTime")).getYear();
+						int endYear = DateUtil.getLocalDateTime(root.getDate("endTime")).getYear();
+						IntStream.rangeClosed(startYear, endYear).forEach(availableYears::add);
+					});
+				}
 			}
 		});
 		return availableYears;

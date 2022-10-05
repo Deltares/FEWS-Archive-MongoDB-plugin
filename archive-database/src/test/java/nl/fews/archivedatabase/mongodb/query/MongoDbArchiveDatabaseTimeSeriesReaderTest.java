@@ -356,4 +356,26 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		LongUnmodifiableList forecastTimes = mongoDbArchiveDatabaseTimeSeriesReader.searchForExternalForecastTimes("BARK2E", "MAP", "QPF_to_MAP", "", new String[]{"Extended", "HRRR"}, TimeSeriesType.EXTERNAL_FORECASTING, new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2022-01-01").getTime()),1000);
 		assertEquals(1, forecastTimes.size());
 	}
+
+	@Test
+	void getAvailableYears() throws Exception {
+		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
+
+		MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = (MongoDbArchiveDatabaseTimeSeriesReader)mongoDbArchiveDatabase.getArchiveDataBaseTimeSeriesReader();
+		mongoDbArchiveDatabaseTimeSeriesReader.setHeaderProvider(new TestUtil.HeaderProviderTestImplementation());
+
+		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("observed") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		Insert.insertMetaDatas(entries, Map.of());
+
+		DefaultTimeSeriesHeader timeSeriesHeader = new DefaultTimeSeriesHeader();
+		timeSeriesHeader.setModuleInstanceId("Preprocess_AV");
+		timeSeriesHeader.setLocationId("BOH-01");
+		timeSeriesHeader.setParameterId("AV");
+		timeSeriesHeader.setTimeStep(TimeStepUtils.decode("SETS60"));
+		Period period = new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2020-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2020-12-01").getTime());
+
+		Set<Integer> years = mongoDbArchiveDatabaseTimeSeriesReader.getAvailableYears(List.of(timeSeriesHeader), period);
+		assertEquals(1, years.size());
+	}
 }
