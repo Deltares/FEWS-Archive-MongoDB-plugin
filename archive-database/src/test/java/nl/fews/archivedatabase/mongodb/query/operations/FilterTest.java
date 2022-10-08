@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Testcontainers
 class FilterTest {
 	@Container
-	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo"));
+	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:5.0.12"));
 
 	@BeforeEach
 	public void setUpClass(){
