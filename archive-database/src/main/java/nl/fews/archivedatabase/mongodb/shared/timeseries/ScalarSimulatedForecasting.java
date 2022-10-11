@@ -61,12 +61,17 @@ public class ScalarSimulatedForecasting extends ScalarTimeSeries implements Time
 	public Document getMetaData(TimeSeriesHeader header, String areaId, String sourceId){
 		Document document = super.getMetaData(header, areaId, sourceId);
 
-		int ensembleMemberIndex = header.getEnsembleMemberIndex();
-		Date approvedTime = new Date(header.getApprovedTime());
+		document.append("ensembleMemberIndex", "ensembleMemberIndex");
+		document.append("approvedTime", "approvedTime");
 
-		document.append("ensembleMemberIndex", ensembleMemberIndex);
-		document.append("approvedTime", approvedTime);
+		if(header instanceof FewsTimeSeriesHeader) {
+			FewsTimeSeriesHeader fewsHeader = (FewsTimeSeriesHeader)header;
+			int ensembleMemberIndex = header.getEnsembleMemberIndex();
+			Date approvedTime = new Date(fewsHeader.getTaskRunDescriptor().getApprovedTime());
 
+			document.append("ensembleMemberIndex", ensembleMemberIndex);
+			document.append("approvedTime", approvedTime);
+		}
 		return document;
 	}
 
