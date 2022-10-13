@@ -186,13 +186,6 @@
         </dependency>
         <dependency>
             <groupId>nl.deltares</groupId>
-            <artifactId>Delft_Archive_Server</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/Delft_Archive_Server.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>nl.deltares</groupId>
             <artifactId>Delft_ARCHIVE_castor</artifactId>
             <version>1.0</version>
             <scope>system</scope>

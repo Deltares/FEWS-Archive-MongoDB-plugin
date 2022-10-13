@@ -5,7 +5,7 @@ import nl.fews.archivedatabase.mongodb.shared.utils.PathUtil;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
 import nl.wldelft.archive.util.metadata.timeseries.TimeSeriesRecord;
-import nl.wldelft.archiveserver.catalogue.indeces.ElasticSearchIndexUtil;
+import nl.wldelft.fews.system.data.externaldatasource.util.ArchiveIntegrationUtil;
 import nl.wldelft.netcdf.NetcdfTimeSeriesParser;
 import nl.wldelft.util.timeseries.*;
 import org.javatuples.Pair;
@@ -93,7 +93,7 @@ public final class NetcdfUtil {
 		try {
 			Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = new HashMap<>();
 			try (NetcdfFile dataSet = NetcdfFile.open(netcdfFile.getAbsolutePath())) {
-				for (TimeSeriesRecord timeSeriesRecord : ElasticSearchIndexUtil.createTimeSeries(dataSet, netcdfContent, false).getObject0()) {
+				for (TimeSeriesRecord timeSeriesRecord : ArchiveIntegrationUtil.createTimeSeries(dataSet, netcdfContent, false).getObject0()) {
 					timeSeriesRecordsMap.putIfAbsent(timeSeriesRecord.getArchiveLocationId(), new HashMap<>());
 					timeSeriesRecordsMap.get(timeSeriesRecord.getArchiveLocationId()).putIfAbsent(timeSeriesRecord.getArchiveParameterId(), timeSeriesRecord);
 				}
