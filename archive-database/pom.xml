@@ -119,21 +119,7 @@
             <artifactId>cdm</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/cdm-core-5.5.2.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>grib</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/grib-5.5.2.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>udunits</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/udunits-5.5.2.jar</systemPath>
+            <systemPath>${project.basedir}/lib/netcdf-4.6.3p.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>nl.deltares</groupId>

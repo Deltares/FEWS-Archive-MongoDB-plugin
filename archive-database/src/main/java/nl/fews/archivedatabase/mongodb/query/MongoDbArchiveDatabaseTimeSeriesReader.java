@@ -30,9 +30,11 @@ import nl.wldelft.util.timeseries.*;
 import org.bson.Document;
 import org.json.JSONArray;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -203,7 +205,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			query.put("qualifierId", List.of(qualifierId));
 			query.put("encodedTimeStepId", List.of(encodedTimeStepId));
 
-			try(MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), query, period.getStartDate(), period.getEndDate())) {
+			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
+			try(MongoCursor<Document> results = new ReadBuckets().read(collection, query, period.getStartDate(), period.getEndDate())) {
 				if (results.hasNext()) {
 					Document result = results.next();
 					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, result);
@@ -524,6 +527,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		if(period.getEndDate().before(period.getStartDate()))
 			throw new IllegalArgumentException("End of period must fall on or after start of period");
 
+		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
+
 		Set<Integer> availableYears = Collections.synchronizedSet(new HashSet<>());
 		timeSeriesHeaders.parallelStream().forEach(timeSeriesHeader -> {
 			Map<String, List<Object>> query = new HashMap<>();
@@ -542,32 +547,43 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 						moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId));
 			}
 			else {
-
 				query.put("moduleInstanceId", List.of(moduleInstanceId));
 				query.put("locationId", List.of(locationId));
 				query.put("parameterId", List.of(parameterId));
 				query.put("qualifierId", List.of(qualifierId));
 				query.put("encodedTimeStepId", List.of(encodedTimeStepId));
 
-				Date startDate = period.getStartDate();
-				Date endDate = period.getEndDate();
+				LocalDateTime startDate = DateUtil.getLocalDateTime(period.getStartDate());
+				LocalDateTime endDate = DateUtil.getLocalDateTime(period.getEndDate());
 
 				Document document = new Document();
-				document.append("endTime", new Document("$gte", startDate));
-				document.append("startTime", new Document("$lte", endDate));
 				query.forEach((k, v) -> {
 					if (!v.isEmpty())
 						document.append(k, v.size() == 1 ? v.get(0) : new Document("$in", v));
 				});
-				Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), List.of(
-						new Document("$match", document),
-						new Document("$sort", new Document("startTime", 1).append("endTime", 1)),
-						new Document("$group", new Document("_id", new Document("startTime", "$startTime").append("endTime", "$endTime"))))).forEach(result -> {
-					Document root = result.get("_id", Document.class);
-					int startYear = DateUtil.getLocalDateTime(root.getDate("startTime")).getYear();
-					int endYear = DateUtil.getLocalDateTime(root.getDate("endTime")).getYear();
-					IntStream.rangeClosed(startYear, endYear).forEach(availableYears::add);
-				});
+
+				Set<Integer> years = new HashSet<>();
+				Database.distinct(collection, "startTime", document, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
+				Database.distinct(collection, "endTime", document, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
+
+				if(!years.isEmpty()){
+					List<Document> yearQueries = new ArrayList<>();
+					LongStream.rangeClosed(Collections.min(years), Collections.max(years)).forEach(year -> yearQueries.add(new Document("$and", List.of(
+							new Document("endTime", new Document("$gte", DateUtil.getDate(startDate.plusYears(year - startDate.getYear())))),
+							new Document("startTime", new Document("$lte", DateUtil.getDate(endDate.plusYears(year - startDate.getYear()))))
+					))));
+					document.append("$or", yearQueries);
+
+					Database.aggregate(collection, List.of(
+							new Document("$match", document),
+							new Document("$sort", new Document("startTime", 1).append("endTime", 1)),
+							new Document("$group", new Document("_id", new Document("startTime", "$startTime").append("endTime", "$endTime"))))).forEach(result -> {
+						Document root = result.get("_id", Document.class);
+						int startYear = DateUtil.getLocalDateTime(root.getDate("startTime")).getYear();
+						int endYear = DateUtil.getLocalDateTime(root.getDate("endTime")).getYear();
+						IntStream.rangeClosed(startYear, endYear).forEach(availableYears::add);
+					});
+				}
 			}
 		});
 		return availableYears;
