@@ -66,8 +66,8 @@ public class ScalarSimulatedForecasting extends ScalarTimeSeries implements Time
 
 		if(header instanceof FewsTimeSeriesHeader) {
 			FewsTimeSeriesHeader fewsHeader = (FewsTimeSeriesHeader)header;
-			int ensembleMemberIndex = header.getEnsembleMemberIndex();
-			Date approvedTime = new Date(fewsHeader.getTaskRunDescriptor().getApprovedTime());
+			int ensembleMemberIndex = fewsHeader.getEnsembleMemberIndex();
+			Date approvedTime = new Date(fewsHeader.getApprovedTime());
 
 			document.append("ensembleMemberIndex", ensembleMemberIndex);
 			document.append("approvedTime", approvedTime);

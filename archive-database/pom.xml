@@ -269,14 +269,6 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/lib</directory>
-                                    <includes>
-                                        <include>Delft_Archive_Server.jar</include>
-                                    </includes>
-                                </resource>
-                            </resources>
                         </configuration>
                     </execution>
                 </executions>
