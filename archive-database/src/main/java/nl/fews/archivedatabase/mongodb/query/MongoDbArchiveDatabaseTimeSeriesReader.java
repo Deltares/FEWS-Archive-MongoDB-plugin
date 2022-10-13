@@ -205,7 +205,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			query.put("qualifierId", List.of(qualifierId));
 			query.put("encodedTimeStepId", List.of(encodedTimeStepId));
 
-			try(MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), query, period.getStartDate(), period.getEndDate())) {
+			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
+			try(MongoCursor<Document> results = new ReadBuckets().read(collection, query, period.getStartDate(), period.getEndDate())) {
 				if (results.hasNext()) {
 					Document result = results.next();
 					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, result);
