@@ -269,6 +269,11 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${basedir}/target</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/lib</directory>
+                                </resource>
+                            </resources>
                         </configuration>
                     </execution>
                 </executions>
