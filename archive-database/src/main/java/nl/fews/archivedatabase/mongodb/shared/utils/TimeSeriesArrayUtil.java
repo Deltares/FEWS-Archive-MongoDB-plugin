@@ -124,20 +124,27 @@ public class TimeSeriesArrayUtil {
 		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader, timeSeriesHeader.getTimeStep());
 		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
 
+
 		if (!events.isEmpty()){
+			Map<Long, Document> eventLookup = new HashMap<>();
 			long[] times = new long[events.size()];
-			for (int i = 0; i < events.size(); i++)
+			for (int i = 0; i < events.size(); i++) {
 				times[i] = events.get(i).getDate("t").getTime();
+				eventLookup.put(times[i], events.get(i));
+			}
 
 			if(timeSeriesHeader.getTimeStep() == IrregularTimeStep.INSTANCE)
 				timeSeriesArray.ensureTimes(times);
 			else
 				timeSeriesArray.ensurePeriod(new Period(times[0], times[times.length-1]));
 
-			for (int i = 0; i < events.size(); i++)  {
-				timeSeriesArray.setValue(i,  events.get(i).get("v") != null ? events.get(i).getDouble("v").floatValue() : Float.NaN);
-				timeSeriesArray.setFlag(i, events.get(i).getInteger("f").byteValue());
-				timeSeriesArray.setComment(i, events.get(i).getString("c"));
+			for (int i = 0; i < timeSeriesArray.size(); i++)  {
+				if(eventLookup.containsKey(timeSeriesArray.getTime(i))){
+					Document event = eventLookup.get(timeSeriesArray.getTime(i));
+					timeSeriesArray.setValue(i,  event.get("v") != null ? event.getDouble("v").floatValue() : Float.NaN);
+					timeSeriesArray.setFlag(i, event.getInteger("f").byteValue());
+					timeSeriesArray.setComment(i, event.getString("c"));
+				}
 			}
 		}
 		return timeSeriesArray;
