@@ -4,8 +4,9 @@ import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.PathUtil;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
+import nl.wldelft.archive.util.metadata.timeseries.ArchiveTimeSeriesRecord;
 import nl.wldelft.archive.util.metadata.timeseries.TimeSeriesRecord;
-import nl.wldelft.archiveserver.catalogue.indeces.ElasticSearchIndexUtil;
+import nl.wldelft.fews.system.data.externaldatasource.util.ArchiveIntegrationUtil;
 import nl.wldelft.netcdf.NetcdfTimeSeriesParser;
 import nl.wldelft.util.timeseries.*;
 import org.javatuples.Pair;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 public final class NetcdfUtil {
 
@@ -92,11 +94,32 @@ public final class NetcdfUtil {
 	 */
 	public static Map<String, Map<String, TimeSeriesRecord>> getTimeSeriesRecordsMap(File netcdfFile, NetcdfContent netcdfContent){
 		try {
+			String baseDirectoryArchive = Settings.get("baseDirectoryArchive", String.class);
+			String relativePathNetcdFile = netcdfFile.getAbsolutePath().substring(baseDirectoryArchive.length());
 			Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = new HashMap<>();
 			try (NetcdfFile dataSet = NetcdfFiles.open(netcdfFile.getAbsolutePath())) {
-				for (TimeSeriesRecord timeSeriesRecord : ElasticSearchIndexUtil.createTimeSeries(dataSet, netcdfContent, false).getObject0()) {
-					timeSeriesRecordsMap.putIfAbsent(timeSeriesRecord.getArchiveLocationId(), new HashMap<>());
-					timeSeriesRecordsMap.get(timeSeriesRecord.getArchiveLocationId()).putIfAbsent(timeSeriesRecord.getArchiveParameterId(), timeSeriesRecord);
+				for (ArchiveTimeSeriesRecord archiveTimeSeriesRecord : ArchiveIntegrationUtil.createTimeSeries(dataSet, relativePathNetcdFile, false, netcdfContent)) {
+					IntStream.range(0, archiveTimeSeriesRecord.getArchiveLocationId().size()).forEach(i -> {
+						timeSeriesRecordsMap.putIfAbsent(archiveTimeSeriesRecord.getArchiveLocationId().get(i), new HashMap<>());
+						try {
+							TimeSeriesRecord timeSeriesRecord = new TimeSeriesRecord(
+									archiveTimeSeriesRecord.getLocationId().get(i),
+									archiveTimeSeriesRecord.getArchiveLocationId().get(i),
+									archiveTimeSeriesRecord.getParameterId(),
+									archiveTimeSeriesRecord.getArchiveParameterId(),
+									archiveTimeSeriesRecord.getModuleInstanceId().get(archiveTimeSeriesRecord.getModuleInstanceId().size() == 1 ? 0 : i),
+									archiveTimeSeriesRecord.getTimeStepId(),
+									archiveTimeSeriesRecord.getQualifierIds().get(archiveTimeSeriesRecord.getQualifierIds().size() == 1 ? 0 : i),
+									archiveTimeSeriesRecord.getEnsembleId(),
+									String.join(",", archiveTimeSeriesRecord.getEnsembleMemberIds()),
+									archiveTimeSeriesRecord.getTimeSeriesType()
+							);
+							timeSeriesRecordsMap.get(archiveTimeSeriesRecord.getArchiveLocationId().get(i)).putIfAbsent(archiveTimeSeriesRecord.getArchiveParameterId(), timeSeriesRecord);
+						}
+						catch (Exception ex){
+							System.out.println(ex);
+						}
+					});
 				}
 			}
 			return timeSeriesRecordsMap;
