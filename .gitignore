@@ -23,7 +23,7 @@
 hs_err_pid*
 /archive-database/target
 /archive-database/out
-/archive-database/src/test/resources/TestSettings.json
-/archive-database/src/test/TestSettings.json
+/archive-database/src/test/resources/*.json
+/archive-database/src/test/*.json
 /usage_examples/node_modules
 /usage_examples/.idea/sonarlint/issuestore
