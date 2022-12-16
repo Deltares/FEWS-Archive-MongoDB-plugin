@@ -1,8 +1,9 @@
 import pymongo
 import pandas as pd
 from datetime import datetime
+import matplotlib.pyplot as plt
 
-client = pymongo.MongoClient("mongodb://mongo:[PASSWORD]@mongo.infisys.net/admin")
+client = pymongo.MongoClient("mongodb://mongo:j72fGnBoruQX7MIgkjv5@mongo.infisys.net/admin")
 db = client["FEWS_ARCHIVE"]
 
 
@@ -11,7 +12,7 @@ def main():
 		{"$match": {
 			"moduleInstanceId": "QPF_to_MAP",
 			"parameterId": "MAP",
-			"qualifierId": '["NAEFS"]',
+			"qualifierId": '["ECMWF"]',
 			"encodedTimeStepId": "SETS360",
 			"forecastTime": {"$gte": datetime.strptime("2020-01-01", "%Y-%m-%d"), "$lt": datetime.strptime("2020-02-01", "%Y-%m-%d")}}},
 		{"$unwind": "$timeseries"},
@@ -20,7 +21,7 @@ def main():
 			"locationId": 1,
 			"forecastTime": 1,
 			"time": "$timeseries.t",
-			"forecast": "$timeseries.v",
+			"forecast": "$timeseries.dv",
 			"hour": {"$dateDiff": {"startDate": "$forecastTime", "endDate": "$timeseries.t", "unit": "hour"}}}}
 	]))
 	forecast = forecast.set_index(["locationId", "time"])
@@ -42,11 +43,12 @@ def main():
 			"_id": 0,
 			"locationId": 1,
 			"time": "$timeseries.t",
-			"observed": "$timeseries.v"}}
+			"observed": "$timeseries.dv"}}
 	]))
 	observed = observed.set_index(["locationId", "time"])
 	forecast_observed = forecast.join(observed).reset_index().set_index(["locationId", "forecastTime", "hour"]).dropna().drop(columns=["time"]).to_xarray()
 	mean_error_per_location = (forecast_observed.forecast - forecast_observed.observed).sum(["forecastTime", "hour"]) / (forecast_observed.dims["forecastTime"] * forecast_observed.dims["hour"])
+	mean_error_per_location = (forecast_observed.forecast - forecast_observed.observed).sum(["forecastTime"]) / (forecast_observed.dims["forecastTime"])
 	average_over_per_location = (forecast_observed.forecast - forecast_observed.observed).where((forecast_observed.forecast - forecast_observed.observed) > 0).mean(["forecastTime", "hour"])
 	average_under_per_location = (forecast_observed.forecast - forecast_observed.observed).where((forecast_observed.forecast - forecast_observed.observed) < 0).mean(["forecastTime", "hour"])
 

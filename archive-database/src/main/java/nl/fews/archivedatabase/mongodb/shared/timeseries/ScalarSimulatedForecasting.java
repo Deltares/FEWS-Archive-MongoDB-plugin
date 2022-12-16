@@ -33,14 +33,18 @@ public class ScalarSimulatedForecasting extends ScalarTimeSeries implements Time
 		String ensembleId = header.getEnsembleId() == null || header.getEnsembleId().equals("none") || header.getEnsembleId().equals("main") ? "" : header.getEnsembleId();
 		String ensembleMemberId = header.getEnsembleMemberId() == null || header.getEnsembleMemberId().equals("none") || header.getEnsembleMemberId().equals("0") ? ensembleId : header.getEnsembleMemberId();
 		Date forecastTime = new Date(header.getForecastTime());
-		Date localForecastTime = Settings.get("archiveDatabaseTimeConverter") == null ? null : DateUtil.getDates(Settings.get("archiveDatabaseTimeConverter", ArchiveDatabaseTimeConverter.class).convert(new long[]{header.getForecastTime()}))[0];
 		String taskRunId = runInfo.getString("taskRunId");
+
+		if (header.getForecastTime() == Long.MIN_VALUE && runInfo.containsKey("time0") && runInfo.get("time0") instanceof Date)
+			forecastTime = runInfo.getDate("time0");
 
 		if (forecastTime.getTime() == Long.MIN_VALUE)
 			throw new IllegalArgumentException("header.getForecastTime() cannot be null or default");
 
 		if (taskRunId == null || taskRunId.equals(""))
 			throw new IllegalArgumentException("runInfo.getString(\"taskRunId\") cannot be null or empty");
+
+		Date localForecastTime = Settings.get("archiveDatabaseTimeConverter") == null ? null : DateUtil.getDates(Settings.get("archiveDatabaseTimeConverter", ArchiveDatabaseTimeConverter.class).convert(new long[]{forecastTime.getTime()}))[0];
 
 		document.append("ensembleId", ensembleId);
 		document.append("ensembleMemberId", ensembleMemberId);

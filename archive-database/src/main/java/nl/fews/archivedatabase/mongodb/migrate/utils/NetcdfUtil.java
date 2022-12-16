@@ -101,24 +101,19 @@ public final class NetcdfUtil {
 				for (ArchiveTimeSeriesRecord archiveTimeSeriesRecord : ArchiveIntegrationUtil.createTimeSeries(dataSet, relativePathNetcdFile, false, netcdfContent)) {
 					IntStream.range(0, archiveTimeSeriesRecord.getArchiveLocationId().size()).forEach(i -> {
 						timeSeriesRecordsMap.putIfAbsent(archiveTimeSeriesRecord.getArchiveLocationId().get(i), new HashMap<>());
-						try {
-							TimeSeriesRecord timeSeriesRecord = new TimeSeriesRecord(
-									archiveTimeSeriesRecord.getLocationId().get(i),
-									archiveTimeSeriesRecord.getArchiveLocationId().get(i),
-									archiveTimeSeriesRecord.getParameterId(),
-									archiveTimeSeriesRecord.getArchiveParameterId(),
-									archiveTimeSeriesRecord.getModuleInstanceId().get(archiveTimeSeriesRecord.getModuleInstanceId().size() == 1 ? 0 : i),
-									archiveTimeSeriesRecord.getTimeStepId(),
-									archiveTimeSeriesRecord.getQualifierIds().get(archiveTimeSeriesRecord.getQualifierIds().size() == 1 ? 0 : i),
-									archiveTimeSeriesRecord.getEnsembleId(),
-									String.join(",", archiveTimeSeriesRecord.getEnsembleMemberIds()),
-									archiveTimeSeriesRecord.getTimeSeriesType()
-							);
-							timeSeriesRecordsMap.get(archiveTimeSeriesRecord.getArchiveLocationId().get(i)).putIfAbsent(archiveTimeSeriesRecord.getArchiveParameterId(), timeSeriesRecord);
-						}
-						catch (Exception ex){
-							System.out.println(ex);
-						}
+						TimeSeriesRecord timeSeriesRecord = new TimeSeriesRecord(
+								archiveTimeSeriesRecord.getLocationId().get(i),
+								archiveTimeSeriesRecord.getArchiveLocationId().get(i),
+								archiveTimeSeriesRecord.getParameterId(),
+								archiveTimeSeriesRecord.getArchiveParameterId(),
+								archiveTimeSeriesRecord.getModuleInstanceId().get(archiveTimeSeriesRecord.getModuleInstanceId().size() == 1 ? 0 : i),
+								archiveTimeSeriesRecord.getTimeStepId(),
+								archiveTimeSeriesRecord.getQualifierIds().get(archiveTimeSeriesRecord.getQualifierIds().size() == 1 ? 0 : i),
+								archiveTimeSeriesRecord.getEnsembleId(),
+								String.join(",", archiveTimeSeriesRecord.getEnsembleMemberIds()),
+								archiveTimeSeriesRecord.getTimeSeriesType()
+						);
+						timeSeriesRecordsMap.get(archiveTimeSeriesRecord.getArchiveLocationId().get(i)).putIfAbsent(archiveTimeSeriesRecord.getArchiveParameterId(), timeSeriesRecord);
 					});
 				}
 			}

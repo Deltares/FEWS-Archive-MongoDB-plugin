@@ -8,27 +8,5 @@
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="11" project-jdk-type="JavaSDK">
-    <output url="file://$PROJECT_DIR$/out" />
-  </component>
-  <component name="SvnBranchConfigurationManager">
-    <option name="myConfigurationMap">
-      <map>
-        <entry key="$PROJECT_DIR$">
-          <value>
-            <SvnBranchConfiguration>
-              <option name="branchUrls">
-                <list>
-                  <option value="https://repos.deltares.nl/repos/OpenDatabase_MongoDB/FEWS-bin" />
-                  <option value="https://repos.deltares.nl/repos/OpenDatabase_MongoDB/branches" />
-                  <option value="https://repos.deltares.nl/repos/OpenDatabase_MongoDB/tags" />
-                </list>
-              </option>
-              <option name="trunkUrl" value="https://repos.deltares.nl/repos/OpenDatabase_MongoDB/trunk" />
-            </SvnBranchConfiguration>
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="11" project-jdk-type="JavaSDK" />
 </project>
