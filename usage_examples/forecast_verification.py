@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 
-client = pymongo.MongoClient("mongodb://mongo:j72fGnBoruQX7MIgkjv5@mongo.infisys.net/admin")
+client = pymongo.MongoClient("mongodb://mongo:[PASSWORD]@mongo.infisys.net/admin")
 db = client["FEWS_ARCHIVE"]
 
 
