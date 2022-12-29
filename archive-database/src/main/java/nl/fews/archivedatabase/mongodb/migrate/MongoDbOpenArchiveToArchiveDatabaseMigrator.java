@@ -6,10 +6,12 @@ import nl.fews.archivedatabase.mongodb.migrate.operations.*;
 import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
+import nl.fews.archivedatabase.mongodb.shared.logging.MongoDbAppender;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.LogUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
+import nl.wldelft.util.LogUtils;
 import nl.wldelft.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -114,6 +116,9 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	@Override
 	public void migrate(String[] areaId, String sourceId) {
 		try{
+			if(!LogUtils.getAppenders().containsKey("databaseLogAppender"))
+				LogUtils.addAppender(MongoDbAppender.createAppender("databaseLogAppender", Settings.get("connectionString"), null));
+
 			logger.info("Settings: {}", Settings.toJsonString(1));
 			logger.info("Start: deleteUncommitted");
 			Delete.deleteUncommitted();
