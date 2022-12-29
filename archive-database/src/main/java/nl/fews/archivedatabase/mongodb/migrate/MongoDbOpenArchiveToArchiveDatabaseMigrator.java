@@ -1,14 +1,12 @@
 package nl.fews.archivedatabase.mongodb.migrate;
 
 import com.mongodb.lang.NonNull;
-import nl.fews.archivedatabase.mongodb.migrate.interfaces.BucketHistorical;
 import nl.fews.archivedatabase.mongodb.migrate.operations.*;
 import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.logging.MongoDbAppender;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
-import nl.fews.archivedatabase.mongodb.shared.utils.LogUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.LogUtils;
@@ -45,6 +43,11 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	 *
 	 */
 	private static MongoDbOpenArchiveToArchiveDatabaseMigrator mongoDbOpenArchiveToArchiveDatabaseMigrator = null;
+
+	/**
+	 *
+	 */
+	private static final Object mutex = new Object();
 
 	/**
 	 * Creates a new instance of this interface implementation
@@ -116,8 +119,10 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	@Override
 	public void migrate(String[] areaId, String sourceId) {
 		try{
-			if(!LogUtils.getAppenders().containsKey("databaseLogAppender"))
-				LogUtils.addAppender(MongoDbAppender.createAppender("databaseLogAppender", Settings.get("connectionString"), null));
+			synchronized (mutex){
+				if(!LogUtils.getAppenders().containsKey("databaseLogAppender"))
+					LogUtils.addAppender(MongoDbAppender.createAppender("databaseLogAppender", Settings.get("connectionString"), null));
+			}
 
 			logger.info("Settings: {}", Settings.toJsonString(1));
 			logger.info("Start: deleteUncommitted");
