@@ -16,24 +16,14 @@ import org.bson.Document;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 
 /**
  *
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public final class Database {
-	/**
-	 *
-	 */
-	public enum Collection {
-		MigrateMetaData,
-		MigrateLog,
-		BucketSize,
-		TimeSeriesIndex
-	}
 
 	/**
 	 * NUM_RETRIES
@@ -111,7 +101,7 @@ public final class Database {
 		if(indexOperations.isEmpty()){
 			Set<String> collections = new HashSet<>();
 			mongoDatabase.listCollectionNames().forEach(collections::add);
-			collectionIndex.keySet().forEach(collection -> {
+			Index.collectionIndex.keySet().forEach(collection -> {
 				if(collections.contains(collection))
 					CompletableFuture.runAsync(() -> ensureCollection(collection));
 				else
@@ -146,7 +136,7 @@ public final class Database {
 	 *
 	 */
 	public static void updateTimeSeriesIndex(){
-		Database.ensureCollection(Database.Collection.TimeSeriesIndex.toString());
+		Database.ensureCollection(Collection.TimeSeriesIndex.toString());
 		List.of(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, TimeSeriesType.SCALAR_EXTERNAL_FORECASTING, TimeSeriesType.SCALAR_SIMULATED_FORECASTING, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED).forEach(timeSeriesType -> {
 			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 			List<Document> results = new ArrayList<>();
@@ -197,7 +187,7 @@ public final class Database {
 	 * @return the durable key members matching the insert data type collection's unique key
 	 */
 	public static List<String> getCollectionKeys(String collection) {
-		return collectionKeys.get(collection);
+		return Index.collectionKeys.get(collection);
 	}
 
 	/**
@@ -206,7 +196,7 @@ public final class Database {
 	 * @return The array of document representing default indexes to be applied to the given collection.  The first entry is unique
 	 */
 	private static Document[] getCollectionIndexes(String collection) {
-		return collectionIndex.get(collection);
+		return Index.collectionIndex.get(collection);
 	}
 
 	/**
@@ -681,252 +671,4 @@ public final class Database {
 		}
 		throw new MongoClientException("Failed Query");
 	}
-
-	/**
-	 * lookup for string representation of each collection
-	 */
-	private static final Map<String, List<String>> collectionKeys = new ConcurrentHashMap<>(Map.of(
-			TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING), List.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "ensembleId", "ensembleMemberId", "forecastTime"),
-			TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), List.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "bucketSize", "bucket"),
-			TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), List.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "ensembleId", "ensembleMemberId", "forecastTime", "taskRunId"),
-			TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), List.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "ensembleId", "ensembleMemberId", "forecastTime", "taskRunId"),
-			TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET), List.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "bucketSize", "bucket"),
-			TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED), List.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "ensembleId", "ensembleMemberId", "bucketSize", "bucket")
-	));
-
-	/**
-	 * default indexes for each collection
-	 */
-	private static final Map<String, Document[]> collectionIndex = Map.ofEntries(
-			Map.entry(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING), new Document[]{
-					new Document(collectionKeys.get(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING)).stream().collect(Collectors.toMap(k -> k, k -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("forecastTime", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("metaData.areaId", "forecastTime", "moduleInstanceId", "parameterId", "encodedTimeStepId","metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-			}),
-			Map.entry(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), new Document[]{
-					new Document(collectionKeys.get(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)).stream().collect(Collectors.toMap(k -> k, k -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime", "endTime", "unique").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime", "unique").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "endTime", "unique").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "metaData.timeStepMinutes").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("metaData.areaId", "startTime", "endTime", "moduleInstanceId", "parameterId", "encodedTimeStepId","metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-			}),
-			Map.entry(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET), new Document[]{
-					new Document(collectionKeys.get(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET)).stream().collect(Collectors.toMap(k -> k, k -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime", "endTime", "unique").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "startTime", "unique").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "endTime", "unique").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("metaData.areaId", "startTime", "endTime", "moduleInstanceId", "parameterId", "encodedTimeStepId","metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-			}),
-			Map.entry(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), new Document[]{
-					new Document(collectionKeys.get(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING)).stream().collect(Collectors.toMap(k -> k, k -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
-					new Document(collectionKeys.get(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING)).stream().filter(s -> !s.equals("taskRunId")).collect(Collectors.toMap(k -> k, k -> 1))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("taskRunId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("taskRunId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("metaData.areaId", "forecastTime", "moduleInstanceId", "parameterId", "encodedTimeStepId","metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-			}),
-			Map.entry(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), new Document[]{
-					new Document(collectionKeys.get(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL)).stream().collect(Collectors.toMap(k -> k, k -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
-					new Document(collectionKeys.get(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL)).stream().filter(s -> !s.equals("taskRunId")).collect(Collectors.toMap(k -> k, k -> 1))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "ensembleId", "ensembleMemberId", "metaData.timeStepMinutes").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "ensembleId", "ensembleMemberId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("taskRunId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("taskRunId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "metaData.areaId", "forecastTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("metaData.areaId", "forecastTime", "moduleInstanceId", "parameterId", "encodedTimeStepId","metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-			}),
-			Map.entry(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED), new Document[]{
-					new Document(collectionKeys.get(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED)).stream().collect(Collectors.toMap(k -> k, k -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "ensembleId", "ensembleMemberId", "startTime", "endTime", "unique").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "ensembleId", "ensembleMemberId", "startTime", "unique").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "ensembleId", "ensembleMemberId", "endTime", "unique").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "qualifierId", "encodedTimeStepId", "ensembleId", "ensembleMemberId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("locationId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "startTime", "endTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("encodedTimeStepId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("parameterId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "metaData.areaId", "startTime", "endTime", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("metaData.areaId", "startTime", "endTime", "moduleInstanceId", "parameterId", "encodedTimeStepId","metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-			}),
-			Map.entry(Collection.MigrateMetaData.toString(), new Document[]{
-					new Document(Stream.of("metaDataFileRelativePath").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
-					new Document(Stream.of("netcdfFiles.timeSeriesIds").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("committed").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-			}),
-			Map.entry(Collection.MigrateLog.toString(), new Document[]{
-					new Document(Stream.of("date").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("errorCategory").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-			}),
-			Map.entry(Collection.BucketSize.toString(), new Document[]{
-					new Document(Stream.of("bucketCollection", "bucketKey").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1)
-			}),
-			Map.entry(Collection.TimeSeriesIndex.toString(), new Document[]{
-					new Document(Stream.of("collection", "moduleInstanceId", "parameterId", "encodedTimeStepId", "areaId", "sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
-					new Document(Stream.of("collection", "moduleInstanceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("collection", "parameterId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("collection", "encodedTimeStepId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("collection", "areaId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("collection", "sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("collection", "moduleInstanceId", "areaId", "sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("collection", "parameterId", "areaId", "sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-					new Document(Stream.of("collection", "encodedTimeStepId", "areaId", "sourceId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-			})
-	);
 }

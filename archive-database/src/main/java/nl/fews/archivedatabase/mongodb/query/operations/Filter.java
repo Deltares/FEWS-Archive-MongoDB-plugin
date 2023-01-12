@@ -1,5 +1,6 @@
 package nl.fews.archivedatabase.mongodb.query.operations;
 
+import nl.fews.archivedatabase.mongodb.shared.database.Collection;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import org.bson.Document;
 
@@ -31,7 +32,7 @@ public final class Filter {
 			String field = e.getKey();
 			Class<?> clazz = e.getValue();
 			filters.put(field, new ArrayList<>());
-			Database.distinct(Database.Collection.TimeSeriesIndex.toString(), field, new Document("collection", collection), clazz).forEach(f -> filters.get(field).add(f));
+			Database.distinct(Collection.TimeSeriesIndex.toString(), field, new Document("collection", collection), clazz).forEach(f -> filters.get(field).add(f));
 		});
 		filters.entrySet().parallelStream().forEach(e -> {
 			String field = e.getKey();
@@ -46,7 +47,7 @@ public final class Filter {
 					if(!v.isEmpty())
 						document.append(k.replace("metaData.", ""), v.size() == 1 ? v.get(0) : new Document("$in", v));
 				});
-				Database.distinct(Database.Collection.TimeSeriesIndex.toString(), field, document, f.getClass()).forEach(filtersFound::add);
+				Database.distinct(Collection.TimeSeriesIndex.toString(), field, document, f.getClass()).forEach(filtersFound::add);
 			});
 			filters.put(field, filtersFound);
 		});

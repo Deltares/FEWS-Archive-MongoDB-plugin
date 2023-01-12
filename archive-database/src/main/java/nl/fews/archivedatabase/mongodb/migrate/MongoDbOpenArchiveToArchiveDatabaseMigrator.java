@@ -4,6 +4,7 @@ import com.mongodb.lang.NonNull;
 import nl.fews.archivedatabase.mongodb.migrate.operations.*;
 import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
+import nl.fews.archivedatabase.mongodb.shared.database.Collection;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.logging.MongoDbAppender;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
@@ -27,9 +28,9 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 
 	//DEFAULTS THAT MAY BE ADDED TO INTERFACE AND OPTIONALLY OVERRIDDEN LATER
 	static{
-		Settings.put("metaDataCollection", Database.Collection.MigrateMetaData.toString());
-		Settings.put("logCollection", Database.Collection.MigrateLog.toString());
-		Settings.put("bucketSizeCollection", Database.Collection.BucketSize.toString());
+		Settings.put("metaDataCollection", Collection.MigrateMetaData.toString());
+		Settings.put("logCollection", Collection.MigrateLog.toString());
+		Settings.put("bucketSizeCollection", Collection.BucketSize.toString());
 		Settings.put("metadataFileName", "metaData.xml");
 		Settings.put("runInfoFileName", "runInfo.xml");
 	}

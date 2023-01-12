@@ -1,7 +1,7 @@
 package nl.fews.archivedatabase.mongodb.shared;
 
 import nl.fews.archivedatabase.mongodb.TestUtil;
-import nl.fews.archivedatabase.mongodb.shared.database.Database;
+import nl.fews.archivedatabase.mongodb.shared.database.Collection;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.util.LogUtils;
 import org.json.JSONObject;
@@ -28,9 +28,9 @@ public class TestSettings {
 				testSettings = new JSONObject(Files.readString(path));
 			}
 
-			Settings.put("metaDataCollection", Database.Collection.MigrateMetaData.toString());
-			Settings.put("logCollection", Database.Collection.MigrateLog.toString());
-			Settings.put("bucketSizeCollection", Database.Collection.BucketSize.toString());
+			Settings.put("metaDataCollection", Collection.MigrateMetaData.toString());
+			Settings.put("logCollection", Collection.MigrateLog.toString());
+			Settings.put("bucketSizeCollection", Collection.BucketSize.toString());
 			Settings.put("databaseBaseThreads", 16);
 			Settings.put("netcdfReadThreads", 32);
 			Settings.put("folderMaxDepth", 4);

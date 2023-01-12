@@ -1,7 +1,7 @@
 package nl.fews.archivedatabase.mongodb.export;
 
 import nl.fews.archivedatabase.mongodb.export.interfaces.Synchronize;
-import nl.fews.archivedatabase.mongodb.shared.database.Database;
+import nl.fews.archivedatabase.mongodb.shared.database.Collection;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
@@ -50,7 +50,7 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 
 	//DEFAULTS THAT MAY BE ADDED TO INTERFACE AND OPTIONALLY OVERRIDDEN LATER
 	static{
-		Settings.put("bucketSizeCollection", Database.Collection.BucketSize.toString());
+		Settings.put("bucketSizeCollection", Collection.BucketSize.toString());
 	}
 
 	/**

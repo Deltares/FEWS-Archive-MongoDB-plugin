@@ -11,6 +11,7 @@ import nl.fews.archivedatabase.mongodb.query.operations.ReadBuckets;
 import nl.fews.archivedatabase.mongodb.query.operations.ReadSingletons;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesArrayUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
+import nl.fews.archivedatabase.mongodb.shared.database.Collection;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.DateUtil;
@@ -721,7 +722,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 
 			Set<String> sourceIdsFound = new HashSet<>();
-			Database.distinct(Database.Collection.TimeSeriesIndex.toString(), "sourceId", new Document("collection", collection), String.class).forEach(sourceIdsFound::add);
+			Database.distinct(Collection.TimeSeriesIndex.toString(), "sourceId", new Document("collection", collection), String.class).forEach(sourceIdsFound::add);
 			return sourceIdsFound;
 		}
 		catch (Exception ex){
