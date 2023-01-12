@@ -2,6 +2,7 @@ package nl.fews.archivedatabase.mongodb.export.operations;
 
 import com.mongodb.MongoWriteException;
 import nl.fews.archivedatabase.mongodb.export.interfaces.Synchronize;
+import nl.fews.archivedatabase.mongodb.shared.database.Collection;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
@@ -21,7 +22,7 @@ public abstract class SynchronizeBase implements Synchronize {
 	private static final Map<Document, Object> timeSeriesIndex = new ConcurrentHashMap<>();
 
 	static{
-		Database.find(Database.Collection.TimeSeriesIndex.toString(), new Document(), new Document("_id", 0)).forEach(document -> timeSeriesIndex.put(document, "null"));
+		Database.find(Collection.TimeSeriesIndex.toString(), new Document(), new Document("_id", 0)).forEach(document -> timeSeriesIndex.put(document, "null"));
 	}
 
 	/**
@@ -88,7 +89,7 @@ public abstract class SynchronizeBase implements Synchronize {
 	private static synchronized void addMissingTimeSeriesIndexes(Map<Document, Object> missingTimeSeriesIndexes){
 		missingTimeSeriesIndexes.forEach((k, v) -> {
 			try{
-				Database.insertOne(Database.Collection.TimeSeriesIndex.toString(), k);
+				Database.insertOne(Collection.TimeSeriesIndex.toString(), k);
 				timeSeriesIndex.put(k, "");
 			}
 			catch (MongoWriteException ex){
