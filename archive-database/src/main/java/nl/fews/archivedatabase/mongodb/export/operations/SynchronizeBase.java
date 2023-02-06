@@ -35,8 +35,8 @@ public abstract class SynchronizeBase implements Synchronize {
 		String moduleInstanceId = document.containsKey("moduleInstanceId") ? document.getString("moduleInstanceId") : "";
 		String parameterId = document.containsKey("parameterId") ? document.getString("parameterId") : "";
 		String encodedTimeStepId = document.containsKey("encodedTimeStepId") ? document.getString("encodedTimeStepId") : "";
-		String areaId = document.containsKey("areaId") ? document.getString("areaId") : "";
-		String sourceId = document.containsKey("sourceId") ? document.getString("sourceId") : "";
+		String areaId = document.containsKey("metaData") && document.get("metaData", Document.class).containsKey("areaId") ? document.get("metaDate", Document.class).getString("areaId") : "";
+		String sourceId = document.containsKey("metaData") && document.get("metaData", Document.class).containsKey("sourceId") ? document.get("metaData", Document.class).getString("sourceId") : "";
 		return new Document("moduleInstanceId", moduleInstanceId).append("parameterId", parameterId).append("encodedTimeStepId", encodedTimeStepId).append("areaId", areaId).append("sourceId", sourceId).append("collection", collection);
 	}
 
