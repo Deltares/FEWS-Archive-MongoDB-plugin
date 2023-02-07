@@ -112,6 +112,7 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 	@Override
 	public void setArchiveDatabaseUrl(String archiveDatabaseUrl) {
 		Settings.put("archiveDatabaseUrl", archiveDatabaseUrl);
+		logger.info("{} Version: {} Database: {}", MongoDbArchiveDatabase.class.getSimpleName(), MongoDbArchiveDatabase.class.getPackage().getImplementationVersion(), archiveDatabaseUrl);
 	}
 
 	/**
