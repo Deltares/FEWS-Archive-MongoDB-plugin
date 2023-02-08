@@ -84,7 +84,7 @@ public class TimeSeriesArrayUtil {
 					timeSeriesArray.setValue(i,  event.get("v") != null ? event.getDouble("v").floatValue() : Float.NaN);
 					timeSeriesArray.setFlag(i, event.getInteger("f").byteValue());
 					timeSeriesArray.setComment(i, event.getString("c"));
-					timeSeriesArray.setFlagSource(i, event.get("fs") != null ? event.getInteger("fs").byteValue() : timeSeriesArray.getFlagSource(i));
+					timeSeriesArray.setFlagSource(i, event.get("fs") != null && FlagSource.get(event.getString("fs")) != null ? FlagSource.get(event.getString("fs")).toByte() : timeSeriesArray.getFlagSource(i));
 					timeSeriesArray.setUser(i, event.getString("u"));
 				}
 			}
