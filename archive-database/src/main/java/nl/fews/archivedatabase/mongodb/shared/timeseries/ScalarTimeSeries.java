@@ -154,6 +154,7 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 			Date localTime = localTimes != null ? localTimes[i] : null;
 
 			int flag = timeSeriesArray.getFlag(i);
+			String user = timeSeriesArray.getUser(i);
 			String comment = timeSeriesArray.getComment(i);
 			String flagSource = FlagSource.get(timeSeriesArray.getFlagSource(i)).getId();
 
@@ -166,6 +167,7 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 			if (displayValues != null) document.append("dv", displayValue);
 
 			document.append("f", flag);
+			if (user != null) document.append("u", user);
 			if (comment != null) document.append("c", comment);
 			if (flagSource != null) document.append("fs", flagSource);
 

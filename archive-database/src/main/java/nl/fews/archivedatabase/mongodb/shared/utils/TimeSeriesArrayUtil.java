@@ -56,65 +56,6 @@ public class TimeSeriesArrayUtil {
 	}
 
 	/**
-	 * ASSUMPTION: events and requestTimeSeriesArray are monotonically increasing
-	 * @param timeSeriesHeader timeSeriesHeader
-	 * @param events events
-	 * @param requestTimeSeriesArray requestTimeSeriesArray
-	 * @return TimeSeriesArray<TimeSeriesHeader>
-	 */
-	public static TimeSeriesArray<TimeSeriesHeader> getTimeSeriesArray(TimeSeriesHeader timeSeriesHeader, List<Document> events, TimeSeriesArray<TimeSeriesHeader> requestTimeSeriesArray){
-		List<Document> mergedEvents = new ArrayList<>(events.size() + requestTimeSeriesArray.size());
-		int x = 0;
-		int  y = 0;
-		long lastDate = Long.MIN_VALUE;
-
-		// MERGE AND DEDUPLICATE, PREFER EXISTING RELIABLE OVER ARCHIVE
-		while(x < events.size() && y < requestTimeSeriesArray.size()) {
-			long a = events.get(x).getDate("t").getTime();
-			long b = requestTimeSeriesArray.getTime(y);
-			if(a < b){
-				if (a > lastDate) {
-					mergedEvents.add(events.get(x));
-					lastDate = a;
-				}
-				x++;
-			}
-			else if (b < a){
-				if(b > lastDate){
-					mergedEvents.add(new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)).append("fs", FlagSource.get(requestTimeSeriesArray.getFlagSource(y)).getId()));
-					lastDate = b;
-				}
-				y++;
-			}
-			else{
-				if (a > lastDate) {
-					mergedEvents.add(requestTimeSeriesArray.isValueReliable(y) ? new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)).append("fs", FlagSource.get(requestTimeSeriesArray.getFlagSource(y)).getId()) : events.get(x));
-					lastDate = a;
-				}
-				x++;
-				y++;
-			}
-		}
-		while(x < events.size()) {
-			long a = events.get(x).getDate("t").getTime();
-			if (a > lastDate) {
-				mergedEvents.add(events.get(x));
-				lastDate = a;
-			}
-			x++;
-		}
-		while(y < requestTimeSeriesArray.size()) {
-			long b = requestTimeSeriesArray.getTime(y);
-			if(b > lastDate) {
-				mergedEvents.add(new Document("t", new Date(b)).append("v", (double)requestTimeSeriesArray.getValue(y)).append("f", (int)requestTimeSeriesArray.getFlag(y)).append("c", requestTimeSeriesArray.getComment(y)).append("fs", FlagSource.get(requestTimeSeriesArray.getFlagSource(y)).getId()));
-				lastDate = b;
-			}
-			y++;
-		}
-		return TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader, mergedEvents);
-	}
-
-	/**
 	 *
 	 * @param timeSeriesHeader timeSeriesHeader
 	 * @param events events
@@ -144,6 +85,8 @@ public class TimeSeriesArrayUtil {
 					timeSeriesArray.setValue(i,  event.get("v") != null ? event.getDouble("v").floatValue() : Float.NaN);
 					timeSeriesArray.setFlag(i, event.getInteger("f").byteValue());
 					timeSeriesArray.setComment(i, event.getString("c"));
+					timeSeriesArray.setFlagSource(i, event.get("fs") != null ? event.getInteger("fs").byteValue() : timeSeriesArray.getFlagSource(i));
+					timeSeriesArray.setUser(i, event.getString("u"));
 				}
 			}
 		}
