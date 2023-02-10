@@ -42,6 +42,11 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 	/**
 	 *
 	 */
+	private static boolean connectionLogged = false;
+
+	/**
+	 *
+	 */
 	private MongoDbArchiveDatabase(){}
 
 	static{
@@ -112,7 +117,10 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 	@Override
 	public void setArchiveDatabaseUrl(String archiveDatabaseUrl) {
 		Settings.put("archiveDatabaseUrl", archiveDatabaseUrl);
-		logger.info("{} Version: {} Database: {}", MongoDbArchiveDatabase.class.getSimpleName(), MongoDbArchiveDatabase.class.getPackage().getImplementationVersion(), archiveDatabaseUrl);
+		if(!connectionLogged){
+			logger.info("{} Version: {} Database: {}", MongoDbArchiveDatabase.class.getSimpleName(), MongoDbArchiveDatabase.class.getPackage().getImplementationVersion(), archiveDatabaseUrl);
+			connectionLogged = true;
+		}
 	}
 
 	/**
