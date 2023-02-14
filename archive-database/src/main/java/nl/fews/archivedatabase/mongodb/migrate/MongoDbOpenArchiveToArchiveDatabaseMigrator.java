@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -132,6 +133,9 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 
 			logger.info("Start: getExistingMetaDataFilesFs");
 			Map<File, Date> existingMetaDataFilesFs = MetaDataUtil.getExistingMetaDataFilesFs(areaId == null ? null : Arrays.asList(areaId));
+			if(existingMetaDataFilesFs.isEmpty()){
+				throw new FileNotFoundException(String.format("No meta data files found @[Settings.baseDirectoryArchive]: %s", Paths.get(Settings.get("baseDirectoryArchive", String.class))));
+			}
 			logger.info("End: getExistingMetaDataFilesFs");
 
 			logger.info("Start: existingMetaDataFilesDb");
