@@ -111,7 +111,7 @@ public final class MetaDataUtil {
 			folders.forEach(folder -> tasks.add(() -> {
 				synchronized (mutex){
 					if (++progressCurrent % 100 == 0)
-						logger.info("getExistingMetaDataFilesFs - Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+						logger.info("getExistingMetaDataFilesFs - Progress: {}/{} {}, Pool Size: {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), pool.getPoolSize());
 				}
 				return Files.find(folder, Integer.MAX_VALUE, (p, a) -> a.isRegularFile() && p.endsWith(metadataFileName)).collect(Collectors.toMap(Path::toFile, s -> new Date(s.toFile().lastModified())));
 			}));

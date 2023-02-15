@@ -94,7 +94,7 @@ public final class Insert {
 			insertMetaData(file, date);
 			synchronized (mutex){
 				if (++progressCurrent % 100 == 0)
-					logger.info("Insert Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+					logger.info("Insert Progress: {}/{} {}, Pool Size: {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), pool.getPoolSize());
 			}
 			return null;
 		}));
@@ -103,7 +103,7 @@ public final class Insert {
 			x.get();
 		}
 		pool.shutdown();
-		logger.info("Insert Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("Insert: %,.2f", ((double)progressCurrent/progressExpected*100)));
+		logger.info("Insert Progress: {}/{} {}, Pool Size: {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), 0);
 	}
 
 	/**
