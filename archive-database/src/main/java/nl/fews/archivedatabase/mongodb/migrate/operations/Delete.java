@@ -61,7 +61,7 @@ public final class Delete {
 			deleteMetaData(file);
 			synchronized (mutex){
 				if (++progressCurrent % 100 == 0)
-					logger.info("Delete Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+					logger.info("Delete Progress: {}/{} {}, Pool Size: {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), pool.getPoolSize());
 			}
 			return null;
 		}));
@@ -70,7 +70,7 @@ public final class Delete {
 			x.get();
 		}
 		pool.shutdown();
-		logger.info("Delete Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+		logger.info("Delete Progress: {}/{} {}, Pool Size: {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), 0);
 	}
 
 	/**

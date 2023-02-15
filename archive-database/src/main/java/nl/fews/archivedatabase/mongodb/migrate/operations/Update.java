@@ -64,7 +64,7 @@ public final class Update {
 			updateMetaData(file, date);
 			synchronized (mutex){
 				if (++progressCurrent % 100 == 0)
-					logger.info("Update Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+					logger.info("Update Progress: {}/{} {}, Pool Size: {})", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), pool.getPoolSize());
 			}
 			return null;
 		}));
@@ -73,7 +73,7 @@ public final class Update {
 			x.get();
 		}
 		pool.shutdown();
-		logger.info("Update Progress: {}/{} {}%", progressCurrent, progressExpected, String.format("%,.2f", ((double)progressCurrent/progressExpected*100)));
+		logger.info("Update Progress: {}/{} {}, Pool Size: {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), 0);
 	}
 
 	/**
