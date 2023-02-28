@@ -41,7 +41,6 @@ class SynchronizeSingletonsTest {
 	void synchronize() {
 		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();
 		TimeSeries timeSeries = new ScalarExternalForecasting();
-		List<Document> ts = new ArrayList<>();
 		for(TimeSeriesArray<TimeSeriesHeader> timeSeriesArray: timeSeriesArrays.toArray()){
 			TimeSeriesHeader header = timeSeriesArray.getHeader();
 
@@ -56,12 +55,10 @@ class SynchronizeSingletonsTest {
 			if(!timeseriesDocuments.isEmpty()) rootDocument.append("timeseries", timeseriesDocuments);
 
 			if(!timeseriesDocuments.isEmpty()){
-				ts.add(rootDocument);
+				Synchronize synchronize = new SynchronizeSingletons();
+				synchronize.synchronize(rootDocument, TimeSeriesType.SCALAR_EXTERNAL_FORECASTING);
 			}
 		}
-		Synchronize synchronize = new SynchronizeSingletons();
-		synchronize.synchronize(ts, TimeSeriesType.SCALAR_EXTERNAL_FORECASTING);
-
 		assertNotNull(Database.findOne(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING), new Document()));
 	}
 }

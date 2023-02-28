@@ -65,6 +65,7 @@ public class TimeSeriesArrayUtil {
 		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader, timeSeriesHeader.getTimeStep());
 		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
 
+
 		if (!events.isEmpty()){
 			Map<Long, Document> eventLookup = new HashMap<>();
 			long[] times = new long[events.size()];

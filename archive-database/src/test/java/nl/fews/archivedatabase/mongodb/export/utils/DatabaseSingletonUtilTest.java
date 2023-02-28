@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -76,7 +77,13 @@ class DatabaseSingletonUtilTest {
 				ts.add(rootDocument);
 			}
 		}
-		Map<String, List<Document>> documents = DatabaseSingletonUtil.getDocumentsByKey(ts, TimeSeriesType.SCALAR_EXTERNAL_FORECASTING);
+		Map<String, List<Document>> documents = new HashMap<>();
+		for(Document document: ts){
+			for (Map.Entry<String, List<Document>> x: DatabaseSingletonUtil.getDocumentsByKey(document, TimeSeriesType.SCALAR_EXTERNAL_FORECASTING).entrySet()){
+				documents.putIfAbsent(x.getKey(), new ArrayList<>());
+				documents.get(x.getKey()).addAll(x.getValue());
+			}
+		}
 
 		assertEquals(20, documents.size());
 

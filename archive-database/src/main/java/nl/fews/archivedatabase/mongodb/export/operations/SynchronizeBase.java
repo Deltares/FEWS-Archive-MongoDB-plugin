@@ -45,7 +45,7 @@ public abstract class SynchronizeBase implements Synchronize {
 	 * @param timeSeries the entire list of all documents passed to this instance
 	 * @param timeSeriesType timeSeriesType
 	 */
-	public void synchronize(List<Document> timeSeries, TimeSeriesType timeSeriesType){
+	public void synchronize(Document timeSeries, TimeSeriesType timeSeriesType){
 		Map<String, Triplet<List<Document>, List<Document>, List<Document>>> insertUpdateRemove = getInsertUpdateRemove(timeSeries, timeSeriesType);
 		synchronize(
 				timeSeriesType,
@@ -104,5 +104,5 @@ public abstract class SynchronizeBase implements Synchronize {
 	 * @param timeSeriesType timeSeriesType
 	 * @return Map<String, Triplet<List<Document>, List<Document>, List<Document>>>
 	 */
-	protected abstract Map<String, Triplet<List<Document>, List<Document>, List<Document>>> getInsertUpdateRemove(List<Document> timeSeries, TimeSeriesType timeSeriesType);
+	protected abstract Map<String, Triplet<List<Document>, List<Document>, List<Document>>> getInsertUpdateRemove(Document timeSeries, TimeSeriesType timeSeriesType);
 }

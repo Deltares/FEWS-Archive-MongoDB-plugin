@@ -21,7 +21,7 @@ public final class SynchronizeSingletons extends SynchronizeBase implements Sync
 	 * @return Triplet<List<Document>, List<Document>, List<Document>>
 	 */
 	@Override
-	protected Map<String, Triplet<List<Document>, List<Document>, List<Document>>> getInsertUpdateRemove(List<Document> timeSeries, TimeSeriesType timeSeriesType){
+	protected Map<String, Triplet<List<Document>, List<Document>, List<Document>>> getInsertUpdateRemove(Document timeSeries, TimeSeriesType timeSeriesType){
 		Map<String, Triplet<List<Document>, List<Document>, List<Document>>> insertUpdateRemove = new HashMap<>();
 		Map<String, Document> existingDocuments = getExistingDocuments(getExistingQueries(timeSeries, timeSeriesType), timeSeriesType);
 
@@ -75,7 +75,7 @@ public final class SynchronizeSingletons extends SynchronizeBase implements Sync
 	 * @param timeSeriesType timeSeriesType
 	 * @return existingQueries
 	 */
-	private static List<Document> getExistingQueries(List<Document> timeSeries, TimeSeriesType timeSeriesType){
+	private static List<Document> getExistingQueries(Document timeSeries, TimeSeriesType timeSeriesType){
 		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 		List<String> keys = Database.getCollectionKeys(collection);
 		List<Document> existingQueries = new ArrayList<>();

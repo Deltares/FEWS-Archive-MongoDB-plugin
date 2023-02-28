@@ -8,7 +8,6 @@ import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.utils.BucketUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
-import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import java.util.*;
@@ -26,7 +25,7 @@ public final class SynchronizeBuckets extends SynchronizeBase implements Synchro
 	 * @return Triplet<List<Document>, List<Document>, List<Document>>
 	 */
 	@Override
-	protected Map<String, Triplet<List<Document>, List<Document>, List<Document>>> getInsertUpdateRemove(List<Document> timeSeries, TimeSeriesType timeSeriesType){
+	protected Map<String, Triplet<List<Document>, List<Document>, List<Document>>> getInsertUpdateRemove(Document timeSeries, TimeSeriesType timeSeriesType){
 		String bucketCollection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 		boolean bucketResized = false;
 
@@ -51,13 +50,11 @@ public final class SynchronizeBuckets extends SynchronizeBase implements Synchro
 	 * @param timeSeriesType timeSeriesType
 	 * @return Triplet<List<Document>, List<Document>, List<Document>>
 	 */
-	private Map<String, Triplet<List<Document>, List<Document>, List<Document>>> _getInsertUpdateRemove(List<Document> timeSeries, TimeSeriesType timeSeriesType){
+	private Map<String, Triplet<List<Document>, List<Document>, List<Document>>> _getInsertUpdateRemove(Document timeSeries, TimeSeriesType timeSeriesType){
 		String bucketCollection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 		List<String> keys = Database.getCollectionKeys(bucketCollection);
 		Map<String, Triplet<List<Document>, List<Document>, List<Document>>> insertUpdateRemove = new ConcurrentHashMap<>();
-		DatabaseBucketUtil.getDocumentsByKeyBucket(timeSeries, bucketCollection).entrySet().parallelStream().forEach(e -> {
-			String key = e.getKey();
-			Map<Pair<BucketSize, Long>, List<Document>> buckets = e.getValue();
+		DatabaseBucketUtil.getDocumentsByKeyBucket(timeSeries, bucketCollection).forEach((key, buckets) -> {
 
 			List<Document> insert = new ArrayList<>();
 			List<Document> replace = new ArrayList<>();

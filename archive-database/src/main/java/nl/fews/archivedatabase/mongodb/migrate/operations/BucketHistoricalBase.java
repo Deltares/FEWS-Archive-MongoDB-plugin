@@ -38,8 +38,6 @@ public abstract class BucketHistoricalBase implements BucketHistorical {
 
 	/**
 	 *
-	 * @param singletonCollection singletonCollection
-	 * @param bucketCollection bucketCollection
 	 */
 	public void bucketGroups(String singletonCollection, String bucketCollection){
 		try {
@@ -96,6 +94,11 @@ public abstract class BucketHistoricalBase implements BucketHistorical {
 	 */
 	private void bucketGroup(Document bucketKeyDocument, BucketSize bucketSize, String singletonCollection, String bucketCollection){
 		try{
+			synchronized (mutex){
+				if (++progressCurrent % 100 == 0)
+					logger.info("{} Progress: {}/{} {}%", getClass().getSimpleName(), progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)));
+			}
+
 			List<Document> timeSeries = getUnwoundTimeSeries(bucketKeyDocument, singletonCollection);
 			Map<Long, List<Document>> timeSeriesBuckets = TimeSeriesUtil.getTimeSeriesBuckets(timeSeries, bucketSize);
 			List<Document> timeSeriesDocuments = TimeSeriesUtil.getTimeSeriesDocuments(bucketKeyDocument, timeSeriesBuckets, bucketSize, singletonCollection);

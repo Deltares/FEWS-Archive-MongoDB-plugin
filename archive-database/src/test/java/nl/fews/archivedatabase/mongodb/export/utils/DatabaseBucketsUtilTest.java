@@ -16,10 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -74,7 +71,16 @@ class DatabaseBucketsUtilTest {
 			"{\"moduleInstanceId\": \"moduleInstanceId9\", \"locationId\": \"locationId9\", \"parameterId\": \"parameterId9\", \"qualifierId\": \"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\", \"encodedTimeStepId\": \"SETS360\"}"
 		};
 
-		Map<String, Map<Pair<BucketSize, Long>, List<Document>>> documents = DatabaseBucketUtil.getDocumentsByKeyBucket(ts, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
+		Map<String, Map<Pair<BucketSize, Long>, List<Document>>> documents = new HashMap<>();
+		for(Document document: ts){
+			for (Map.Entry<String, Map<Pair<BucketSize, Long>, List<Document>>> x: DatabaseBucketUtil.getDocumentsByKeyBucket(document, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)).entrySet()){
+				documents.putIfAbsent(x.getKey(), new HashMap<>());
+				for (Map.Entry<Pair<BucketSize, Long>, List<Document>> y: x.getValue().entrySet()){
+					documents.get(x.getKey()).putIfAbsent(y.getKey(), new ArrayList<>());
+					documents.get(x.getKey()).get(y.getKey()).addAll(y.getValue());
+				}
+			}
+		}
 
 		assertEquals(10, documents.size());
 

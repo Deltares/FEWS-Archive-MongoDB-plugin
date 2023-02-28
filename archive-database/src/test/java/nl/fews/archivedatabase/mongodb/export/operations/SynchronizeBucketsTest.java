@@ -41,7 +41,6 @@ class SynchronizeBucketsTest {
 	void synchronize() {
 		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = TestUtil.getDefaultTimeSeriesArrays();
 		TimeSeries timeSeries = new ScalarExternalHistorical();
-		List<Document> ts = new ArrayList<>();
 		for(TimeSeriesArray<TimeSeriesHeader> timeSeriesArray: timeSeriesArrays.toArray()){
 			TimeSeriesHeader header = timeSeriesArray.getHeader();
 
@@ -56,12 +55,10 @@ class SynchronizeBucketsTest {
 			if(!timeseriesDocuments.isEmpty()) rootDocument.append("timeseries", timeseriesDocuments);
 
 			if(!timeseriesDocuments.isEmpty()){
-				ts.add(rootDocument);
+				Synchronize synchronize = new SynchronizeBuckets();
+				synchronize.synchronize(rootDocument, TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
 			}
 		}
-		Synchronize synchronize = new SynchronizeBuckets();
-		synchronize.synchronize(ts, TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
-
 		assertNotNull(Database.findOne(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), new Document()));
 	}
 }

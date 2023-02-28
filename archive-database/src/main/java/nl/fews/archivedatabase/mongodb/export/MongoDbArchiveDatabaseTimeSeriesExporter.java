@@ -8,12 +8,11 @@ import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.Properties;
-import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -189,9 +188,7 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 	private void insertTimeSeries(TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays, TimeSeriesType timeSeriesType, String areaId, String sourceId) {
 		try{
 			TimeSeries timeSeries = (TimeSeries)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "shared.timeseries", TimeSeriesTypeUtil.getTimeSeriesTypeClassName(timeSeriesType))).getConstructor().newInstance();
-
-			List<Document> ts = new ArrayList<>();
-			for(TimeSeriesArray<TimeSeriesHeader> timeSeriesArray: timeSeriesArrays.toArray()){
+			Arrays.stream(timeSeriesArrays.toArray()).parallel().forEach(timeSeriesArray -> {
 				TimeSeriesHeader header = timeSeriesArray.getHeader();
 
 				Document metaDataDocument = timeSeries.getMetaData(header, areaId, sourceId);
@@ -204,11 +201,15 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 				if(!timeseriesDocuments.isEmpty()) rootDocument.append("timeseries", timeseriesDocuments);
 
 				if(!timeseriesDocuments.isEmpty()){
-					ts.add(rootDocument);
+					try{
+						Synchronize synchronize = (Synchronize)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "export.operations", String.format("Synchronize%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
+						synchronize.synchronize(rootDocument, timeSeriesType);
+					}
+					catch (Exception ex){
+						throw new RuntimeException(ex);
+					}
 				}
-			}
-			Synchronize synchronize = (Synchronize)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "export.operations", String.format("Synchronize%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
-			synchronize.synchronize(ts, timeSeriesType);
+			});
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);
