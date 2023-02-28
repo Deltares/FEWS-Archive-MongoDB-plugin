@@ -14,10 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  *
@@ -55,25 +52,38 @@ public final class Update {
 	 * @param existingMetaDataFilesDb existingMetaDataFilesDb
 	 */
 	public static void updateMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb) throws ExecutionException, InterruptedException {
-		ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
-		ArrayList<Callable<Void>> tasks = new ArrayList<>();
+		ExecutorService pool = Executors.newFixedThreadPool(Settings.get("databaseBaseThreads"));
 		Map<File, Date> metaDataFiles = MetaDataUtil.getMetaDataFilesUpdate(existingMetaDataFilesFs, existingMetaDataFilesDb);
+		ArrayList<Callable<Void>> tasks = new ArrayList<>();
 		progressExpected = metaDataFiles.size();
 		progressCurrent = 0;
-		metaDataFiles.forEach((file, date) -> tasks.add(() -> {
-			updateMetaData(file, date);
-			synchronized (mutex){
-				if (++progressCurrent % 100 == 0)
-					logger.info("Update Progress: {}/{} {}, Pool Size: {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), pool.getPoolSize());
+
+		class UpdateMetaData implements Callable<Void> {
+			private final File file;
+			private final Date date;
+			public UpdateMetaData(File file, Date date) {
+				this.file = file;
+				this.date = date;
 			}
-			return null;
-		}));
+			@Override
+			public Void call() {
+				updateMetaData(file, date);
+				synchronized (mutex){
+					if (++progressCurrent % 100 == 0)
+						logger.info("Update Progress: {}/{} {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)));
+				}
+				return null;
+			}
+		}
+
+		metaDataFiles.forEach((file, date) -> tasks.add(new UpdateMetaData(file, date)));
 		List<Future<Void>> results = pool.invokeAll(tasks);
 		for (Future<Void> x : results) {
 			x.get();
 		}
 		pool.shutdown();
-		logger.info("Update Progress: {}/{} {}, Pool Size: {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), 0);
+
+		logger.info("Update Progress: {}/{} {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)));
 	}
 
 	/**

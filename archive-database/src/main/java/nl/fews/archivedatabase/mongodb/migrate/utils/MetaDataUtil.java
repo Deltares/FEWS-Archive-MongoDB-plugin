@@ -21,9 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public final class MetaDataUtil {
@@ -96,36 +94,48 @@ public final class MetaDataUtil {
 	 * @return Map<File, Date>
 	 */
 	public static Map<File, Date> getExistingMetaDataFilesFs (List<String> areaIds) {
-		Map<File, Date> existingMetaDataFilesFs = new HashMap<>();
-		Path start = Paths.get(Settings.get("baseDirectoryArchive", String.class));
-		int rootDepth = start.getNameCount();
-		int folderMaxDepth = Settings.get("folderMaxDepth");
-		String metadataFileName = Settings.get("metadataFileName");
-
 		try {
-			ForkJoinPool pool = new ForkJoinPool(Settings.get("netcdfReadThreads"));
+			Map<File, Date> existingMetaDataFilesFs = new HashMap<>();
+			Path start = Paths.get(Settings.get("baseDirectoryArchive", String.class));
+			int rootDepth = start.getNameCount();
+			int folderMaxDepth = Settings.get("folderMaxDepth");
+			String metadataFileName = Settings.get("metadataFileName");
+
+			ExecutorService pool = Executors.newFixedThreadPool(Settings.get("netcdfReadThreads"));
 			ArrayList<Callable<Map<File, Date>>> tasks = new ArrayList<>();
 			List<Path> folders = Files.find(start, folderMaxDepth, (p, a) -> a.isDirectory() && p.getNameCount()-rootDepth == folderMaxDepth).filter(f -> areaIds == null || areaIds.isEmpty() || areaIds.stream().anyMatch(areaId -> PathUtil.containsSegment(f, areaId))).collect(Collectors.toList());
 			progressExpected = folders.size();
 			progressCurrent = 0;
-			folders.forEach(folder -> tasks.add(() -> {
-				synchronized (mutex){
-					if (++progressCurrent % 100 == 0)
-						logger.info("getExistingMetaDataFilesFs - Progress: {}/{} {}, Pool Size: {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), pool.getPoolSize());
-				}
-				return Files.find(folder, Integer.MAX_VALUE, (p, a) -> a.isRegularFile() && p.endsWith(metadataFileName)).collect(Collectors.toMap(Path::toFile, s -> new Date(s.toFile().lastModified())));
-			}));
-			List<Future<Map<File, Date>>> results = pool.invokeAll(tasks);
 
+			class Find implements Callable<Map<File, Date>> {
+				private final Path folder;
+				private final String metadataFileName;
+				public Find(Path folder, String metadataFileName) {
+					this.folder = folder;
+					this.metadataFileName = metadataFileName;
+				}
+				@Override
+				public Map<File, Date> call() throws Exception {
+					synchronized (mutex){
+						if (++progressCurrent % 100 == 0)
+							logger.info("getExistingMetaDataFilesFs - Progress: {}/{} {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)));
+					}
+					return Files.find(folder, Integer.MAX_VALUE, (p, a) -> a.isRegularFile() && p.endsWith(metadataFileName)).collect(Collectors.toMap(Path::toFile, s -> new Date(s.toFile().lastModified())));
+				}
+			}
+
+			folders.forEach(folder -> tasks.add(new Find(folder, metadataFileName)));
+			List<Future<Map<File, Date>>> results = pool.invokeAll(tasks);
 			for (Future<Map<File, Date>> x : results) {
 				existingMetaDataFilesFs.putAll(x.get());
 			}
 			pool.shutdown();
+
+			return existingMetaDataFilesFs;
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);
 		}
-		return existingMetaDataFilesFs;
 	}
 
 	/**
