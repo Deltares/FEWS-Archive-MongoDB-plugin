@@ -3,7 +3,6 @@ package nl.fews.archivedatabase.mongodb.shared.database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
