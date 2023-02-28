@@ -14,10 +14,7 @@ import org.bson.types.ObjectId;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public final class Delete {
 
@@ -52,25 +49,36 @@ public final class Delete {
 	 * @param existingMetaDataFilesDb existingMetaDataFilesDb
 	 */
 	public static void deleteMetaDatas(Map<File, Date> existingMetaDataFilesFs, Map<File, Date> existingMetaDataFilesDb) throws ExecutionException, InterruptedException {
-		ForkJoinPool pool = new ForkJoinPool(Settings.get("databaseBaseThreads"));
-		ArrayList<Callable<Void>> tasks = new ArrayList<>();
+		ExecutorService pool = Executors.newFixedThreadPool(Settings.get("databaseBaseThreads"));
 		Map<File, Date> metaDataFiles = MetaDataUtil.getMetaDataFilesDelete(existingMetaDataFilesFs, existingMetaDataFilesDb);
+		ArrayList<Callable<Void>> tasks = new ArrayList<>();
 		progressExpected = metaDataFiles.size();
 		progressCurrent = 0;
-		metaDataFiles.forEach((file, date) -> tasks.add(() -> {
-			deleteMetaData(file);
-			synchronized (mutex){
-				if (++progressCurrent % 100 == 0)
-					logger.info("Delete Progress: {}/{} {}, Pool Size: {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), pool.getPoolSize());
+
+		class DeleteMetaData implements Callable<Void> {
+			private final File file;
+			public DeleteMetaData(File file) {
+				this.file = file;
 			}
-			return null;
-		}));
+			@Override
+			public Void call() {
+				deleteMetaData(file);
+				synchronized (mutex){
+					if (++progressCurrent % 100 == 0)
+						logger.info("Delete Progress: {}/{} {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)));
+				}
+				return null;
+			}
+		}
+
+		metaDataFiles.forEach((file, date) -> tasks.add(new DeleteMetaData(file)));
 		List<Future<Void>> results = pool.invokeAll(tasks);
 		for (Future<Void> x : results) {
 			x.get();
 		}
 		pool.shutdown();
-		logger.info("Delete Progress: {}/{} {}, Pool Size: {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)), 0);
+
+		logger.info("Delete Progress: {}/{} {}", progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)));
 	}
 
 	/**
