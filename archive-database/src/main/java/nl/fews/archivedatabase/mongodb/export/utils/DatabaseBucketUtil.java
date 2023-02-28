@@ -64,20 +64,18 @@ public final class DatabaseBucketUtil {
 	 *     distinct buckets having the parent key =>
 	 *     all documents having timeseries range that intersects the parent bucket.
 	 */
-	public static Map<String, Map<Pair<BucketSize, Long>, List<Document>>> getDocumentsByKeyBucket(List<Document> timeSeries, String bucketCollection){
+	public static Map<String, Map<Pair<BucketSize, Long>, List<Document>>> getDocumentsByKeyBucket(Document timeSeries, String bucketCollection){
 		Map<String, Map<Pair<BucketSize, Long>, List<Document>>> keyBucketDocuments = new HashMap<>();
-		for (Document document:timeSeries) {
-			String bucketKey = BucketUtil.getBucketKey(bucketCollection, document);
-			BucketSize bucketSize = document.getString("encodedTimeStepId").equals("NETS") ?
-					BucketUtil.getNetsBucketSize(bucketCollection, bucketKey) :
-					BucketUtil.getBucketSize(document.get("metaData", Document.class).getInteger("timeStepMinutes"));
-			List<Pair<BucketSize, Long>> buckets = document.getList("timeseries", Document.class).stream().map(s -> new Pair<>(bucketSize, BucketUtil.getBucketValue(s.getDate("t"), bucketSize))).distinct().collect(Collectors.toList());
+		String bucketKey = BucketUtil.getBucketKey(bucketCollection, timeSeries);
+		BucketSize bucketSize = timeSeries.getString("encodedTimeStepId").equals("NETS") ?
+				BucketUtil.getNetsBucketSize(bucketCollection, bucketKey) :
+				BucketUtil.getBucketSize(timeSeries.get("metaData", Document.class).getInteger("timeStepMinutes"));
+		List<Pair<BucketSize, Long>> buckets = timeSeries.getList("timeseries", Document.class).stream().map(s -> new Pair<>(bucketSize, BucketUtil.getBucketValue(s.getDate("t"), bucketSize))).distinct().collect(Collectors.toList());
 
-			keyBucketDocuments.putIfAbsent(bucketKey, new HashMap<>());
-			for (Pair<BucketSize, Long> bucket:buckets){
-				keyBucketDocuments.get(bucketKey).putIfAbsent(bucket, new ArrayList<>());
-				keyBucketDocuments.get(bucketKey).get(bucket).add(document);
-			}
+		keyBucketDocuments.putIfAbsent(bucketKey, new HashMap<>());
+		for (Pair<BucketSize, Long> bucket:buckets){
+			keyBucketDocuments.get(bucketKey).putIfAbsent(bucket, new ArrayList<>());
+			keyBucketDocuments.get(bucketKey).get(bucket).add(timeSeries);
 		}
 		return keyBucketDocuments;
 	}

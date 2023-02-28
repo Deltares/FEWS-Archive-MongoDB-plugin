@@ -12,5 +12,5 @@ public interface Synchronize {
 	 * @param timeSeries the entire list of all documents passed to this instance
 	 * @param timeSeriesType timeSeriesType
 	 */
-	void synchronize(List<Document> timeSeries, TimeSeriesType timeSeriesType);
+	void synchronize(Document timeSeries, TimeSeriesType timeSeriesType);
 }
