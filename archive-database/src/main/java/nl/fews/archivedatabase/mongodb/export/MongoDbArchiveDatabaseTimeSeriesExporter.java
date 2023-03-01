@@ -188,6 +188,7 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 	private void insertTimeSeries(TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays, TimeSeriesType timeSeriesType, String areaId, String sourceId) {
 		try{
 			TimeSeries timeSeries = (TimeSeries)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "shared.timeseries", TimeSeriesTypeUtil.getTimeSeriesTypeClassName(timeSeriesType))).getConstructor().newInstance();
+			Synchronize synchronize = (Synchronize)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "export.operations", String.format("Synchronize%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
 			Arrays.stream(timeSeriesArrays.toArray()).parallel().forEach(timeSeriesArray -> {
 				TimeSeriesHeader header = timeSeriesArray.getHeader();
 
@@ -201,13 +202,7 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 				if(!timeseriesDocuments.isEmpty()) rootDocument.append("timeseries", timeseriesDocuments);
 
 				if(!timeseriesDocuments.isEmpty()){
-					try{
-						Synchronize synchronize = (Synchronize)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "export.operations", String.format("Synchronize%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
-						synchronize.synchronize(rootDocument, timeSeriesType);
-					}
-					catch (Exception ex){
-						throw new RuntimeException(ex);
-					}
+					synchronize.synchronize(rootDocument, timeSeriesType);
 				}
 			});
 		}
