@@ -9,7 +9,6 @@ import org.bson.Document;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -64,36 +63,6 @@ public final class BucketUtil {
 	public static synchronized BucketSize getNetsBucketSize(String bucketCollection, String bucketKey){
 		Document bucketSize = Database.findOne(Settings.get("bucketSizeCollection"), new Document("bucketCollection", bucketCollection).append("bucketKey", bucketKey), new Document("_id", 0).append("bucketSize", 1));
 		return bucketSize == null ? BucketSize.YEAR : BucketSize.valueOf(bucketSize.getString("bucketSize"));
-	}
-
-	/**
-	 *
-	 * @param bucketCollection bucketCollection
-	 * @param document document
-	 * @return String
-	 */
-	public static String getBucketKey(String bucketCollection, Document document){
-		return getBucketKeyDocument(bucketCollection, document).toJson();
-	}
-
-	/**
-	 *
-	 * @param bucketKeyFields timeSeriesType
-	 * @param document document
-	 * @return String
-	 */
-	public static String getBucketKey(List<String> bucketKeyFields, Document document){
-		return new Document(bucketKeyFields.stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new))).toJson();
-	}
-
-	/**
-	 *
-	 * @param bucketCollection bucketCollection
-	 * @param document document
-	 * @return Document
-	 */
-	public static Document getBucketKeyDocument(String bucketCollection, Document document){
-		return new Document(getBucketKeyFields(bucketCollection).stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new)));
 	}
 
 	/**
@@ -256,8 +225,8 @@ public final class BucketUtil {
 		Document document = getMaxSizeDocument(documents);
 		if(document != null && document.getList("timeseries", Document.class).size() > BucketUtil.TIME_SERIES_MAX_ENTRY_COUNT) {
 			bucketSize = BucketUtil.getEstimatedBucketSize(document.getDate("startTime"), document.getDate("endTime"), document.getList("timeseries", Document.class).size());
-			Document bucketKeyDocument = BucketUtil.getBucketKeyDocument(bucketCollection, document);
-			String bucketKey = BucketUtil.getBucketKey(bucketCollection, document);
+			Document bucketKeyDocument = Database.getKeyDocument(BucketUtil.getBucketKeyFields(bucketCollection), document);
+			String bucketKey = Database.getKey(bucketKeyDocument);
 			resizeExistingBuckets(bucketCollection, bucketKeyDocument, bucketKey, bucketSize);
 		}
 		return bucketSize;

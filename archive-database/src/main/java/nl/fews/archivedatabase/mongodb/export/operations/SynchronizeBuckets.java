@@ -65,7 +65,7 @@ public final class SynchronizeBuckets extends SynchronizeBase implements Synchro
 				long bucketValue = bucket.getValue1();
 
 				Document document = new Document(documents.get(documents.size() - 1)).append("bucketSize", bucketSize.toString()).append("bucket", bucketValue);
-				Document existingDocument = Database.findOne(bucketCollection, new Document(keys.stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new))).append("bucketSize", bucketSize.toString()).append("bucket", bucketValue));
+				Document existingDocument = Database.findOne(bucketCollection, Database.getKeyDocument(keys, document).append("bucketSize", bucketSize.toString()).append("bucket", bucketValue));
 
 				if (existingDocument == null) {
 					document = DatabaseBucketUtil.mergeDocuments(bucket.getValue1(), document.append("timeseries", new ArrayList<Document>()), documents, bucketCollection);

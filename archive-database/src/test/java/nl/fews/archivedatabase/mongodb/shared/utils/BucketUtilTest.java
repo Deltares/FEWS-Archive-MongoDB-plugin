@@ -90,7 +90,7 @@ class BucketUtilTest {
 		Database.insertMany(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), timeSeriesDocuments);
 		BucketUtil.ensureBucketSize(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), timeSeriesDocuments);
 
-		Document result = Database.findOne(Settings.get("bucketSizeCollection"), new Document("bucketCollection", TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)).append("bucketKey", BucketUtil.getBucketKey(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), timeSeriesDocuments.get(0))));
+		Document result = Database.findOne(Settings.get("bucketSizeCollection"), new Document("bucketCollection", TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)).append("bucketKey", Database.getKey(Database.getKeyDocument(BucketUtil.getBucketKeyFields(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)), timeSeriesDocuments.get(0)))));
 		assertNotNull(result);
 		assertEquals("DAY", result.getString("bucketSize"));
 	}
@@ -107,7 +107,7 @@ class BucketUtilTest {
 		Map<Long, List<Document>> timeSeriesBuckets = TimeSeriesUtil.getTimeSeriesBuckets(timeSeries, bucketSize);
 		List<Document> timeSeriesDocuments = TimeSeriesUtil.getTimeSeriesDocuments(timeSeriesGroup, timeSeriesBuckets, bucketSize, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
 
-		assertEquals(BucketSize.YEAR, BucketUtil.getNetsBucketSize(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), BucketUtil.getBucketKey(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), timeSeriesDocuments.get(0))));
+		assertEquals(BucketSize.YEAR, BucketUtil.getNetsBucketSize(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), Database.getKey(Database.getKeyDocument(BucketUtil.getBucketKeyFields(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)), timeSeriesDocuments.get(0)))));
 	}
 
 	@Test
@@ -122,8 +122,8 @@ class BucketUtilTest {
 		Map<Long, List<Document>> timeSeriesBuckets = TimeSeriesUtil.getTimeSeriesBuckets(timeSeries, bucketSize);
 		List<Document> timeSeriesDocuments = TimeSeriesUtil.getTimeSeriesDocuments(timeSeriesGroup, timeSeriesBuckets, bucketSize, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
 
-		assertNotNull(BucketUtil.getBucketKey(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), timeSeriesDocuments.get(0)));
-		assertNotNull(BucketUtil.getBucketKey(BucketUtil.getBucketKeyFields(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)), timeSeriesDocuments.get(0)));
+		assertNotNull(Database.getKey(Database.getKeyDocument(BucketUtil.getBucketKeyFields(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)), timeSeriesDocuments.get(0))));
+		assertNotNull(Database.getKey(Database.getKeyDocument(BucketUtil.getBucketKeyFields(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)), timeSeriesDocuments.get(0))));
 	}
 
 	@Test
@@ -138,7 +138,7 @@ class BucketUtilTest {
 		Map<Long, List<Document>> timeSeriesBuckets = TimeSeriesUtil.getTimeSeriesBuckets(timeSeries, bucketSize);
 		List<Document> timeSeriesDocuments = TimeSeriesUtil.getTimeSeriesDocuments(timeSeriesGroup, timeSeriesBuckets, bucketSize, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
 
-		assertNotNull(BucketUtil.getBucketKeyDocument(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL), timeSeriesDocuments.get(0)));
+		assertNotNull(Database.getKeyDocument(BucketUtil.getBucketKeyFields(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)), timeSeriesDocuments.get(0)));
 	}
 
 	@Test

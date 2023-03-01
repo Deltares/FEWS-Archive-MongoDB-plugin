@@ -191,6 +191,24 @@ public final class Database {
 
 	/**
 	 *
+	 * @param keys the durable key members matching the insert data type collection's unique key
+	 * @return the key values for the passed timeseries
+	 */
+	public static Document getKeyDocument(List<String> keys, Document document) {
+		return new Document(keys.stream().collect(Collectors.toMap(k -> k, document::get, (k, v) -> v, LinkedHashMap::new)));
+	}
+
+	/**
+	 *
+	 * @param keyDocument keyDocument
+	 * @return the key for the passed key document
+	 */
+	public static String getKey(Document keyDocument) {
+		return keyDocument.toJson();
+	}
+
+	/**
+	 *
 	 * @param collection collection
 	 * @return The array of document representing default indexes to be applied to the given collection.  The first entry is unique
 	 */
