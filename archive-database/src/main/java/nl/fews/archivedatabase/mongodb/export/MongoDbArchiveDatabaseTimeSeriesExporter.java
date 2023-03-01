@@ -2,18 +2,27 @@ package nl.fews.archivedatabase.mongodb.export;
 
 import nl.fews.archivedatabase.mongodb.export.interfaces.Synchronize;
 import nl.fews.archivedatabase.mongodb.shared.database.Collection;
+import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.interfaces.TimeSeries;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
+import nl.fews.archivedatabase.mongodb.shared.utils.BucketUtil;
+import nl.fews.archivedatabase.mongodb.shared.utils.LogUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.Properties;
+import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Iterates through a series of timeseries arrays converting them to bson documents for mongodb consumption.
@@ -51,6 +60,11 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 	static{
 		Settings.put("bucketSizeCollection", Collection.BucketSize.toString());
 	}
+
+	/**
+	 *
+	 */
+	private static final Logger logger = LogManager.getLogger(MongoDbArchiveDatabaseTimeSeriesExporter.class);
 
 	/**
 	 *
@@ -187,9 +201,20 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 	 */
 	private void insertTimeSeries(TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays, TimeSeriesType timeSeriesType, String areaId, String sourceId) {
 		try{
+			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 			TimeSeries timeSeries = (TimeSeries)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "shared.timeseries", TimeSeriesTypeUtil.getTimeSeriesTypeClassName(timeSeriesType))).getConstructor().newInstance();
 			Synchronize synchronize = (Synchronize)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "export.operations", String.format("Synchronize%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
-			Arrays.stream(timeSeriesArrays.toArray()).parallel().forEach(timeSeriesArray -> {
+
+			Map<Document, List<TimeSeriesArray<TimeSeriesHeader>>> groupedTimeSeriesArrays = Arrays.stream(timeSeriesArrays.toArray()).collect(Collectors.groupingBy(g -> Database.getKeyDocument(BucketUtil.getBucketKeyFields(collection), timeSeries.getRoot(g.getHeader(), List.of(), timeSeries.getRunInfo(g.getHeader())))));
+			List<TimeSeriesArray<TimeSeriesHeader>> uniqueTimeSeriesArrays = new ArrayList<>();
+			for (Map.Entry<Document, List<TimeSeriesArray<TimeSeriesHeader>>> timeSeriesHeader: groupedTimeSeriesArrays.entrySet()) {
+				uniqueTimeSeriesArrays.add(timeSeriesHeader.getValue().get(0));
+				if(timeSeriesHeader.getValue().size() > 1){
+					Exception ex = new Exception("Duplicate time series array found and removed");
+					logger.warn(LogUtil.getLogMessageJson(ex, Map.of("duplicatesRemoved", timeSeriesHeader.getValue().size() - 1, "duplicateValue", timeSeriesHeader.getKey())).toJson(), ex);
+				}
+			}
+			uniqueTimeSeriesArrays.parallelStream().forEach(timeSeriesArray -> {
 				TimeSeriesHeader header = timeSeriesArray.getHeader();
 
 				Document metaDataDocument = timeSeries.getMetaData(header, areaId, sourceId);

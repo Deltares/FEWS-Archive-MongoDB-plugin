@@ -1,5 +1,6 @@
 package nl.fews.archivedatabase.mongodb.export.utils;
 
+import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.BucketSize;
 import nl.fews.archivedatabase.mongodb.shared.utils.BucketUtil;
 import org.bson.Document;
@@ -31,7 +32,7 @@ public final class DatabaseBucketUtil {
 		Map<Date, Document> timeSeries = existingDocument.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t"), s -> s));
 		for (Document document: documents) {
 			BucketSize bucketSize = document.getString("encodedTimeStepId").equals("NETS") ?
-					BucketUtil.getNetsBucketSize(bucketCollection, BucketUtil.getBucketKey(bucketCollection, document)) :
+					BucketUtil.getNetsBucketSize(bucketCollection, Database.getKey(Database.getKeyDocument(BucketUtil.getBucketKeyFields(bucketCollection), document))) :
 					BucketUtil.getBucketSize(document.get("metaData", Document.class).getInteger("timeStepMinutes"));
 			for (Document event:document.getList("timeseries", Document.class)){
 				if (bucketValue == BucketUtil.getBucketValue(event.getDate("t"), bucketSize)){
@@ -66,7 +67,7 @@ public final class DatabaseBucketUtil {
 	 */
 	public static Map<String, Map<Pair<BucketSize, Long>, List<Document>>> getDocumentsByKeyBucket(Document timeSeries, String bucketCollection){
 		Map<String, Map<Pair<BucketSize, Long>, List<Document>>> keyBucketDocuments = new HashMap<>();
-		String bucketKey = BucketUtil.getBucketKey(bucketCollection, timeSeries);
+		String bucketKey = Database.getKey(Database.getKeyDocument(BucketUtil.getBucketKeyFields(bucketCollection), timeSeries));
 		BucketSize bucketSize = timeSeries.getString("encodedTimeStepId").equals("NETS") ?
 				BucketUtil.getNetsBucketSize(bucketCollection, bucketKey) :
 				BucketUtil.getBucketSize(timeSeries.get("metaData", Document.class).getInteger("timeStepMinutes"));

@@ -6,7 +6,6 @@ import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class DatabaseSingletonUtil {
 
@@ -22,10 +21,8 @@ public class DatabaseSingletonUtil {
 	 * @return Map<String, List<Document>> document map keyed by their JSON string key representation of mongo unique key fields.
 	 */
 	public static Map<String, List<Document>> getDocumentsByKey(Document timeSeries, TimeSeriesType timeSeriesType){
-		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
-		List<String> keys = Database.getCollectionKeys(collection);
 		Map<String, List<Document>> keyBucketDocuments = new HashMap<>();
-		String key = new Document(keys.stream().collect(Collectors.toMap(k -> k, timeSeries::get, (k, v) -> v, LinkedHashMap::new))).toJson();
+		String key = Database.getKey(Database.getKeyDocument(Database.getCollectionKeys(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType)), timeSeries));
 		keyBucketDocuments.putIfAbsent(key, new ArrayList<>());
 		keyBucketDocuments.get(key).add(timeSeries);
 		return keyBucketDocuments;

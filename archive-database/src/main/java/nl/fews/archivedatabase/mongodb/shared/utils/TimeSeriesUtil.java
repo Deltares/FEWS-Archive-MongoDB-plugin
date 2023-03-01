@@ -40,7 +40,7 @@ public final class TimeSeriesUtil {
 		Database.aggregate(collection, query).hint(hint).allowDiskUse(true).forEach(timeSeriesGroup -> {
 			Document groupResults = timeSeriesGroup.get("_id", Document.class);
 			BucketSize bucketSize = groupResults.getString("encodedTimeStepId").equals("NETS") ?
-					BucketUtil.getNetsBucketSize(collection, BucketUtil.getBucketKey(bucketKeyFields, groupResults)) :
+					BucketUtil.getNetsBucketSize(collection, Database.getKey(Database.getKeyDocument(bucketKeyFields, groupResults))) :
 					BucketUtil.getBucketSize(timeSeriesGroup.getInteger("timeStepMinutes"));
 			timeSeriesGroups.add(new Document("timeSeriesGroup", groupResults).append("bucketSize", bucketSize.toString()));
 		});
