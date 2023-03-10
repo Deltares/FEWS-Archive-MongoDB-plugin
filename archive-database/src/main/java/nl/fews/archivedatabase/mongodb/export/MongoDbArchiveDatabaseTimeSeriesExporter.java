@@ -212,9 +212,10 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 				if(timeSeriesHeader.getValue().size() > 1){
 					Exception ex = new Exception("Duplicate time series array found and removed");
 					logger.warn(LogUtil.getLogMessageJson(ex, Map.of("duplicatesRemoved", timeSeriesHeader.getValue().size() - 1, "duplicateValue", timeSeriesHeader.getKey())).toJson(), ex);
+					logger.warn("Config.Warn: {}", LogUtil.getLogMessageJson(ex, Map.of("duplicatesRemoved", timeSeriesHeader.getValue().size() - 1, "duplicateValue", timeSeriesHeader.getKey())).toJson(), ex);
 				}
 			}
-			uniqueTimeSeriesArrays.parallelStream().forEach(timeSeriesArray -> {
+			uniqueTimeSeriesArrays.stream().forEach(timeSeriesArray -> {
 				TimeSeriesHeader header = timeSeriesArray.getHeader();
 
 				Document metaDataDocument = timeSeries.getMetaData(header, areaId, sourceId);
