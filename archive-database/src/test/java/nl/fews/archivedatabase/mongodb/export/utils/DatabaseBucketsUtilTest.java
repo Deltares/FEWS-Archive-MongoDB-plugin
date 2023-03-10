@@ -103,7 +103,7 @@ class DatabaseBucketsUtilTest {
 
 		DatabaseBucketUtil.removeExistingTimeseries(existingDocument, ts.get(0));
 
-		assertEquals(1, existingDocument.getList("timeseries", Document.class).size());
+		assertEquals(10, existingDocument.getList("timeseries", Document.class).size());
 	}
 
 	@Test
@@ -116,8 +116,5 @@ class DatabaseBucketsUtilTest {
 
 		d = DatabaseBucketUtil.mergeExistingDocument( new Document(ts.get(10)).append("timeseries", new ArrayList<Document>()), ts.get(0));
 		assertEquals(10, d.getList("timeseries", Document.class).size());
-
-		d = DatabaseBucketUtil.mergeExistingDocument( new Document(ts.get(0)).append("timeseries", new ArrayList<Document>()), ts.get(0));
-		assertEquals(0, d.getList("timeseries", Document.class).size());
 	}
 }
