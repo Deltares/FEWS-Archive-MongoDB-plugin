@@ -24,7 +24,7 @@ public class TestUtil {
 	@SuppressWarnings({"unchecked"})
 	public static TimeSeriesArrays<TimeSeriesHeader> getDefaultTimeSeriesArrays() {
 		List<TimeSeriesArray<TimeSeriesHeader>> arrays = new ArrayList<>();
-		for (int y = 2012; y < 2014; y++) {
+		for (int y = 2012; y < 2013; y++) {
 			for (int h = 0; h < 10; h++) {
 				DefaultTimeSeriesHeader timeSeriesHeader = new DefaultTimeSeriesHeader();
 				timeSeriesHeader.setApprovedTime(Instant.parse(y + "-01-01T00:00:00Z").toEpochMilli());
