@@ -71,20 +71,19 @@ class DatabaseBucketsUtilTest {
 			"{\"moduleInstanceId\": \"moduleInstanceId9\", \"locationId\": \"locationId9\", \"parameterId\": \"parameterId9\", \"qualifierId\": \"[\\\"qualifierId9\\\",\\\"qualifierId9\\\"]\", \"encodedTimeStepId\": \"SETS360\"}"
 		};
 
-		Map<String, Map<Pair<BucketSize, Long>, List<Document>>> documents = new HashMap<>();
+		Map<String, Map<Pair<BucketSize, Long>, Document>> documents = new HashMap<>();
 		for(Document document: ts){
-			for (Map.Entry<String, Map<Pair<BucketSize, Long>, List<Document>>> x: DatabaseBucketUtil.getDocumentsByKeyBucket(document, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)).entrySet()){
+			for (Map.Entry<String, Map<Pair<BucketSize, Long>, Document>> x: DatabaseBucketUtil.getDocumentsByKeyBucket(document, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL)).entrySet()){
 				documents.putIfAbsent(x.getKey(), new HashMap<>());
-				for (Map.Entry<Pair<BucketSize, Long>, List<Document>> y: x.getValue().entrySet()){
-					documents.get(x.getKey()).putIfAbsent(y.getKey(), new ArrayList<>());
-					documents.get(x.getKey()).get(y.getKey()).addAll(y.getValue());
+				for (Map.Entry<Pair<BucketSize, Long>, Document> y: x.getValue().entrySet()){
+					documents.get(x.getKey()).putIfAbsent(y.getKey(), new Document(document));
 				}
 			}
 		}
 
 		assertEquals(10, documents.size());
 
-		for (Map<Pair<BucketSize, Long>, List<Document>> documentList:documents.values()) {
+		for (Map<Pair<BucketSize, Long>, Document> documentList:documents.values()) {
 			assertEquals(2, documentList.size());
 		}
 
@@ -102,23 +101,23 @@ class DatabaseBucketsUtilTest {
 
 		assertEquals(11, existingDocument.getList("timeseries", Document.class).size());
 
-		DatabaseBucketUtil.removeExistingTimeseries(existingDocument, List.of(ts.get(0)));
+		DatabaseBucketUtil.removeExistingTimeseries(existingDocument, ts.get(0));
 
 		assertEquals(1, existingDocument.getList("timeseries", Document.class).size());
 	}
 
 	@Test
-	void mergeDocuments() {
+	void mergeExistingDocument() {
 
 		assertEquals(10, ts.get(0).getList("timeseries", Document.class).size());
 
-		Document d = DatabaseBucketUtil.mergeDocuments(2012, new Document(ts.get(0)).append("timeseries", new ArrayList<Document>()), ts, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
+		Document d = DatabaseBucketUtil.mergeExistingDocument( new Document(ts.get(0)).append("timeseries", new ArrayList<Document>()), ts.get(0));
 		assertEquals(10, d.getList("timeseries", Document.class).size());
 
-		d = DatabaseBucketUtil.mergeDocuments(2013, new Document(ts.get(10)).append("timeseries", new ArrayList<Document>()), ts, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
+		d = DatabaseBucketUtil.mergeExistingDocument( new Document(ts.get(10)).append("timeseries", new ArrayList<Document>()), ts.get(0));
 		assertEquals(10, d.getList("timeseries", Document.class).size());
 
-		d = DatabaseBucketUtil.mergeDocuments(2014, new Document(ts.get(0)).append("timeseries", new ArrayList<Document>()), ts, TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
+		d = DatabaseBucketUtil.mergeExistingDocument( new Document(ts.get(0)).append("timeseries", new ArrayList<Document>()), ts.get(0));
 		assertEquals(0, d.getList("timeseries", Document.class).size());
 	}
 }

@@ -59,22 +59,22 @@ public final class SynchronizeBuckets extends SynchronizeBase implements Synchro
 			List<Document> insert = new ArrayList<>();
 			List<Document> replace = new ArrayList<>();
 			List<Document> remove = new ArrayList<>();
-			buckets.forEach((bucket, documents) -> {
+			buckets.forEach((bucket, document) -> {
 
 				BucketSize bucketSize = bucket.getValue0();
 				long bucketValue = bucket.getValue1();
 
-				Document document = new Document(documents.get(documents.size() - 1)).append("bucketSize", bucketSize.toString()).append("bucket", bucketValue);
+				document.append("bucketSize", bucketSize.toString()).append("bucket", bucketValue);
 				Document existingDocument = Database.findOne(bucketCollection, Database.getKeyDocument(keys, document).append("bucketSize", bucketSize.toString()).append("bucket", bucketValue));
 
 				if (existingDocument == null) {
-					document = DatabaseBucketUtil.mergeDocuments(bucket.getValue1(), document.append("timeseries", new ArrayList<Document>()), documents, bucketCollection);
+					document = DatabaseBucketUtil.mergeExistingDocument(document.append("timeseries", new ArrayList<Document>()), document);
 					if (!document.getList("timeseries", Document.class).isEmpty())
 						insert.add(document);
 				}
 				else {
 					document.get("metaData", Document.class).append("archiveTime", existingDocument.get("metaData", Document.class).get("archiveTime"));
-					document = DatabaseBucketUtil.mergeDocuments(bucket.getValue1(), document.append("_id", existingDocument.get("_id")).append("timeseries", existingDocument.get("timeseries")), documents, bucketCollection);
+					document = DatabaseBucketUtil.mergeExistingDocument(document.append("_id", existingDocument.get("_id")).append("timeseries", existingDocument.get("timeseries")), document);
 					if (document.getList("timeseries", Document.class).isEmpty())
 						remove.add(document);
 					else
