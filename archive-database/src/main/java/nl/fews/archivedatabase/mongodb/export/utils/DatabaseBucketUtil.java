@@ -69,9 +69,7 @@ public final class DatabaseBucketUtil {
 		timeSeries.getList("timeseries", Document.class).forEach(s -> {
 			Pair<BucketSize, Long> bucket = new Pair<>(bucketSize, BucketUtil.getBucketValue(s.getDate("t"), bucketSize));
 			if(!keyBucketDocuments.get(bucketKey).containsKey(bucket)){
-				Document ts = new Document(timeSeries);
-				ts.replace("timeseries", new ArrayList<Document>());
-				keyBucketDocuments.get(bucketKey).put(bucket, ts);
+				keyBucketDocuments.get(bucketKey).put(bucket, new Document(timeSeries).append("timeseries", new ArrayList<Document>()));
 			}
 			keyBucketDocuments.get(bucketKey).get(bucket).getList("timeseries", Document.class).add(s);
 		});

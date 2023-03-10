@@ -68,7 +68,7 @@ public final class SynchronizeBuckets extends SynchronizeBase implements Synchro
 				Document existingDocument = Database.findOne(bucketCollection, Database.getKeyDocument(keys, document).append("bucketSize", bucketSize.toString()).append("bucket", bucketValue));
 
 				if (existingDocument == null) {
-					document = DatabaseBucketUtil.mergeExistingDocument(document.append("timeseries", new ArrayList<Document>()), document);
+					document = DatabaseBucketUtil.mergeExistingDocument(new Document(document).append("timeseries", new ArrayList<Document>()), document);
 					if (!document.getList("timeseries", Document.class).isEmpty())
 						insert.add(document);
 				}
