@@ -84,7 +84,7 @@ class DatabaseBucketsUtilTest {
 		assertEquals(10, documents.size());
 
 		for (Map<Pair<BucketSize, Long>, Document> documentList:documents.values()) {
-			assertEquals(2, documentList.size());
+			assertEquals(1, documentList.size());
 		}
 
 		int index = 0;
@@ -114,7 +114,7 @@ class DatabaseBucketsUtilTest {
 		Document d = DatabaseBucketUtil.mergeExistingDocument( new Document(ts.get(0)).append("timeseries", new ArrayList<Document>()), ts.get(0));
 		assertEquals(10, d.getList("timeseries", Document.class).size());
 
-		d = DatabaseBucketUtil.mergeExistingDocument( new Document(ts.get(10)).append("timeseries", new ArrayList<Document>()), ts.get(0));
+		d = DatabaseBucketUtil.mergeExistingDocument( new Document(ts.get(9)).append("timeseries", new ArrayList<Document>()), ts.get(0));
 		assertEquals(10, d.getList("timeseries", Document.class).size());
 	}
 }

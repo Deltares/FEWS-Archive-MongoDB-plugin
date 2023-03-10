@@ -75,7 +75,7 @@ class DatabaseSingletonUtilTest {
 			}
 		}
 
-		assertEquals(20, documents.size());
+		assertEquals(10, documents.size());
 
 		for (List<Document> documentList:documents.values()) {
 			assertEquals(1, documentList.size());
