@@ -22,23 +22,15 @@ public final class DatabaseBucketUtil {
 	/**
 	 * merges the passed documents with the existing (or new) bucketedDocument for the given bin (bucket) - after deleting any existing values between (inclusive) each document timeseries event's date range
 	 * updates startTime, endTime, localStartTime, and localEndTime accordingly - leaving the returned document fully self-consistent
-	 * @param bucketValue the year or year-month integer-represented bin or 'bucket' over which to merge documents from intersecting timeseries
 	 * @param existingDocument a populated document matching last passed bucket-intersecting document, preserving the _id, timeseries, and metaData.archiveTime fields, if already existing in mongo db
-	 * @param documents the timeseries-event-sorted, intersecting documents (at least one timeseries event entry time entry intersects the bucket)
+	 * @param document the timeseries-event-sorted, intersecting documents (at least one timeseries event entry time entry intersects the bucket)
 	 * @return a single Document representing the merged documents passes + any existing values, if this bucket was already in mongo db
 	 */
-	public static Document mergeDocuments(long bucketValue, Document existingDocument, List<Document> documents, String bucketCollection){
-		removeExistingTimeseries(existingDocument, documents);
+	public static Document mergeExistingDocument(Document existingDocument, Document document){
+		removeExistingTimeseries(existingDocument, document);
 		Map<Date, Document> timeSeries = existingDocument.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t"), s -> s));
-		for (Document document: documents) {
-			BucketSize bucketSize = document.getString("encodedTimeStepId").equals("NETS") ?
-					BucketUtil.getNetsBucketSize(bucketCollection, Database.getKey(Database.getKeyDocument(BucketUtil.getBucketKeyFields(bucketCollection), document))) :
-					BucketUtil.getBucketSize(document.get("metaData", Document.class).getInteger("timeStepMinutes"));
-			for (Document event:document.getList("timeseries", Document.class)){
-				if (bucketValue == BucketUtil.getBucketValue(event.getDate("t"), bucketSize)){
-					timeSeries.put(event.getDate("t"), event);
-				}
-			}
+		for (Document event:document.getList("timeseries", Document.class)){
+			timeSeries.put(event.getDate("t"), event);
 		}
 		if(timeSeries.isEmpty())
 			return existingDocument;
@@ -65,19 +57,23 @@ public final class DatabaseBucketUtil {
 	 *     distinct buckets having the parent key =>
 	 *     all documents having timeseries range that intersects the parent bucket.
 	 */
-	public static Map<String, Map<Pair<BucketSize, Long>, List<Document>>> getDocumentsByKeyBucket(Document timeSeries, String bucketCollection){
-		Map<String, Map<Pair<BucketSize, Long>, List<Document>>> keyBucketDocuments = new HashMap<>();
+	public static Map<String, Map<Pair<BucketSize, Long>, Document>> getDocumentsByKeyBucket(Document timeSeries, String bucketCollection){
+		Map<String, Map<Pair<BucketSize, Long>, Document>> keyBucketDocuments = new HashMap<>();
+
 		String bucketKey = Database.getKey(Database.getKeyDocument(BucketUtil.getBucketKeyFields(bucketCollection), timeSeries));
 		BucketSize bucketSize = timeSeries.getString("encodedTimeStepId").equals("NETS") ?
 				BucketUtil.getNetsBucketSize(bucketCollection, bucketKey) :
 				BucketUtil.getBucketSize(timeSeries.get("metaData", Document.class).getInteger("timeStepMinutes"));
-		List<Pair<BucketSize, Long>> buckets = timeSeries.getList("timeseries", Document.class).stream().map(s -> new Pair<>(bucketSize, BucketUtil.getBucketValue(s.getDate("t"), bucketSize))).distinct().collect(Collectors.toList());
 
 		keyBucketDocuments.putIfAbsent(bucketKey, new HashMap<>());
-		for (Pair<BucketSize, Long> bucket:buckets){
-			keyBucketDocuments.get(bucketKey).putIfAbsent(bucket, new ArrayList<>());
-			keyBucketDocuments.get(bucketKey).get(bucket).add(timeSeries);
-		}
+		timeSeries.getList("timeseries", Document.class).forEach(s -> {
+			Pair<BucketSize, Long> bucket = new Pair<>(bucketSize, BucketUtil.getBucketValue(s.getDate("t"), bucketSize));
+			if(!keyBucketDocuments.get(bucketKey).containsKey(bucket)){
+				keyBucketDocuments.get(bucketKey).put(bucket, new Document(timeSeries).append("timeseries", new ArrayList<Document>()));
+			}
+			keyBucketDocuments.get(bucketKey).get(bucket).getList("timeseries", Document.class).add(s);
+		});
+
 		return keyBucketDocuments;
 	}
 
@@ -86,16 +82,17 @@ public final class DatabaseBucketUtil {
 	 * This effectively accomplishes deletes where any value missing between the min and max range of newly
 	 * passed insert / updates will be removed.
 	 * @param existingDocument the existing timeseries document, if found, else the last passed document
-	 * @param documents the timeseries documents having a range of values that intersect the existing document
+	 * @param document the timeseries documents having a range of values that intersect the existing document
 	 */
-	public static void removeExistingTimeseries(Document existingDocument, List<Document> documents){
+	public static void removeExistingTimeseries(Document existingDocument, Document document){
 		Map<Date, Document> timeseries = existingDocument.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t"), s -> s));
-		List<Date[]> dateRanges = documents.stream().map(s -> s.getList("timeseries", Document.class)).map(s -> new Date[]{s.get(0).getDate("t"), s.get(s.size()-1).getDate("t")}).collect(Collectors.toList());
+		List<Document> events = document.getList("timeseries", Document.class);
+		Date[] dateRange = new Date[]{events.get(0).getDate("t"), events.get(events.size()-1).getDate("t")};
 		List<Date> dates = new ArrayList<>(timeseries.keySet());
 
 		List<Document> trimmedTimeseries = new ArrayList<>();
 		for (Date date:dates) {
-			if(dateRanges.stream().noneMatch(s -> date.compareTo(s[0]) >= 0 && date.compareTo(s[1]) <= 0)){
+			if(date.compareTo(dateRange[0]) >= 0 && date.compareTo(dateRange[1]) <= 0){
 				trimmedTimeseries.add(timeseries.get(date));
 			}
 		}
