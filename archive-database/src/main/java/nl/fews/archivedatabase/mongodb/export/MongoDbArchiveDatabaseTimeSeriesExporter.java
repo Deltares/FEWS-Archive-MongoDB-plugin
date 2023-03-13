@@ -215,7 +215,7 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 					logger.warn("Config.Warn: {}", LogUtil.getLogMessageJson(ex, Map.of("duplicatesRemoved", timeSeriesHeader.getValue().size() - 1, "duplicateValue", timeSeriesHeader.getKey())).toJson(), ex);
 				}
 			}
-			uniqueTimeSeriesArrays.stream().forEach(timeSeriesArray -> {
+			uniqueTimeSeriesArrays.parallelStream().forEach(timeSeriesArray -> {
 				TimeSeriesHeader header = timeSeriesArray.getHeader();
 
 				Document metaDataDocument = timeSeries.getMetaData(header, areaId, sourceId);
