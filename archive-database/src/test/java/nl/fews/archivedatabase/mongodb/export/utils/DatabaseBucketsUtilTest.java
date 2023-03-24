@@ -101,9 +101,9 @@ class DatabaseBucketsUtilTest {
 
 		assertEquals(11, existingDocument.getList("timeseries", Document.class).size());
 
-		DatabaseBucketUtil.removeExistingTimeseries(existingDocument, ts.get(0));
+		List<Document> existingTimeseries = DatabaseBucketUtil.getNonIntersectingExistingTimeseries(existingDocument, ts.get(0));
 
-		assertEquals(10, existingDocument.getList("timeseries", Document.class).size());
+		assertEquals(10, existingTimeseries.size());
 	}
 
 	@Test

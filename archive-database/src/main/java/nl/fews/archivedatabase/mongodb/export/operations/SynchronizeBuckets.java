@@ -68,17 +68,17 @@ public final class SynchronizeBuckets extends SynchronizeBase implements Synchro
 				Document existingDocument = Database.findOne(bucketCollection, Database.getKeyDocument(keys, document).append("bucketSize", bucketSize.toString()).append("bucket", bucketValue));
 
 				if (existingDocument == null) {
-					document = DatabaseBucketUtil.mergeExistingDocument(new Document(document).append("timeseries", new ArrayList<Document>()), document);
-					if (!document.getList("timeseries", Document.class).isEmpty())
-						insert.add(document);
+					Document mergedDocument = DatabaseBucketUtil.mergeExistingDocument(new Document(document).append("timeseries", new ArrayList<Document>()), document);
+					if (!mergedDocument.getList("timeseries", Document.class).isEmpty())
+						insert.add(mergedDocument);
 				}
 				else {
 					document.get("metaData", Document.class).append("archiveTime", existingDocument.get("metaData", Document.class).get("archiveTime"));
-					document = DatabaseBucketUtil.mergeExistingDocument(document.append("_id", existingDocument.get("_id")).append("timeseries", existingDocument.get("timeseries")), document);
-					if (document.getList("timeseries", Document.class).isEmpty())
-						remove.add(document);
+					Document mergedDocument = DatabaseBucketUtil.mergeExistingDocument(new Document(document).append("_id", existingDocument.get("_id")).append("timeseries", existingDocument.get("timeseries")), document);
+					if (mergedDocument.getList("timeseries", Document.class).isEmpty())
+						remove.add(mergedDocument);
 					else
-						replace.add(document);
+						replace.add(mergedDocument);
 				}
 			});
 			insertUpdateRemove.put(key, new Triplet<>(insert, replace, remove));
