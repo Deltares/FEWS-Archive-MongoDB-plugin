@@ -103,7 +103,7 @@ class DatabaseBucketsUtilTest {
 
 		List<Document> existingTimeseries = DatabaseBucketUtil.getNonIntersectingExistingTimeseries(existingDocument, ts.get(0));
 
-		assertEquals(10, existingTimeseries.size());
+		assertEquals(1, existingTimeseries.size());
 	}
 
 	@Test

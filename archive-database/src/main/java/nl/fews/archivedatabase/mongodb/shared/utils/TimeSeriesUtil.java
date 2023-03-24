@@ -172,8 +172,8 @@ public final class TimeSeriesUtil {
 
 	/**
 	 * Trims null values from the beginning and end of a timeseries
-	 * @param timeseries
-	 * @return
+	 * @param timeseries timeseries
+	 * @return List<Document>
 	 */
 	public static List<Document> trimNullValues(List<Document> timeseries){
 		if(timeseries.isEmpty())
