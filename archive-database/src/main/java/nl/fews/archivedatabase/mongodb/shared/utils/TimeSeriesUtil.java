@@ -176,9 +176,6 @@ public final class TimeSeriesUtil {
 	 * @return List<Document>
 	 */
 	public static List<Document> trimNullValues(List<Document> timeseries){
-		if(timeseries.isEmpty())
-			return timeseries;
-
 		int begin = 0;
 		int end = timeseries.size();
 
