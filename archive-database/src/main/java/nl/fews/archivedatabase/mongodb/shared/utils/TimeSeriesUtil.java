@@ -171,18 +171,21 @@ public final class TimeSeriesUtil {
 	}
 
 	/**
-	 *
-	 * @param timeseries timeseries
-	 * @return List<Document>
+	 * Trims null values from the beginning and end of a timeseries
+	 * @param timeseries
+	 * @return
 	 */
 	public static List<Document> trimNullValues(List<Document> timeseries){
+		if(timeseries.isEmpty())
+			return timeseries;
+
 		int begin = 0;
 		int end = timeseries.size();
 
 		while(begin < end && timeseries.get(begin).get("v") == null)
 			begin++;
 
-		while(end >= begin && timeseries.get(end-1).get("v") == null)
+		while(end > begin && timeseries.get(end-1).get("v") == null)
 			end--;
 
 		return timeseries.subList(begin, end);

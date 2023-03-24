@@ -95,13 +95,20 @@ class TimeSeriesUtilTest {
 	void trimNullValues() {
 		List<Document> d = new ArrayList<>();
 		assertEquals(0, TimeSeriesUtil.trimNullValues(d).size());
+
 		d.add(new Document("v", null));
 		assertEquals(0, TimeSeriesUtil.trimNullValues(d).size());
+
 		d.add(new Document("v", new Object()));
 		assertEquals(1, TimeSeriesUtil.trimNullValues(d).size());
+
 		d.add(new Document("v", null));
 		assertEquals(1, TimeSeriesUtil.trimNullValues(d).size());
+
 		d.add(new Document("v", new Object()));
 		assertEquals(3, TimeSeriesUtil.trimNullValues(d).size());
+
+		d.add(0, new Document("v", new Object()));
+		assertEquals(5, TimeSeriesUtil.trimNullValues(d).size());
 	}
 }
