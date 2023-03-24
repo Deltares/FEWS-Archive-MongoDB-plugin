@@ -15,10 +15,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @Testcontainers
@@ -87,5 +89,26 @@ class TimeSeriesUtilTest {
 		List<Document> timeSeriesGroups = TimeSeriesUtil.getTimeSeriesGroups(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), BucketUtil.getBucketKeyFields(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED)));
 		List<Document> timeSeries = TimeSeriesUtil.getUnwoundTimeSeries(timeSeriesGroups.get(0).get("timeSeriesGroup", Document.class), TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL));
 		assertFalse(timeSeries.isEmpty());
+	}
+
+	@Test
+	void trimNullValues() {
+		List<Document> d = new ArrayList<>();
+		assertEquals(0, TimeSeriesUtil.trimNullValues(d).size());
+
+		d.add(new Document("v", null));
+		assertEquals(0, TimeSeriesUtil.trimNullValues(d).size());
+
+		d.add(new Document("v", new Object()));
+		assertEquals(1, TimeSeriesUtil.trimNullValues(d).size());
+
+		d.add(new Document("v", null));
+		assertEquals(1, TimeSeriesUtil.trimNullValues(d).size());
+
+		d.add(new Document("v", new Object()));
+		assertEquals(3, TimeSeriesUtil.trimNullValues(d).size());
+
+		d.add(0, new Document("v", new Object()));
+		assertEquals(5, TimeSeriesUtil.trimNullValues(d).size());
 	}
 }

@@ -27,7 +27,7 @@ public final class DatabaseBucketUtil {
 	 * @return a single Document representing the merged documents passes + any existing values, if this bucket was already in mongo db
 	 */
 	public static Document mergeExistingDocument(Document existingDocument, Document document){
-		removeExistingTimeseries(existingDocument, document);
+		existingDocument.append("timeseries", getNonIntersectingExistingTimeseries(existingDocument, document));
 		Map<Date, Document> timeSeries = existingDocument.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t"), s -> s));
 		for (Document event:document.getList("timeseries", Document.class)){
 			timeSeries.put(event.getDate("t"), event);
@@ -78,24 +78,25 @@ public final class DatabaseBucketUtil {
 	}
 
 	/**
-	 * in-place deletes any existing values between (inclusive) the min and max range of new incoming values.
-	 * This effectively accomplishes deletes where any value missing between the min and max range of newly
-	 * passed insert / updates will be removed.
+	 * returns any existing values outside the min and max range of the new incoming values.
+	 * This effectively accomplishes deletes where any value missing between the min and max
+	 * range of newly passed insert / updates will be removed.
 	 * @param existingDocument the existing timeseries document, if found, else the last passed document
 	 * @param document the timeseries documents having a range of values that intersect the existing document
 	 */
-	public static void removeExistingTimeseries(Document existingDocument, Document document){
-		Map<Date, Document> timeseries = existingDocument.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t"), s -> s));
+	public static List<Document> getNonIntersectingExistingTimeseries(Document existingDocument, Document document){
+		Map<Date, Document> existingTimeseries = existingDocument.getList("timeseries", Document.class).stream().collect(Collectors.toMap(s -> s.getDate("t"), s -> s));
+		List<Date> existingDates = new ArrayList<>(existingTimeseries.keySet());
+
 		List<Document> events = document.getList("timeseries", Document.class);
 		Date[] dateRange = new Date[]{events.get(0).getDate("t"), events.get(events.size()-1).getDate("t")};
-		List<Date> dates = new ArrayList<>(timeseries.keySet());
 
-		List<Document> trimmedTimeseries = new ArrayList<>();
-		for (Date date:dates) {
-			if(date.compareTo(dateRange[0]) >= 0 && date.compareTo(dateRange[1]) <= 0){
-				trimmedTimeseries.add(timeseries.get(date));
+		List<Document> trimmedExistingTimeseries = new ArrayList<>();
+		for (Date existingDate:existingDates) {
+			if(existingDate.compareTo(dateRange[0]) < 0 || existingDate.compareTo(dateRange[1]) > 0){
+				trimmedExistingTimeseries.add(existingTimeseries.get(existingDate));
 			}
 		}
-		existingDocument.append("timeseries", trimmedTimeseries);
+		return trimmedExistingTimeseries;
 	}
 }

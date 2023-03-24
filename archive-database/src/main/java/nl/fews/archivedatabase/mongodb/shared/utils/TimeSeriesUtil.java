@@ -169,4 +169,22 @@ public final class TimeSeriesUtil {
 			eventsDeduplicate.sort(Comparator.comparing(s -> s.getDate("t")));
 		return eventsDeduplicate;
 	}
+
+	/**
+	 * Trims null values from the beginning and end of a timeseries
+	 * @param timeseries timeseries
+	 * @return List<Document>
+	 */
+	public static List<Document> trimNullValues(List<Document> timeseries){
+		int begin = 0;
+		int end = timeseries.size();
+
+		while(begin < end && timeseries.get(begin).get("v") == null)
+			begin++;
+
+		while(end > begin && timeseries.get(end-1).get("v") == null)
+			end--;
+
+		return timeseries.subList(begin, end);
+	}
 }

@@ -9,6 +9,7 @@ import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.BucketUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.LogUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
+import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesUtil;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.Properties;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
@@ -219,7 +220,7 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 				TimeSeriesHeader header = timeSeriesArray.getHeader();
 
 				Document metaDataDocument = timeSeries.getMetaData(header, areaId, sourceId);
-				List<Document> timeseriesDocuments = timeSeries.getEvents(timeSeriesArray, metaDataDocument);
+				List<Document> timeseriesDocuments = TimeSeriesUtil.trimNullValues(timeSeries.getEvents(timeSeriesArray, metaDataDocument));
 				Document runInfoDocument = timeSeries.getRunInfo(header);
 				Document rootDocument = timeSeries.getRoot(header, timeseriesDocuments, runInfoDocument);
 
