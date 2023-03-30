@@ -1,6 +1,7 @@
 package nl.fews.archivedatabase.mongodb.migrate;
 
 import com.mongodb.lang.NonNull;
+import nl.fews.archivedatabase.mongodb.export.MongoDbArchiveDatabaseTimeSeriesExporter;
 import nl.fews.archivedatabase.mongodb.migrate.operations.*;
 import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 /**
  *
  */
-public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenArchiveToArchiveDatabaseMigrator {
+public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenArchiveToArchiveDatabaseMigrator, AutoCloseable {
 
 	//DEFAULTS THAT MAY BE ADDED TO INTERFACE AND OPTIONALLY OVERRIDDEN LATER
 	static{
@@ -58,6 +59,13 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 		if(mongoDbOpenArchiveToArchiveDatabaseMigrator == null)
 			mongoDbOpenArchiveToArchiveDatabaseMigrator = new MongoDbOpenArchiveToArchiveDatabaseMigrator();
 		return mongoDbOpenArchiveToArchiveDatabaseMigrator;
+	}
+
+	public void close() {
+		synchronized (mutex){
+			MongoDbOpenArchiveToArchiveDatabaseMigrator.mongoDbOpenArchiveToArchiveDatabaseMigrator = null;
+			Database.close();
+		}
 	}
 
 	/**
