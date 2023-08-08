@@ -44,7 +44,7 @@ import org.apache.logging.log4j.Logger;
  *
  */
 @SuppressWarnings("unchecked")
-public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTimeSeriesReader {
+public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTimeSeriesReader, AutoCloseable {
 
 	/**
 	 *
@@ -62,12 +62,24 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	private static MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = null;
 
 	/**
+	 *
+	 */
+	private static final Object mutex = new Object();
+
+	/**
 	 * Creates a new instance of this interface implementation
 	 */
 	public static MongoDbArchiveDatabaseTimeSeriesReader create() {
 		if(mongoDbArchiveDatabaseTimeSeriesReader == null)
 			mongoDbArchiveDatabaseTimeSeriesReader = new MongoDbArchiveDatabaseTimeSeriesReader();
 		return mongoDbArchiveDatabaseTimeSeriesReader;
+	}
+
+	public void close() {
+		synchronized (mutex) {
+			MongoDbArchiveDatabaseTimeSeriesReader.mongoDbArchiveDatabaseTimeSeriesReader = null;
+			Database.close();
+		}
 	}
 
 	/**
@@ -127,9 +139,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			TimeSeriesHeader timeSeriesHeader = timeSeriesArray.getHeader();
 			Map<String, List<Object>> query = new HashMap<>();
 
-			List<String> qualifierIds = new ArrayList<>();
-			for (int j = 0; j < timeSeriesHeader.getQualifierCount(); j++)
-				qualifierIds.add(timeSeriesHeader.getQualifierId(j));
+			List<String> qualifierIds = IntStream.range(0, timeSeriesHeader.getQualifierCount()).boxed().map(timeSeriesHeader::getQualifierId).collect(Collectors.toList());
 			String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
 			String moduleInstanceId = timeSeriesHeader.getModuleInstanceId();
 			String locationId = timeSeriesHeader.getLocationId();
@@ -139,7 +149,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			String ensembleMemberId = timeSeriesHeader.getEnsembleMemberId() == null || timeSeriesHeader.getEnsembleMemberId().equals("none") || timeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : timeSeriesHeader.getEnsembleMemberId();
 
 			if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
-				logger.info(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s",
+				logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s",
 						moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId));
 			}
 			else {
@@ -154,6 +164,14 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest(List.of(timeSeriesHeader), period, query));
 			}
 		}
+		return getStitchedSimulatedDataImportRequestHavingData(singleExternalDataImportRequests);
+	}
+
+	/**
+	 * @param singleExternalDataImportRequests singleExternalDataImportRequests
+	 * @return List<SingleExternalDataImportRequest>
+	 */
+	private List<SingleExternalDataImportRequest> getStitchedSimulatedDataImportRequestHavingData(List<SingleExternalDataImportRequest> singleExternalDataImportRequests){
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = Collections.synchronizedList(new ArrayList<>());
 		singleExternalDataImportRequests.parallelStream().forEach(singleExternalDataImportRequest -> {
 			try{
@@ -195,7 +213,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		String encodedTimeStepId = fewsTimeSeriesHeader.getTimeStep() == null ? null : fewsTimeSeriesHeader.getTimeStep().getEncoded();
 
 		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
-			logger.info(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s",
+			logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s",
 					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId));
 		}
 		else {
@@ -259,7 +277,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		String ensembleMemberId = fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId();
 
 		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
-			logger.info(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s, taskRunId=%s",
+			logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s, taskRunId=%s",
 					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId, taskRunId));
 		}
 		else {
@@ -321,7 +339,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		Date forecastTime = new Date(fewsTimeSeriesHeader.getForecastTime());
 
 		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
-			logger.info(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s, forecastTime=%s",
+			logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s, forecastTime=%s",
 					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId, forecastTime));
 		}
 		else {
@@ -371,7 +389,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		String ensembleMemberId = fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId();
 
 		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
-			logger.info(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s",
+			logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s",
 					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId));
 		}
 		else {
@@ -434,7 +452,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		Date forecastTime = new Date(fewsTimeSeriesHeader.getForecastTime());
 
 		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
-			logger.info(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s, forecastTime=%s",
+			logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s, forecastTime=%s",
 					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId, forecastTime));
 		}
 		else {
@@ -485,7 +503,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			String encodedTimeStepId = timeSeriesHeader.getTimeStep() == null ? null : timeSeriesHeader.getTimeStep().getEncoded();
 
 			if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
-				logger.info(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s",
+				logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s",
 						moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId));
 			}
 			else {
@@ -544,7 +562,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			String encodedTimeStepId = timeSeriesHeader.getTimeStep() == null ? null : timeSeriesHeader.getTimeStep().getEncoded();
 
 			if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
-				logger.info(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s",
+				logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s",
 						moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId));
 			}
 			else {
