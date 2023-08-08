@@ -66,7 +66,7 @@ public abstract class BucketHistoricalBase implements BucketHistorical {
 					bucketGroup(timeSeriesGroup, bucketSize, singletonCollection, bucketCollection);
 					synchronized (mutex){
 						if (++progressCurrent % 100 == 0)
-							logger.info("{} Progress: {}/{} {}%", getClass().getSimpleName(), progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)));
+							logger.info("{} Progress: {}/{} {}", getClass().getSimpleName(), progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)));
 					}
 					return null;
 				}
@@ -96,7 +96,7 @@ public abstract class BucketHistoricalBase implements BucketHistorical {
 		try{
 			synchronized (mutex){
 				if (++progressCurrent % 100 == 0)
-					logger.info("{} Progress: {}/{} {}%", getClass().getSimpleName(), progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)));
+					logger.info("{} Progress: {}/{} {}", getClass().getSimpleName(), progressCurrent, progressExpected, String.format("%,.2f%%", ((double)progressCurrent/progressExpected*100)));
 			}
 
 			List<Document> timeSeries = getUnwoundTimeSeries(bucketKeyDocument, singletonCollection);
