@@ -1,6 +1,7 @@
 package nl.fews.archivedatabase.mongodb.export;
 
 import nl.fews.archivedatabase.mongodb.export.interfaces.Synchronize;
+import nl.fews.archivedatabase.mongodb.query.MongoDbArchiveDatabaseTimeSeriesReader;
 import nl.fews.archivedatabase.mongodb.shared.database.Collection;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
@@ -55,7 +56,7 @@ import java.util.stream.Collectors;
  *  timeseries stored in mongo db are guaranteed to be in ascending order and unique
  */
 @SuppressWarnings({"unchecked"})
-public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabaseTimeSeriesExporter<TimeSeriesHeader> {
+public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabaseTimeSeriesExporter<TimeSeriesHeader>, AutoCloseable {
 
 	//DEFAULTS THAT MAY BE ADDED TO INTERFACE AND OPTIONALLY OVERRIDDEN LATER
 	static{
@@ -78,12 +79,24 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 	private static final String BASE_NAMESPACE = "nl.fews.archivedatabase.mongodb";
 
 	/**
+	 *
+	 */
+	private static final Object mutex = new Object();
+
+	/**
 	 * Creates a new instance of this interface implementation
 	 */
 	public static MongoDbArchiveDatabaseTimeSeriesExporter create() {
 		if(mongoDbArchiveDatabaseTimeSeriesExporter == null)
 			mongoDbArchiveDatabaseTimeSeriesExporter = new MongoDbArchiveDatabaseTimeSeriesExporter();
 		return mongoDbArchiveDatabaseTimeSeriesExporter;
+	}
+
+	public void close() {
+		synchronized (mutex){
+			MongoDbArchiveDatabaseTimeSeriesExporter.mongoDbArchiveDatabaseTimeSeriesExporter = null;
+			Database.close();
+		}
 	}
 
 	/**

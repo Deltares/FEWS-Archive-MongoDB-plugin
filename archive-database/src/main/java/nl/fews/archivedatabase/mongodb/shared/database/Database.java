@@ -88,6 +88,17 @@ public final class Database {
 	/**
 	 *
 	 */
+	public static void close(){
+		if(Database.mongoClient != null)
+			Database.mongoClient.close();
+		Database.mongoClient = null;
+		Database.database = null;
+		Database.connectionString = null;
+	}
+
+	/**
+	 *
+	 */
 	private static void ensureCollections(){
 		MongoDatabase mongoDatabase = createInternal().getDatabase(database);
 		List<Document> indexOperations = Database.mongoClient.getDatabase("admin").runCommand(

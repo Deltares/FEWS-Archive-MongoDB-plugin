@@ -5,6 +5,7 @@ on:
     branches: [ "FEWS-202102NA" ]
   pull_request:
     branches: [ "FEWS-202102NA" ]
+  workflow_dispatch:
 
 jobs:
   build:
