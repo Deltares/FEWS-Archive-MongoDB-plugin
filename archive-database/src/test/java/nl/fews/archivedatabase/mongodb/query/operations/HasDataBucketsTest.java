@@ -37,7 +37,7 @@ class HasDataBucketsTest {
 	void hasData() throws Exception{
 		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("observed") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		Insert.insertMetaDatas(entries, Map.of());
-		boolean hasData = HasDataBuckets.hasData(
+		boolean hasData = HasDataBuckets.hasNewData(
 				TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL),
 				Map.of("metaData.areaId", List.of("scalar")),
 				new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01"),

@@ -161,7 +161,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				query.put("ensembleId", List.of(ensembleId));
 				query.put("ensembleMemberId", List.of(ensembleMemberId));
 
-				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest(List.of(timeSeriesHeader), period, query));
+				List<Period> existingPeriods = TimeSeriesArrayUtil.getTimeSeriesArrayExistingPeriods(timeSeriesArray).get(false);
+				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest(List.of(timeSeriesHeader), period, existingPeriods, query));
 			}
 		}
 		return getStitchedSimulatedDataImportRequestHavingData(singleExternalDataImportRequests);
@@ -180,15 +181,16 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				Map<String, List<Object>> query = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getQuery();
 				Date startDate = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getPeriod().getStartDate();
 				Date endDate = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getPeriod().getEndDate();
+				List<Period> existingPeriods = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getExistingPeriods();
 
-				if(HasDataBuckets.hasData(collection, query, startDate, endDate))
+				if(HasDataBuckets.hasNewData(collection, query, startDate, endDate, existingPeriods))
 					singleExternalDataImportRequestsHavingData.add(singleExternalDataImportRequest);
 			}
 			catch (Exception ex){
 				throw new RuntimeException(ex);
 			}
 		});
-		return singleExternalDataImportRequestsHavingData;
+		return singleExternalDataImportRequestsHavingData.isEmpty() ? null : singleExternalDataImportRequestsHavingData;
 	}
 
 	/**
@@ -513,7 +515,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				query.put("qualifierId", List.of(qualifierId));
 				query.put("encodedTimeStepId", List.of(encodedTimeStepId));
 
-				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseObservedImportRequest(List.of(timeSeriesHeader), period, query));
+				List<Period> existingPeriods = TimeSeriesArrayUtil.getTimeSeriesArrayExistingPeriods(timeSeriesArray).get(false);
+				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseObservedImportRequest(List.of(timeSeriesHeader), period, existingPeriods, query));
 			}
 		}
 		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = Collections.synchronizedList(new ArrayList<>());
@@ -524,8 +527,9 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				Map<String, List<Object>> query = archiveDatabaseObservedImportRequest.getQuery();
 				Date startDate = archiveDatabaseObservedImportRequest.getPeriod().getStartDate();
 				Date endDate = archiveDatabaseObservedImportRequest.getPeriod().getEndDate();
+				List<Period> existingPeriods = archiveDatabaseObservedImportRequest.getExistingPeriods();
 
-				if(HasDataBuckets.hasData(collection, query, startDate, endDate))
+				if(HasDataBuckets.hasNewData(collection, query, startDate, endDate, existingPeriods))
 					singleExternalDataImportRequestsHavingData.add(singleExternalDataImportRequest);
 			}
 			catch (Exception ex){

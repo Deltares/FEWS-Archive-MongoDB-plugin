@@ -18,11 +18,17 @@ public class MongoDbArchiveDatabaseObservedImportRequest extends ArchiveDatabase
 
 	/**
 	 *
+	 */
+	private final List<Period> existingPeriods;
+
+	/**
+	 *
 	 * @param period period
 	 */
-	public MongoDbArchiveDatabaseObservedImportRequest(List<TimeSeriesHeader> timeSeriesHeaders, Period period, Map<String, List<Object>> query) {
+	public MongoDbArchiveDatabaseObservedImportRequest(List<TimeSeriesHeader> timeSeriesHeaders, Period period, List<Period> existingPeriods, Map<String, List<Object>> query) {
 		super(timeSeriesHeaders, period);
 		this.query = query;
+		this.existingPeriods = existingPeriods;
 	}
 
 	/**
@@ -31,5 +37,13 @@ public class MongoDbArchiveDatabaseObservedImportRequest extends ArchiveDatabase
 	 */
 	public Map<String, List<Object>> getQuery() {
 		return query;
+	}
+
+	/**
+	 *
+	 * @return List<Period>
+	 */
+	public List<Period> getExistingPeriods() {
+		return existingPeriods;
 	}
 }

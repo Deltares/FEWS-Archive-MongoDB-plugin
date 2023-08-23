@@ -29,5 +29,8 @@ hs_err_pid*
 /archive-database/src/test/*.json
 /archive-database/.idea/sonarlint/issuestore
 /archive-database/.idea/workspace.xml
+/archive-database/.idea/sonarlint/securityhotspotstore
+/usage_examples/.idea/workspace.xml
 /usage_examples/node_modules
 /usage_examples/.idea/sonarlint/issuestore
+/usage_examples/.idea/sonarlint/securityhotspotstore

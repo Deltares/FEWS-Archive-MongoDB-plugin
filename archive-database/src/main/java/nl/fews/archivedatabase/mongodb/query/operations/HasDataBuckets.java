@@ -1,8 +1,8 @@
 package nl.fews.archivedatabase.mongodb.query.operations;
 
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
+import nl.wldelft.util.Period;
 import org.bson.Document;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +25,11 @@ public final class HasDataBuckets {
 	 * @param query the query filter having 'and' field keys with 1..n values to 'or' match
 	 * @param startDate event startDate, inclusive
 	 * @param endDate event endDate, inclusive
+	 * @param existingPeriods the existing periods in the database
 	 * @return MongoCursor<Document>
 	 */
-	public static boolean hasData(String collection, Map<String, List<Object>> query, Date startDate, Date endDate) {
+	public static boolean hasNewData(String collection, Map<String, List<Object>> query, Date startDate, Date endDate, List<Period> existingPeriods) {
+
 		Document document = new Document();
 
 		if(startDate != null && endDate != null) {

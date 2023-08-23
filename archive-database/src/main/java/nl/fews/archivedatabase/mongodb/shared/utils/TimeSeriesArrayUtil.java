@@ -10,8 +10,11 @@ import nl.wldelft.util.Box;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.*;
 import org.bson.Document;
-
+import org.javatuples.Pair;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class TimeSeriesArrayUtil {
 
@@ -91,5 +94,31 @@ public class TimeSeriesArrayUtil {
 			}
 		}
 		return timeSeriesArray;
+	}
+
+	/**
+	 *
+	 * @param timeSeriesArray timeSeriesArray
+	 * @return Map<Boolean, List<Period>>, true = missingPeriod, false = existingPeriod
+	 */
+	public static Map<Boolean, List<Period>> getTimeSeriesArrayExistingPeriods(TimeSeriesArray<TimeSeriesHeader> timeSeriesArray){
+		Map<Boolean, List<Period>> existingPeriods = Map.of(true, new ArrayList<>(), false, new ArrayList<>());
+		long[] times = timeSeriesArray.toTimesArray();
+		float[] values = timeSeriesArray.toFloatArray();
+
+		if(values.length == 0)
+			return existingPeriods;
+
+		final Boolean[] prev = {Float.isNaN(values[0])};
+		AtomicInteger group = new AtomicInteger(0);
+
+		IntStream.range(0, times.length).mapToObj(i -> new Pair<>(times[i], values[i])).collect(Collectors.groupingBy(p -> {
+			if(!prev[0].equals(Float.isNaN(p.getValue1()))){
+				group.incrementAndGet();
+			}
+			prev[0] = Float.isNaN(p.getValue1());
+			return group.get();
+		})).forEach((k, v) -> existingPeriods.get(Float.isNaN(v.get(0).getValue1())).add(new Period(v.get(0).getValue0(), v.get(v.size()-1).getValue0())));
+		return existingPeriods;
 	}
 }

@@ -17,11 +17,17 @@ public class MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest exte
 
 	/**
 	 *
+	 */
+	private final List<Period> existingPeriods;
+
+	/**
+	 *
 	 * @param period period
 	 */
-	public MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest(List<TimeSeriesHeader> timeSeriesHeaders, Period period, Map<String, List<Object>> query) {
+	public MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest(List<TimeSeriesHeader> timeSeriesHeaders, Period period, List<Period> existingPeriods, Map<String, List<Object>> query) {
 		super(timeSeriesHeaders, period);
 		this.query = query;
+		this.existingPeriods = existingPeriods;
 	}
 
 	/**
@@ -30,5 +36,13 @@ public class MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest exte
 	 */
 	public Map<String, List<Object>> getQuery() {
 		return query;
+	}
+
+	/**
+	 *
+	 * @return List<Period>
+	 */
+	public List<Period> getExistingPeriods() {
+		return existingPeriods;
 	}
 }
