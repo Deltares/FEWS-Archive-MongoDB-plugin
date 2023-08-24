@@ -22,7 +22,7 @@ public interface TimeSeries {
 	 * @param header FEWS timeseries header
 	 * @param areaId areaId
 	 * @param sourceId sourceId
-	 * @return bson document representing the meta data of this timeseries
+	 * @return bson document representing the metadata of this timeseries
 	 */
 	Document getMetaData(TimeSeriesHeader header, String areaId, String sourceId);
 

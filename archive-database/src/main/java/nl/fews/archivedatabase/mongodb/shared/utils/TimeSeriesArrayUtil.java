@@ -43,8 +43,8 @@ public class TimeSeriesArrayUtil {
 		if(result.containsKey("encodedTimeStepId")) headerRequestBuilder.setTimeStep(TimeStepUtils.decode(result.getString("encodedTimeStepId")));
 
 		if(result.containsKey("forecastTime")) headerRequestBuilder.setExternalForecastTime(result.getDate("forecastTime").getTime());
-		if(result.containsKey("ensembleId") && !result.getString("ensembleId").trim().equals("") && !result.getString("ensembleId").equals("none") && !result.getString("ensembleId").equals("main")) headerRequestBuilder.setEnsembleId(result.getString("ensembleId"));
-		if(result.containsKey("ensembleMemberId") && !result.getString("ensembleMemberId").trim().equals("") && !result.getString("ensembleMemberId").equals("none") && !result.getString("ensembleMemberId").equals("0")) headerRequestBuilder.setEnsembleMember(result.getString("ensembleMemberId"));
+		if(result.containsKey("ensembleId") && !result.getString("ensembleId").trim().isEmpty() && !result.getString("ensembleId").equals("none") && !result.getString("ensembleId").equals("main")) headerRequestBuilder.setEnsembleId(result.getString("ensembleId"));
+		if(result.containsKey("ensembleMemberId") && !result.getString("ensembleMemberId").trim().isEmpty() && !result.getString("ensembleMemberId").equals("none") && !result.getString("ensembleMemberId").equals("0")) headerRequestBuilder.setEnsembleMember(result.getString("ensembleMemberId"));
 
 		if(result.containsKey("runInfo")){
 			Document runInfo = result.get("runInfo", Document.class);
@@ -68,29 +68,29 @@ public class TimeSeriesArrayUtil {
 		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader, timeSeriesHeader.getTimeStep());
 		timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
 
+		if (events.isEmpty())
+			return timeSeriesArray;
 
-		if (!events.isEmpty()){
-			Map<Long, Document> eventLookup = new HashMap<>();
-			long[] times = new long[events.size()];
-			for (int i = 0; i < events.size(); i++) {
-				times[i] = events.get(i).getDate("t").getTime();
-				eventLookup.put(times[i], events.get(i));
-			}
+		Map<Long, Document> eventLookup = new HashMap<>();
+		long[] times = new long[events.size()];
+		for (int i = 0; i < events.size(); i++) {
+			times[i] = events.get(i).getDate("t").getTime();
+			eventLookup.put(times[i], events.get(i));
+		}
 
-			if(timeSeriesHeader.getTimeStep() == IrregularTimeStep.INSTANCE)
-				timeSeriesArray.ensureTimes(times);
-			else
-				timeSeriesArray.ensurePeriod(new Period(times[0], times[times.length-1]));
+		if(timeSeriesHeader.getTimeStep() == IrregularTimeStep.INSTANCE)
+			timeSeriesArray.ensureTimes(times);
+		else
+			timeSeriesArray.ensurePeriod(new Period(times[0], times[times.length-1]));
 
-			for (int i = 0; i < timeSeriesArray.size(); i++)  {
-				if(eventLookup.containsKey(timeSeriesArray.getTime(i))){
-					Document event = eventLookup.get(timeSeriesArray.getTime(i));
-					timeSeriesArray.setValue(i,  event.get("v") != null ? event.getDouble("v").floatValue() : Float.NaN);
-					timeSeriesArray.setFlag(i, event.getInteger("f").byteValue());
-					timeSeriesArray.setComment(i, event.getString("c"));
-					timeSeriesArray.setFlagSource(i, event.get("fs") != null && FlagSource.get(event.getString("fs")) != null ? FlagSource.get(event.getString("fs")).toByte() : timeSeriesArray.getFlagSource(i));
-					timeSeriesArray.setUser(i, event.getString("u"));
-				}
+		for (int i = 0; i < timeSeriesArray.size(); i++)  {
+			if(eventLookup.containsKey(timeSeriesArray.getTime(i))){
+				Document event = eventLookup.get(timeSeriesArray.getTime(i));
+				timeSeriesArray.setValue(i,  event.get("v") != null ? event.getDouble("v").floatValue() : Float.NaN);
+				timeSeriesArray.setFlag(i, event.getInteger("f").byteValue());
+				timeSeriesArray.setComment(i, event.getString("c"));
+				timeSeriesArray.setFlagSource(i, event.get("fs") != null && FlagSource.get(event.getString("fs")) != null ? FlagSource.get(event.getString("fs")).toByte() : timeSeriesArray.getFlagSource(i));
+				timeSeriesArray.setUser(i, event.getString("u"));
 			}
 		}
 		return timeSeriesArray;
@@ -120,5 +120,36 @@ public class TimeSeriesArrayUtil {
 			return group.get();
 		})).forEach((k, v) -> existingPeriods.get(Float.isNaN(v.get(0).getValue1())).add(new Period(v.get(0).getValue0(), v.get(v.size()-1).getValue0())));
 		return existingPeriods;
+	}
+
+	/**
+	 * @param a timeSeriesArray
+	 * @param b timeSeriesArray
+	 * @return true if both empty or all time / value pairs match, else false
+	 */
+	public static boolean timeSeriesArrayValuesAreEqual(TimeSeriesArray<TimeSeriesHeader> a, TimeSeriesArray<TimeSeriesHeader> b){
+		if(a.size() != b.size())
+			return false;
+
+		if(a.isEmpty())
+			return true;
+
+		if(a.getTime(a.size()-1) != b.getTime(a.size()-1))
+			return false;
+
+		if(a.getValue(a.size()-1) != b.getValue(a.size()-1))
+			return false;
+
+		for (int i = 0; i < a.size(); i++) {
+			if(Float.isNaN(a.getValue(i)) && Float.isNaN(b.getValue(i)))
+				continue;
+
+			if(a.getValue(i) != b.getValue(i))
+				return false;
+
+			if(a.getTime(i) != b.getTime(i))
+				return false;
+		}
+		return true;
 	}
 }
