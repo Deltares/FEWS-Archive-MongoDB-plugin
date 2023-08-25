@@ -39,7 +39,7 @@ import org.apache.logging.log4j.Logger;
 /**
  *
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked"})
 public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTimeSeriesReader, AutoCloseable {
 
 	/**

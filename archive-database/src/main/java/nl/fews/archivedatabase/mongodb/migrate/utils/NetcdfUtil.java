@@ -99,6 +99,8 @@ public final class NetcdfUtil {
 			Map<String, Map<String, TimeSeriesRecord>> timeSeriesRecordsMap = new HashMap<>();
 			try (NetcdfFile dataSet = NetcdfFiles.open(netcdfFile.getAbsolutePath())) {
 				for (ArchiveTimeSeriesRecord archiveTimeSeriesRecord : ArchiveIntegrationUtil.createTimeSeries(dataSet, relativePathNetcdFile, false, netcdfContent)) {
+					if(archiveTimeSeriesRecord.getArchiveLocationId().isEmpty())
+						archiveTimeSeriesRecord.getLocationId().forEach(locationId -> archiveTimeSeriesRecord.getArchiveLocationId().add(locationId));
 					IntStream.range(0, archiveTimeSeriesRecord.getArchiveLocationId().size()).forEach(i -> {
 						timeSeriesRecordsMap.putIfAbsent(archiveTimeSeriesRecord.getArchiveLocationId().get(i), new HashMap<>());
 						TimeSeriesRecord timeSeriesRecord = new TimeSeriesRecord(

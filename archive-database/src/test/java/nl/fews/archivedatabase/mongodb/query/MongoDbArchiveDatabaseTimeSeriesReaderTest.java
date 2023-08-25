@@ -13,7 +13,6 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDat
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseSummary;
 import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseForecastImportRequest;
 import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.SimulatedTaskRunInfo;
-import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
 import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
 import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
 import nl.wldelft.util.Box;
@@ -32,7 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
 class MongoDbArchiveDatabaseTimeSeriesReaderTest {
@@ -208,7 +207,7 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 	}
 
 	@Test
-	void getObservedDataImportRequest() throws Exception {
+	void importExternalHistorical() throws Exception {
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
 		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 
@@ -223,18 +222,19 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		timeSeriesHeader.setLocationId("locationId");
 		timeSeriesHeader.setParameterId("parameterId");
 		timeSeriesHeader.setQualifierIds("qualifierId");
-		timeSeriesHeader.setTimeStep(IrregularTimeStep.INSTANCE);
+		timeSeriesHeader.setTimeStep(TimeStepUtils.decode("SETS60"));
 		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader);
 		timeSeriesArray.put(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), 1);
 		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = new TimeSeriesArrays<>(timeSeriesArray);
 		Period period = new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime());
 
-		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = mongoDbArchiveDatabaseTimeSeriesReader.getExternalHistoricalImportRequest(period, timeSeriesArrays);
-		assertEquals(0, singleExternalDataImportRequests.size());
+		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArraysResult = mongoDbArchiveDatabaseTimeSeriesReader.importExternalHistorical(period, timeSeriesArrays);
+		assertFalse(timeSeriesArrays.isEmpty());
+		assertEquals(0, timeSeriesArraysResult.size());
 	}
 
 	@Test
-	void importForecastDataImportRequests() throws Exception {
+	void importExternalForecasting() throws Exception {
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
 		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 
@@ -249,41 +249,13 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		timeSeriesHeader.setLocationId("locationId");
 		timeSeriesHeader.setParameterId("parameterId");
 		timeSeriesHeader.setQualifierIds("qualifierId");
-		timeSeriesHeader.setTimeStep(IrregularTimeStep.INSTANCE);
+		timeSeriesHeader.setTimeStep(TimeStepUtils.decode("SETS60"));
 		timeSeriesHeader.setEnsembleId("ensembleId");
 		timeSeriesHeader.setEnsembleMemberId("ensembleMemberId");
 		timeSeriesHeader.setForecastTime(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime());
 
-		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesHeaders = mongoDbArchiveDatabaseTimeSeriesReader.importExternalForecasting(Set.of(new ArchiveDatabaseForecastImportRequest(List.of(timeSeriesHeader), List.of(""))));
-		//TimeSeriesArrays<TimeSeriesHeader> results = mongoDbArchiveDatabaseTimeSeriesReader.importSingleDataImportRequest(singleExternalDataImportRequests.get(0));
-		assertEquals(0, timeSeriesHeaders.size());
-	}
-
-	@Test
-	void importSingleDataImportRequest() throws Exception {
-		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
-		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
-
-		MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = (MongoDbArchiveDatabaseTimeSeriesReader)mongoDbArchiveDatabase.getArchiveDataBaseTimeSeriesReader();
-
-		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("observed") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-		Insert.insertMetaDatas(entries, Map.of());
-		Database.updateTimeSeriesIndex();
-
-		DefaultTimeSeriesHeader timeSeriesHeader = new DefaultTimeSeriesHeader();
-		timeSeriesHeader.setModuleInstanceId("moduleInstanceId");
-		timeSeriesHeader.setLocationId("locationId");
-		timeSeriesHeader.setParameterId("parameterId");
-		timeSeriesHeader.setQualifierIds("qualifierId");
-		timeSeriesHeader.setTimeStep(IrregularTimeStep.INSTANCE);
-		TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader);
-		timeSeriesArray.put(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), 1);
-		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = new TimeSeriesArrays<>(timeSeriesArray);
-		Period period = new Period(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime(), new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime());
-
-		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = mongoDbArchiveDatabaseTimeSeriesReader.getExternalHistoricalImportRequest(period, timeSeriesArrays);
-		//TimeSeriesArrays<TimeSeriesHeader> results = mongoDbArchiveDatabaseTimeSeriesReader.importSingleDataImportRequest(singleExternalDataImportRequests.get(0));
-		assertEquals(0, singleExternalDataImportRequests.size());
+		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesArrays = mongoDbArchiveDatabaseTimeSeriesReader.importExternalForecasting(Set.of(new ArchiveDatabaseForecastImportRequest(List.of(timeSeriesHeader), List.of(""))));
+		assertEquals(0, timeSeriesArrays.size());
 	}
 
 	@Test

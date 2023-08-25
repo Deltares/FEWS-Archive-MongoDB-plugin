@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Delft_Archive_Util">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/Delft_Archive_Util.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

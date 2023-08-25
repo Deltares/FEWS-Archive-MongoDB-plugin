@@ -49,7 +49,7 @@ public class TestUtil {
 				timeSeriesArray.ensureTimes(LongStream.range(0, 10).map(x -> Instant.parse(year).plus(x*6, ChronoUnit.HOURS).toEpochMilli()).toArray());
 				for (int i = 0; i < 10; i++) {
 					timeSeriesArray.setValue(i,  i);
-					timeSeriesArray.setFlag(i, TimeSeriesArray.FLAG_SOURCE_NONE);
+					timeSeriesArray.setFlag(i, (byte)0);
 					timeSeriesArray.setComment(i, "comment" + i);
 					timeSeriesArray.setUser(i, "user" + i);
 				}
