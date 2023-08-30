@@ -2,9 +2,9 @@ name: publish and test plugin
 
 on:
   push:
-    branches: [ master ]
+    branches: [ "FEWS-202202NA" ]
   pull_request:
-    branches: [ master ]
+    branches: [ "FEWS-202202NA" ]
   workflow_dispatch:
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up JDK 11
+    - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         java-version: 17
