@@ -1,7 +1,6 @@
 package nl.fews.archivedatabase.mongodb.export;
 
 import nl.fews.archivedatabase.mongodb.export.interfaces.Synchronize;
-import nl.fews.archivedatabase.mongodb.query.MongoDbArchiveDatabaseTimeSeriesReader;
 import nl.fews.archivedatabase.mongodb.shared.database.Collection;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;

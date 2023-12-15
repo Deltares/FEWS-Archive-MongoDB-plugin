@@ -6,7 +6,6 @@ import com.mongodb.lang.NonNull;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Read;
 import nl.fews.archivedatabase.mongodb.query.interfaces.Summarize;
 import nl.fews.archivedatabase.mongodb.query.operations.Filter;
-import nl.fews.archivedatabase.mongodb.query.operations.HasDataBuckets;
 import nl.fews.archivedatabase.mongodb.query.operations.ReadBuckets;
 import nl.fews.archivedatabase.mongodb.query.operations.ReadSingletons;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesArrayUtil;
@@ -20,10 +19,7 @@ import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseForecastImportRequest;
-import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseObservedImportRequest;
-import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.ArchiveDatabaseStitchedSimulatedHistoricalImportRequest;
 import nl.wldelft.fews.system.data.externaldatasource.importrequestbuilder.SimulatedTaskRunInfo;
-import nl.wldelft.fews.system.data.requestimporter.SingleExternalDataImportRequest;
 import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
 import nl.wldelft.util.*;
 import nl.wldelft.util.timeseries.*;
@@ -43,7 +39,7 @@ import org.apache.logging.log4j.Logger;
 /**
  *
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked"})
 public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTimeSeriesReader, AutoCloseable {
 
 	/**
@@ -92,125 +88,99 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	}
 
 	/**
-	 *
-	 * @param archiveDatabaseObservedImportRequests archiveDatabaseObservedImportRequests
-	 * @return List<TimeSeriesArrays<TimeSeriesHeader>>
-	 */
-	@Override
-	public List<TimeSeriesArrays<TimeSeriesHeader>> importExternalHistorical(@NonNull Set<ArchiveDatabaseObservedImportRequest> archiveDatabaseObservedImportRequests) {
-		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesArrays = Collections.synchronizedList(new ArrayList<>());
-		archiveDatabaseObservedImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().parallelStream().forEach(fewsTimeSeriesHeader -> {
-			TimeSeriesArrays<TimeSeriesHeader> result = importExternalHistorical(archiveDatabaseImportRequest.getPeriod(), fewsTimeSeriesHeader);
-			if(!result.isEmpty())
-				timeSeriesArrays.add(result);
-		}));
-		return timeSeriesArrays;
-	}
-
-	/**
-	 * @param archiveDatabaseStitchedSimulatedHistoricalImportRequest archiveDatabaseStitchedSimulatedHistoricalImportRequest
-	 * @return List<TimeSeriesArrays<TimeSeriesHeader>>
-	 */
-	@Override
-	public List<TimeSeriesArrays<TimeSeriesHeader>> importStitchedSimulatedHistorical(@NonNull Set<ArchiveDatabaseStitchedSimulatedHistoricalImportRequest> archiveDatabaseStitchedSimulatedHistoricalImportRequest) {
-		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesArrays = Collections.synchronizedList(new ArrayList<>());
-		archiveDatabaseStitchedSimulatedHistoricalImportRequest.parallelStream().forEach(archiveDatabaseImportRequest -> archiveDatabaseImportRequest.getTimeSeriesHeaders().parallelStream().forEach(timeSeriesHeader -> {
-			for (Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor> result:importSimulatedHistoricalStitched(archiveDatabaseImportRequest.getPeriod(), timeSeriesHeader)) {
-				if(!result.getObject0().isEmpty())
-					timeSeriesArrays.add(result.getObject0());
-			}
-		}));
-		return timeSeriesArrays;
-	}
-
-	/**
 	 * @param period period
 	 * @param timeSeriesArrays timeSeriesArrays
-	 * @return List<SingleExternalDataImportRequest>
+	 * @return TimeSeriesArrays<TimeSeriesHeader>
 	 */
 	@Override
-	public List<SingleExternalDataImportRequest> getStitchedSimulatedDataImportRequest(@NonNull Period period, @NonNull TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays) {
+	public TimeSeriesArrays<TimeSeriesHeader> importStitchedSimulatedHistorical(@NonNull Period period, @NonNull TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays) {
 		if(period.getEndDate().before(period.getStartDate()))
 			throw new IllegalArgumentException("End of period must fall on or after start of period");
 
-		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = new ArrayList<>();
-		for (int i = 0; i < timeSeriesArrays.size(); i++) {
+		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArraysResults = Collections.synchronizedList(new ArrayList<>());
+		IntStream.range(0, timeSeriesArrays.size()).parallel().forEach(i -> {
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
-			TimeSeriesHeader timeSeriesHeader = timeSeriesArray.getHeader();
-			Map<String, List<Object>> query = new HashMap<>();
-
-			List<String> qualifierIds = IntStream.range(0, timeSeriesHeader.getQualifierCount()).boxed().map(timeSeriesHeader::getQualifierId).collect(Collectors.toList());
-			String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
-			String moduleInstanceId = timeSeriesHeader.getModuleInstanceId();
-			String locationId = timeSeriesHeader.getLocationId();
-			String parameterId = timeSeriesHeader.getParameterId();
-			String encodedTimeStepId = timeSeriesHeader.getTimeStep() == null ? null : timeSeriesHeader.getTimeStep().getEncoded();
-			String ensembleId = timeSeriesHeader.getEnsembleId() == null || timeSeriesHeader.getEnsembleId().equals("none") || timeSeriesHeader.getEnsembleId().equals("main") ? "" : timeSeriesHeader.getEnsembleId();
-			String ensembleMemberId = timeSeriesHeader.getEnsembleMemberId() == null || timeSeriesHeader.getEnsembleMemberId().equals("none") || timeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : timeSeriesHeader.getEnsembleMemberId();
-
-			if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
-				logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s",
-						moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId));
-			}
-			else {
-				query.put("moduleInstanceId", List.of(moduleInstanceId));
-				query.put("locationId", List.of(locationId));
-				query.put("parameterId", List.of(parameterId));
-				query.put("qualifierId", List.of(qualifierId));
-				query.put("encodedTimeStepId", List.of(encodedTimeStepId));
-				query.put("ensembleId", List.of(ensembleId));
-				query.put("ensembleMemberId", List.of(ensembleMemberId));
-
-				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest(List.of(timeSeriesHeader), period, query));
-			}
-		}
-		return getStitchedSimulatedDataImportRequestHavingData(singleExternalDataImportRequests);
+			Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importStitchedSimulatedHistorical(period, timeSeriesArray.getHeader());
+			if(timeSeriesArrayResult != null && !TimeSeriesArrayUtil.timeSeriesArrayValuesAreEqual(timeSeriesArray, timeSeriesArrayResult.getObject0()))
+				timeSeriesArraysResults.add(timeSeriesArrayResult.getObject0());
+		});
+		return new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArraysResults.toArray(new TimeSeriesArray[0]));
 	}
 
 	/**
-	 * @param singleExternalDataImportRequests singleExternalDataImportRequests
-	 * @return List<SingleExternalDataImportRequest>
+	 * @param period period
+	 * @param timeSeriesHeader timeSeriesHeader
+	 * @return TimeSeriesArray<TimeSeriesHeader>
 	 */
-	private List<SingleExternalDataImportRequest> getStitchedSimulatedDataImportRequestHavingData(List<SingleExternalDataImportRequest> singleExternalDataImportRequests){
-		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = Collections.synchronizedList(new ArrayList<>());
-		singleExternalDataImportRequests.parallelStream().forEach(singleExternalDataImportRequest -> {
-			try{
-				MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest archiveDatabaseStitchedSimulatedHistoricalImportRequest = (MongoDbArchiveDatabaseStitchedSimulatedHistoricalImportRequest)singleExternalDataImportRequest;
-				String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED);
-				Map<String, List<Object>> query = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getQuery();
-				Date startDate = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getPeriod().getStartDate();
-				Date endDate = archiveDatabaseStitchedSimulatedHistoricalImportRequest.getPeriod().getEndDate();
+	private Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> importStitchedSimulatedHistorical(@NonNull Period period, @NonNull TimeSeriesHeader timeSeriesHeader) {
+		List<String> qualifierIds = IntStream.range(0, timeSeriesHeader.getQualifierCount()).mapToObj(timeSeriesHeader::getQualifierId).collect(Collectors.toList());
+		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+		String moduleInstanceId = timeSeriesHeader.getModuleInstanceId();
+		String locationId = timeSeriesHeader.getLocationId();
+		String parameterId = timeSeriesHeader.getParameterId();
+		String encodedTimeStepId = timeSeriesHeader.getTimeStep() == null ? null : timeSeriesHeader.getTimeStep().getEncoded();
+		String ensembleId = timeSeriesHeader.getEnsembleId() == null || timeSeriesHeader.getEnsembleId().equals("none") || timeSeriesHeader.getEnsembleId().equals("main") ? "" : timeSeriesHeader.getEnsembleId();
+		String ensembleMemberId = timeSeriesHeader.getEnsembleMemberId() == null || timeSeriesHeader.getEnsembleMemberId().equals("none") || timeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : timeSeriesHeader.getEnsembleMemberId();
 
-				if(HasDataBuckets.hasData(collection, query, startDate, endDate))
-					singleExternalDataImportRequestsHavingData.add(singleExternalDataImportRequest);
+		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
+			logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s",
+					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId));
+		}
+		else {
+			Map<String, List<Object>> query = new HashMap<>();
+			query.put("moduleInstanceId", List.of(moduleInstanceId));
+			query.put("locationId", List.of(locationId));
+			query.put("parameterId", List.of(parameterId));
+			query.put("qualifierId", List.of(qualifierId));
+			query.put("encodedTimeStepId", List.of(encodedTimeStepId));
+			query.put("ensembleId", List.of(ensembleId));
+			query.put("ensembleMemberId", List.of(ensembleMemberId));
+
+			try(MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED), query, period.getStartDate(), period.getEndDate())) {
+				if (results.hasNext()) {
+					Document result = results.next();
+					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeaderResult = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
+					return new Box<>(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeaderResult.getObject0(), result.getList("timeseries", Document.class)), timeSeriesHeaderResult.getObject1());
+				}
 			}
-			catch (Exception ex){
-				throw new RuntimeException(ex);
-			}
-		});
-		return singleExternalDataImportRequestsHavingData;
+		}
+		return null;
 	}
 
 	/**
 	 *
 	 * @param period period
-	 * @param fewsTimeSeriesHeader fewsTimeSeriesHeader
+	 * @param  timeSeriesArrays timeSeriesArrays
 	 * @return TimeSeriesArrays<TimeSeriesHeader>
 	 */
-	private TimeSeriesArrays<TimeSeriesHeader> importExternalHistorical(@NonNull Period period, @NonNull TimeSeriesHeader fewsTimeSeriesHeader) {
+	@Override
+	public TimeSeriesArrays<TimeSeriesHeader> importExternalHistorical(@NonNull Period period, @NonNull TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays) {
 		if(period.getEndDate().before(period.getStartDate()))
 			throw new IllegalArgumentException("End of period must fall on or after start of period");
 
-		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArrays = new ArrayList<>();
+		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArraysResults = Collections.synchronizedList(new ArrayList<>());
+		IntStream.range(0, timeSeriesArrays.size()).parallel().forEach(i -> {
+			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
+			Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importExternalHistorical(period, timeSeriesArray.getHeader());
+			if (timeSeriesArrayResult != null && !TimeSeriesArrayUtil.timeSeriesArrayValuesAreEqual(timeSeriesArray, timeSeriesArrayResult.getObject0()))
+				timeSeriesArraysResults.add(timeSeriesArrayResult.getObject0());
+		});
+		return new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArraysResults.toArray(new TimeSeriesArray[0]));
+	}
 
-		List<String> qualifierIds = new ArrayList<>();
-		for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
-			qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
+	/**
+	 *
+	 * @param period period
+	 * @param  timeSeriesHeader timeSeriesHeader
+	 * @return TimeSeriesArray<TimeSeriesHeader>
+	 */
+	private Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> importExternalHistorical(@NonNull Period period, @NonNull TimeSeriesHeader timeSeriesHeader) {
+		List<String> qualifierIds = IntStream.range(0, timeSeriesHeader.getQualifierCount()).mapToObj(timeSeriesHeader::getQualifierId).collect(Collectors.toList());
 		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
-		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
-		String locationId = fewsTimeSeriesHeader.getLocationId();
-		String parameterId = fewsTimeSeriesHeader.getParameterId();
-		String encodedTimeStepId = fewsTimeSeriesHeader.getTimeStep() == null ? null : fewsTimeSeriesHeader.getTimeStep().getEncoded();
+		String moduleInstanceId = timeSeriesHeader.getModuleInstanceId();
+		String locationId = timeSeriesHeader.getLocationId();
+		String parameterId = timeSeriesHeader.getParameterId();
+		String encodedTimeStepId = timeSeriesHeader.getTimeStep() == null ? null : timeSeriesHeader.getTimeStep().getEncoded();
 
 		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
 			logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s",
@@ -228,12 +198,29 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			try(MongoCursor<Document> results = new ReadBuckets().read(collection, query, period.getStartDate(), period.getEndDate())) {
 				if (results.hasNext()) {
 					Document result = results.next();
-					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, result);
-					timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeaderResult = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_HISTORICAL, result);
+					return new Box<>(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeaderResult.getObject0(), result.getList("timeseries", Document.class)), timeSeriesHeaderResult.getObject1());
 				}
 			}
 		}
-		return new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0]));
+		return null;
+	}
+
+	/**
+	 *
+	 * @param archiveDatabaseForecastImportRequests archiveDatabaseForecastImportRequests
+	 * @param isStitched isStitched
+	 * @return List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>>
+	 */
+	@Override
+	public List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> importSimulatedHistorical(@NonNull Set<ArchiveDatabaseForecastImportRequest> archiveDatabaseForecastImportRequests, boolean isStitched) {
+		List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> timeSeriesArrays = Collections.synchronizedList(new ArrayList<>());
+		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().parallelStream().forEach(fewsTimeSeriesHeader -> {
+			Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = isStitched ? importStitchedSimulatedHistorical(archiveDatabaseImportRequest.getPeriod(), fewsTimeSeriesHeader) : importSimulatedHistorical(fewsTimeSeriesHeader);
+			if(timeSeriesArrayResult != null)
+				timeSeriesArrays.add(new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArrayResult.getObject0()), timeSeriesArrayResult.getObject1()));
+		}));
+		return timeSeriesArrays;
 	}
 
 	/**
@@ -249,9 +236,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 
 		List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> timeSeriesArrays = Collections.synchronizedList(new ArrayList<>());
 		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest ->
-			IntStream.range(0, archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().size()).parallel().forEach(i ->
-				timeSeriesArrays.addAll(importSimulatedForecasting(archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().get(i), archiveDatabaseImportRequest.getTaskRunIds().get(i)))
-			)
+			IntStream.range(0, archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().size()).parallel().forEach(i -> {
+				Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importSimulatedForecasting(archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().get(i), archiveDatabaseImportRequest.getTaskRunIds().get(i));
+				if(timeSeriesArrayResult != null)
+					timeSeriesArrays.add(new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArrayResult.getObject0()), timeSeriesArrayResult.getObject1()));
+			})
 		);
 		return timeSeriesArrays;
 	}
@@ -262,12 +251,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @param taskRunId taskRunId
 	 * @return Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>
 	 */
-	private List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> importSimulatedForecasting(@NonNull TimeSeriesHeader fewsTimeSeriesHeader, @NonNull String taskRunId) {
-		Map<SystemActivityDescriptor, List<TimeSeriesArray<TimeSeriesHeader>>> timeSeriesArrays = new HashMap<>();
-
-		List<String> qualifierIds = new ArrayList<>();
-		for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
-			qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
+	private Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> importSimulatedForecasting(@NonNull TimeSeriesHeader fewsTimeSeriesHeader, @NonNull String taskRunId) {
+		List<String> qualifierIds = IntStream.range(0, fewsTimeSeriesHeader.getQualifierCount()).mapToObj(fewsTimeSeriesHeader::getQualifierId).collect(Collectors.toList());
 		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
 		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
 		String locationId = fewsTimeSeriesHeader.getLocationId();
@@ -294,27 +279,12 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			try(MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), query)) {
 				if (results.hasNext()) {
 					Document result = results.next();
-					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result);
-					timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
-					timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeaderResult = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_FORECASTING, result);
+					return new Box<>(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeaderResult.getObject0(), result.getList("timeseries", Document.class)), timeSeriesHeaderResult.getObject1());
 				}
 			}
 		}
-		return timeSeriesArrays.entrySet().stream().map(k -> new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(k.getValue().toArray(new TimeSeriesArray[0])), k.getKey())).collect(Collectors.toList());
-	}
-
-	/**
-	 *
-	 * @param archiveDatabaseForecastImportRequests archiveDatabaseForecastImportRequests
-	 * @param isStitched isStitched
-	 * @return List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>>
-	 */
-	@Override
-	public List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> importSimulatedHistorical(@NonNull Set<ArchiveDatabaseForecastImportRequest> archiveDatabaseForecastImportRequests, boolean isStitched) {
-		List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> timeSeriesArrays = Collections.synchronizedList(new ArrayList<>());
-		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().parallelStream().forEach(fewsTimeSeriesHeader ->
-				timeSeriesArrays.addAll(isStitched ? importSimulatedHistoricalStitched(archiveDatabaseImportRequest.getPeriod(), fewsTimeSeriesHeader) : importSimulatedHistorical(fewsTimeSeriesHeader))));
-		return timeSeriesArrays;
+		return null;
 	}
 
 	/**
@@ -322,13 +292,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @param fewsTimeSeriesHeader fewsTimeSeriesHeader
 	 * @return Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>
 	 */
-	private List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> importSimulatedHistorical(@NonNull TimeSeriesHeader fewsTimeSeriesHeader) {
-		Map<SystemActivityDescriptor, List<TimeSeriesArray<TimeSeriesHeader>>> timeSeriesArrays = new HashMap<>();
-		Map<String, List<Object>> query = new HashMap<>();
-
-		List<String> qualifierIds = new ArrayList<>();
-		for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
-			qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
+	private Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> importSimulatedHistorical(@NonNull TimeSeriesHeader fewsTimeSeriesHeader) {
+		List<String> qualifierIds = IntStream.range(0, fewsTimeSeriesHeader.getQualifierCount()).mapToObj(fewsTimeSeriesHeader::getQualifierId).collect(Collectors.toList());
 		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
 		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
 		String locationId = fewsTimeSeriesHeader.getLocationId();
@@ -343,6 +308,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId, forecastTime));
 		}
 		else {
+			Map<String, List<Object>> query = new HashMap<>();
 			query.put("moduleInstanceId", List.of(moduleInstanceId));
 			query.put("locationId", List.of(locationId));
 			query.put("parameterId", List.of(parameterId));
@@ -355,62 +321,12 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			try(MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), query)) {
 				if (results.hasNext()) {
 					Document result = results.next();
-					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
-					timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
-					timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeaderResult = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
+					return new Box<>(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeaderResult.getObject0(), result.getList("timeseries", Document.class)), timeSeriesHeaderResult.getObject1());
 				}
 			}
 		}
-		return timeSeriesArrays.entrySet().stream().map(k -> new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(k.getValue().toArray(new TimeSeriesArray[0])), k.getKey())).collect(Collectors.toList());
-	}
-
-	/**
-	 *
-	 * @param fewsTimeSeriesHeader fewsTimeSeriesHeader
-	 * @param period period
-	 * @return Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>
-	 */
-	private List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> importSimulatedHistoricalStitched(@NonNull Period period, @NonNull TimeSeriesHeader fewsTimeSeriesHeader) {
-		if(period.getEndDate().before(period.getStartDate()))
-			throw new IllegalArgumentException("End of period must fall on or after start of period");
-
-		Map<SystemActivityDescriptor, List<TimeSeriesArray<TimeSeriesHeader>>> timeSeriesArrays = new HashMap<>();
-		Map<String, List<Object>> query = new HashMap<>();
-
-		List<String> qualifierIds = new ArrayList<>();
-		for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
-			qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
-		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
-		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
-		String locationId = fewsTimeSeriesHeader.getLocationId();
-		String parameterId = fewsTimeSeriesHeader.getParameterId();
-		String encodedTimeStepId = fewsTimeSeriesHeader.getTimeStep() == null ? null : fewsTimeSeriesHeader.getTimeStep().getEncoded();
-		String ensembleId = fewsTimeSeriesHeader.getEnsembleId() == null || fewsTimeSeriesHeader.getEnsembleId().equals("none") || fewsTimeSeriesHeader.getEnsembleId().equals("main") ? "" : fewsTimeSeriesHeader.getEnsembleId();
-		String ensembleMemberId = fewsTimeSeriesHeader.getEnsembleMemberId() == null || fewsTimeSeriesHeader.getEnsembleMemberId().equals("none") || fewsTimeSeriesHeader.getEnsembleMemberId().equals("0") ? "" : fewsTimeSeriesHeader.getEnsembleMemberId();
-
-		if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
-			logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s, ensembleId=%s, ensembleMemberId=%s",
-					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId));
-		}
-		else {
-			query.put("moduleInstanceId", List.of(moduleInstanceId));
-			query.put("locationId", List.of(locationId));
-			query.put("parameterId", List.of(parameterId));
-			query.put("qualifierId", List.of(qualifierId));
-			query.put("encodedTimeStepId", List.of(encodedTimeStepId));
-			query.put("ensembleId", List.of(ensembleId));
-			query.put("ensembleMemberId", List.of(ensembleMemberId));
-
-			try(MongoCursor<Document> results = new ReadBuckets().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED), query, period.getStartDate(), period.getEndDate())) {
-				if (results.hasNext()) {
-					Document result = results.next();
-					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL, result);
-					timeSeriesArrays.putIfAbsent(timeSeriesHeader.getObject1(), new ArrayList<>());
-					timeSeriesArrays.get(timeSeriesHeader.getObject1()).add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
-				}
-			}
-		}
-		return timeSeriesArrays.keySet().stream().map(k -> new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArrays.get(k).toArray(new TimeSeriesArray[0])), k)).collect(Collectors.toList());
+		return null;
 	}
 
 	/**
@@ -422,9 +338,9 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	public List<TimeSeriesArrays<TimeSeriesHeader>> importExternalForecasting(Set<ArchiveDatabaseForecastImportRequest> archiveDatabaseForecastImportRequests) {
 		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesArrays = Collections.synchronizedList(new ArrayList<>());
 		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().parallelStream().forEach(fewsTimeSeriesHeader -> {
-			TimeSeriesArrays<TimeSeriesHeader> result = importExternalForecasting(fewsTimeSeriesHeader);
-			if(!result.isEmpty())
-				timeSeriesArrays.add(result);
+			Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importExternalForecasting(fewsTimeSeriesHeader);
+			if(timeSeriesArrayResult != null && !timeSeriesArrayResult.getObject0().isEmpty())
+				timeSeriesArrays.add(new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArrayResult.getObject0()));
 		}));
 		return timeSeriesArrays;
 	}
@@ -434,14 +350,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @param fewsTimeSeriesHeader fewsTimeSeriesHeader
 	 * @return Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>
 	 */
-	private TimeSeriesArrays<TimeSeriesHeader> importExternalForecasting(@NonNull TimeSeriesHeader fewsTimeSeriesHeader) {
-		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArrays = new ArrayList<>();
-
-		Map<String, List<Object>> query = new HashMap<>();
-
-		List<String> qualifierIds = new ArrayList<>();
-		for (int j = 0; j < fewsTimeSeriesHeader.getQualifierCount(); j++)
-			qualifierIds.add(fewsTimeSeriesHeader.getQualifierId(j));
+	private Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> importExternalForecasting(@NonNull TimeSeriesHeader fewsTimeSeriesHeader) {
+		List<String> qualifierIds = IntStream.range(0, fewsTimeSeriesHeader.getQualifierCount()).mapToObj(fewsTimeSeriesHeader::getQualifierId).collect(Collectors.toList());
 		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
 		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
 		String locationId = fewsTimeSeriesHeader.getLocationId();
@@ -456,6 +366,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 					moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId, ensembleId, ensembleMemberId, forecastTime));
 		}
 		else {
+			Map<String, List<Object>> query = new HashMap<>();
 			query.put("moduleInstanceId", List.of(moduleInstanceId));
 			query.put("locationId", List.of(locationId));
 			query.put("parameterId", List.of(parameterId));
@@ -468,71 +379,12 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			try(MongoCursor<Document> results = new ReadSingletons().read(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_FORECASTING), query)) {
 				if (results.hasNext()) {
 					Document result = results.next();
-					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING, result);
-					timeSeriesArrays.add(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), result.getList("timeseries", Document.class)));
+					Box<TimeSeriesHeader, SystemActivityDescriptor> timeSeriesHeaderResult = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, nl.wldelft.fews.system.data.timeseries.TimeSeriesType.EXTERNAL_FORECASTING, result);
+					return new Box<>(TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeaderResult.getObject0(), result.getList("timeseries", Document.class)), timeSeriesHeaderResult.getObject1());
 				}
 			}
 		}
-		return new TimeSeriesArrays<>(timeSeriesArrays.toArray(new TimeSeriesArray[0]));
-	}
-
-	/**
-	 *
-	 * @param period period
-	 * @param timeSeriesArrays timeSeriesArrays
-	 * @return List<SingleExternalDataImportRequest>
-	 */
-	@Override
-	public List<SingleExternalDataImportRequest> getExternalHistoricalImportRequest(@NonNull Period period, @NonNull TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays) {
-		if(period.getEndDate().before(period.getStartDate()))
-			throw new IllegalArgumentException("End of period must fall on or after start of period");
-
-		List<SingleExternalDataImportRequest> singleExternalDataImportRequests = new ArrayList<>();
-		for (int i = 0; i < timeSeriesArrays.size(); i++) {
-			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
-			TimeSeriesHeader timeSeriesHeader = timeSeriesArray.getHeader();
-			Map<String, List<Object>> query = new HashMap<>();
-
-			List<String> qualifierIds = new ArrayList<>();
-			for (int j = 0; j < timeSeriesHeader.getQualifierCount(); j++)
-				qualifierIds.add(timeSeriesHeader.getQualifierId(j));
-			String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
-			String moduleInstanceId = timeSeriesHeader.getModuleInstanceId();
-			String locationId = timeSeriesHeader.getLocationId();
-			String parameterId = timeSeriesHeader.getParameterId();
-			String encodedTimeStepId = timeSeriesHeader.getTimeStep() == null ? null : timeSeriesHeader.getTimeStep().getEncoded();
-
-			if (moduleInstanceId == null || locationId == null || parameterId == null || encodedTimeStepId == null){
-				logger.debug(String.format("Missing Required Query Value: moduleInstanceId=%s, locationId=%s, parameterId=%s, encodedTimeStepId=%s, qualifierId=%s",
-						moduleInstanceId, locationId, parameterId, encodedTimeStepId, qualifierId));
-			}
-			else {
-				query.put("moduleInstanceId", List.of(moduleInstanceId));
-				query.put("locationId", List.of(locationId));
-				query.put("parameterId", List.of(parameterId));
-				query.put("qualifierId", List.of(qualifierId));
-				query.put("encodedTimeStepId", List.of(encodedTimeStepId));
-
-				singleExternalDataImportRequests.add(new MongoDbArchiveDatabaseObservedImportRequest(List.of(timeSeriesHeader), period, query));
-			}
-		}
-		List<SingleExternalDataImportRequest> singleExternalDataImportRequestsHavingData = Collections.synchronizedList(new ArrayList<>());
-		singleExternalDataImportRequests.parallelStream().forEach(singleExternalDataImportRequest -> {
-			try{
-				MongoDbArchiveDatabaseObservedImportRequest archiveDatabaseObservedImportRequest = (MongoDbArchiveDatabaseObservedImportRequest)singleExternalDataImportRequest;
-				String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
-				Map<String, List<Object>> query = archiveDatabaseObservedImportRequest.getQuery();
-				Date startDate = archiveDatabaseObservedImportRequest.getPeriod().getStartDate();
-				Date endDate = archiveDatabaseObservedImportRequest.getPeriod().getEndDate();
-
-				if(HasDataBuckets.hasData(collection, query, startDate, endDate))
-					singleExternalDataImportRequestsHavingData.add(singleExternalDataImportRequest);
-			}
-			catch (Exception ex){
-				throw new RuntimeException(ex);
-			}
-		});
-		return singleExternalDataImportRequestsHavingData;
+		return null;
 	}
 
 	/**
@@ -791,7 +643,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				append("moduleInstanceId", new Document("$in", new ArrayList<>(moduleInstanceIds))).
 				append("ensembleId", ensembleId).
 				append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()), String.class).forEach(ensembleMemberId -> {
-					if(ensembleMemberId != null && !ensembleMemberId.trim().equals("none") && !ensembleMemberId.trim().equals("0") && !ensembleMemberId.trim().equals(""))
+					if(ensembleMemberId != null && !ensembleMemberId.trim().equals("none") && !ensembleMemberId.trim().equals("0") && !ensembleMemberId.trim().isEmpty())
 						ensembleMembers.add(ensembleMemberId);
 				});
 		return ensembleMembers;
