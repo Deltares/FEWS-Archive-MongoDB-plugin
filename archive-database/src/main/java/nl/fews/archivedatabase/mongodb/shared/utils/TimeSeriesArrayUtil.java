@@ -152,4 +152,14 @@ public class TimeSeriesArrayUtil {
 		}
 		return true;
 	}
+
+	/**
+	 * @param existing timeSeriesArray
+	 * @param current timeSeriesArray
+	 * @return true if current contains new time / value pairs, else false
+	 */
+	public static boolean timeSeriesArrayValuesHasNew(TimeSeriesArray<TimeSeriesHeader> existing, TimeSeriesArray<TimeSeriesHeader> current){
+		Map<Long, Float> existingNonNanTimes = IntStream.range(0, existing.size()).boxed().filter(i -> !Float.isNaN(existing.getValue(i))).collect(Collectors.toMap(existing::getTime, existing::getValue));
+		return IntStream.range(0, current.size()).boxed().filter(i -> !Float.isNaN(current.getValue(i))).anyMatch(i -> !existingNonNanTimes.containsKey(current.getTime(i)));
+	}
 }
