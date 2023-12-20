@@ -69,7 +69,7 @@ public final class NetcdfUtil {
 		timeSeriesHeader.setLocationId(timeSeriesRecord.getLocationId());
 		timeSeriesHeader.setParameterId(timeSeriesRecord.getParameterId());
 		timeSeriesHeader.setTimeStep(TimeStepUtils.decode(timeSeriesRecord.getTimeStepId()));
-		timeSeriesHeader.setQualifierIds(timeSeriesRecord.getQualifierIds() == null || timeSeriesRecord.getQualifierIds().equals("none") || timeSeriesRecord.getQualifierIds().equals("") ?  new String[]{} : qualifierSplit.split(timeSeriesRecord.getQualifierIds()));
+		timeSeriesHeader.setQualifierIds(timeSeriesRecord.getQualifierIds() == null || timeSeriesRecord.getQualifierIds().equals("none") || timeSeriesRecord.getQualifierIds().isEmpty() ?  new String[]{} : qualifierSplit.split(timeSeriesRecord.getQualifierIds()));
 		timeSeriesHeader.setEnsembleId(timeSeriesRecord.getEnsembleId() == null || timeSeriesRecord.getEnsembleId().equals("none") || timeSeriesRecord.getEnsembleId().equals("main") ? null : timeSeriesRecord.getEnsembleId());
 		timeSeriesHeader.setModuleInstanceId(timeSeriesRecord.getModuleInstanceId());
 

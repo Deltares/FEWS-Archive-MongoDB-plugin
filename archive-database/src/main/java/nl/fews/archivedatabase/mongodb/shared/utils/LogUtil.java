@@ -5,7 +5,6 @@ import org.bson.Document;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public final class LogUtil {
 
@@ -23,7 +22,7 @@ public final class LogUtil {
 	public static Document getLogMessageJson(Exception ex, Map<String, Object> extra){
 		Document message = new Document(extra);
 		message.put("errorMessage", ex.getMessage());
-		message.put("stackTrace", Arrays.stream(ex.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList()));
+		message.put("stackTrace", Arrays.stream(ex.getStackTrace()).map(StackTraceElement::toString).toList());
 		return message;
 	}
 
@@ -38,7 +37,7 @@ public final class LogUtil {
 		message.put("errorMessage", ex.getError().getMessage());
 		message.put("errorDetails", ex.getError().getDetails());
 		message.put("errorCategory", ex.getError().getCategory().toString());
-		message.put("stackTrace", Arrays.stream(ex.getStackTrace()).map(StackTraceElement::toString).collect(Collectors.toList()));
+		message.put("stackTrace", Arrays.stream(ex.getStackTrace()).map(StackTraceElement::toString).toList());
 		return message;
 	}
 }

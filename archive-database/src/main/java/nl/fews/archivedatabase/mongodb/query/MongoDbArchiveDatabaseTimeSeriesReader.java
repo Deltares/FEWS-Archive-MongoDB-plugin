@@ -113,8 +113,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @return TimeSeriesArray<TimeSeriesHeader>
 	 */
 	private Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> importStitchedSimulatedHistorical(@NonNull Period period, @NonNull TimeSeriesHeader timeSeriesHeader) {
-		List<String> qualifierIds = IntStream.range(0, timeSeriesHeader.getQualifierCount()).mapToObj(timeSeriesHeader::getQualifierId).collect(Collectors.toList());
-		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+		List<String> qualifierIds = IntStream.range(0, timeSeriesHeader.getQualifierCount()).mapToObj(timeSeriesHeader::getQualifierId).toList();
+		String qualifierId = new JSONArray(qualifierIds.stream().sorted().toList()).toString();
 		String moduleInstanceId = timeSeriesHeader.getModuleInstanceId();
 		String locationId = timeSeriesHeader.getLocationId();
 		String parameterId = timeSeriesHeader.getParameterId();
@@ -175,8 +175,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @return TimeSeriesArray<TimeSeriesHeader>
 	 */
 	private Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> importExternalHistorical(@NonNull Period period, @NonNull TimeSeriesHeader timeSeriesHeader) {
-		List<String> qualifierIds = IntStream.range(0, timeSeriesHeader.getQualifierCount()).mapToObj(timeSeriesHeader::getQualifierId).collect(Collectors.toList());
-		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+		List<String> qualifierIds = IntStream.range(0, timeSeriesHeader.getQualifierCount()).mapToObj(timeSeriesHeader::getQualifierId).toList();
+		String qualifierId = new JSONArray(qualifierIds.stream().sorted().toList()).toString();
 		String moduleInstanceId = timeSeriesHeader.getModuleInstanceId();
 		String locationId = timeSeriesHeader.getLocationId();
 		String parameterId = timeSeriesHeader.getParameterId();
@@ -252,8 +252,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @return Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>
 	 */
 	private Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> importSimulatedForecasting(@NonNull TimeSeriesHeader fewsTimeSeriesHeader, @NonNull String taskRunId) {
-		List<String> qualifierIds = IntStream.range(0, fewsTimeSeriesHeader.getQualifierCount()).mapToObj(fewsTimeSeriesHeader::getQualifierId).collect(Collectors.toList());
-		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+		List<String> qualifierIds = IntStream.range(0, fewsTimeSeriesHeader.getQualifierCount()).mapToObj(fewsTimeSeriesHeader::getQualifierId).toList();
+		String qualifierId = new JSONArray(qualifierIds.stream().sorted().toList()).toString();
 		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
 		String locationId = fewsTimeSeriesHeader.getLocationId();
 		String parameterId = fewsTimeSeriesHeader.getParameterId();
@@ -293,8 +293,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @return Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>
 	 */
 	private Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> importSimulatedHistorical(@NonNull TimeSeriesHeader fewsTimeSeriesHeader) {
-		List<String> qualifierIds = IntStream.range(0, fewsTimeSeriesHeader.getQualifierCount()).mapToObj(fewsTimeSeriesHeader::getQualifierId).collect(Collectors.toList());
-		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+		List<String> qualifierIds = IntStream.range(0, fewsTimeSeriesHeader.getQualifierCount()).mapToObj(fewsTimeSeriesHeader::getQualifierId).toList();
+		String qualifierId = new JSONArray(qualifierIds.stream().sorted().toList()).toString();
 		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
 		String locationId = fewsTimeSeriesHeader.getLocationId();
 		String parameterId = fewsTimeSeriesHeader.getParameterId();
@@ -351,8 +351,8 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	 * @return Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>
 	 */
 	private Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> importExternalForecasting(@NonNull TimeSeriesHeader fewsTimeSeriesHeader) {
-		List<String> qualifierIds = IntStream.range(0, fewsTimeSeriesHeader.getQualifierCount()).mapToObj(fewsTimeSeriesHeader::getQualifierId).collect(Collectors.toList());
-		String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+		List<String> qualifierIds = IntStream.range(0, fewsTimeSeriesHeader.getQualifierCount()).mapToObj(fewsTimeSeriesHeader::getQualifierId).toList();
+		String qualifierId = new JSONArray(qualifierIds.stream().sorted().toList()).toString();
 		String moduleInstanceId = fewsTimeSeriesHeader.getModuleInstanceId();
 		String locationId = fewsTimeSeriesHeader.getLocationId();
 		String parameterId = fewsTimeSeriesHeader.getParameterId();
@@ -407,7 +407,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			List<String> qualifierIds = new ArrayList<>();
 			for (int j = 0; j < timeSeriesHeader.getQualifierCount(); j++)
 				qualifierIds.add(timeSeriesHeader.getQualifierId(j));
-			String qualifierId = new JSONArray(qualifierIds.stream().sorted().collect(Collectors.toList())).toString();
+			String qualifierId = new JSONArray(qualifierIds.stream().sorted().toList()).toString();
 			String moduleInstanceId = timeSeriesHeader.getModuleInstanceId();
 			String locationId = timeSeriesHeader.getLocationId();
 			String parameterId = timeSeriesHeader.getParameterId();
@@ -488,7 +488,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				query.put("moduleInstanceId", new ArrayList<>(archiveDatabaseResultSearchParameters.getModuleInstanceIds()));
 
 			if(archiveDatabaseResultSearchParameters.getTimeSteps() != null && !archiveDatabaseResultSearchParameters.getTimeSteps().isEmpty())
-				query.put("encodedTimeStepId", new ArrayList<>(archiveDatabaseResultSearchParameters.getTimeSteps().stream().map(TimeStep::getEncoded).collect(Collectors.toList())));
+				query.put("encodedTimeStepId", new ArrayList<>(archiveDatabaseResultSearchParameters.getTimeSteps().stream().map(TimeStep::getEncoded).toList()));
 
 			Read read = (Read)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "query.operations", String.format("Read%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
 			MongoCursor<Document> result = read.read(collection, query, archiveDatabaseResultSearchParameters.getPeriod().getStartDate(), archiveDatabaseResultSearchParameters.getPeriod().getEndDate());
@@ -528,11 +528,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				query.put("moduleInstanceId", new ArrayList<>(archiveDatabaseResultSearchParameters.getModuleInstanceIds()));
 
 			if(archiveDatabaseResultSearchParameters.getTimeSteps() != null && !archiveDatabaseResultSearchParameters.getTimeSteps().isEmpty())
-				query.put("encodedTimeStepId", new ArrayList<>(archiveDatabaseResultSearchParameters.getTimeSteps().stream().map(TimeStep::getEncoded).collect(Collectors.toList())));
+				query.put("encodedTimeStepId", new ArrayList<>(archiveDatabaseResultSearchParameters.getTimeSteps().stream().map(TimeStep::getEncoded).toList()));
 
 			List<String> bucketKeys = List.of("bucketSize", "bucket");
 			List<String> collectionKeys = Database.getCollectionKeys(collection);
-			List<String> countKeys = collectionKeys.stream().anyMatch(bucketKeys::contains) ? collectionKeys.stream().filter(s -> !bucketKeys.contains(s)).collect(Collectors.toList()) : List.of();
+			List<String> countKeys = collectionKeys.stream().anyMatch(bucketKeys::contains) ? collectionKeys.stream().filter(s -> !bucketKeys.contains(s)).toList() : List.of();
 
 			Map<String, List<String>> distinctKeyFields = Map.of(
 					"parameterId", List.of("parameterId"),
@@ -642,7 +642,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				append("parameterId", parameterId).
 				append("moduleInstanceId", new Document("$in", new ArrayList<>(moduleInstanceIds))).
 				append("ensembleId", ensembleId).
-				append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()), String.class).forEach(ensembleMemberId -> {
+				append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().toList()).toString()), String.class).forEach(ensembleMemberId -> {
 					if(ensembleMemberId != null && !ensembleMemberId.trim().equals("none") && !ensembleMemberId.trim().equals("0") && !ensembleMemberId.trim().isEmpty())
 						ensembleMembers.add(ensembleMemberId);
 				});
@@ -669,7 +669,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 
 		Document query = new Document("locationId", locationId);
 		query.append("parameterId", parameterId);
-		query.append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString());
+		query.append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().toList()).toString());
 		if(collectionKeys.contains("ensembleId"))
 			query.append("ensembleId", ensembleId);
 
@@ -697,7 +697,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		List<SimulatedTaskRunInfo> simulatedTaskRunInfos = new ArrayList<>();
 
 		Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL), List.of(
-				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("encodedTimeStepId", encodedTimeStepId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
+				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("encodedTimeStepId", encodedTimeStepId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().toList()).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
 				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$taskRunId").append("forecastTime", "$forecastTime").append("dispatchTime", "$runInfo.dispatchTime"))),
 				new Document("$sort", new Document("_id.forecastTime", -1).append("_id.taskRunId", 1).append("_id.workflowId", 1).append("_id.dispatchTime", 1)),
 				new Document("$limit", forecastCount),
@@ -705,7 +705,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 				simulatedTaskRunInfos.add(new SimulatedTaskRunInfo(result.getString("workflowId"), result.getString("taskRunId"), result.getDate("forecastTime").getTime(), result.getDate("dispatchTime").getTime())));
 
 		Database.aggregate(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING), List.of(
-				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("encodedTimeStepId", encodedTimeStepId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
+				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("encodedTimeStepId", encodedTimeStepId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().toList()).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
 				new Document("$group", new Document("_id", new Document("workflowId", "$runInfo.workflowId").append("taskRunId", "$taskRunId").append("forecastTime", "$forecastTime").append("dispatchTime", "$runInfo.dispatchTime"))),
 				new Document("$sort", new Document("_id.forecastTime", -1).append("_id.taskRunId", 1).append("_id.workflowId", 1).append("_id.dispatchTime", 1)),
 				new Document("$limit", forecastCount),
@@ -736,7 +736,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 
 		String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType));
 		Database.aggregate(collection, List.of(
-				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().collect(Collectors.toList())).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
+				new Document("$match", new Document("locationId", locationId).append("parameterId", parameterId).append("moduleInstanceId", moduleInstanceId).append("ensembleId", ensembleId).append("qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().toList()).toString()).append("forecastTime", new Document("$gte", period.getStartDate()).append("$lte", period.getEndDate()))),
 				new Document("$group", new Document("_id", "$forecastTime")),
 				new Document("$sort", new Document("_id", -1)),
 				new Document("$limit", forecastCount))).forEach(result ->

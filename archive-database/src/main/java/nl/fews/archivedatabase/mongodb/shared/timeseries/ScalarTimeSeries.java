@@ -16,7 +16,6 @@ import org.bson.Document;
 import org.json.JSONArray;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -44,7 +43,7 @@ public abstract class ScalarTimeSeries implements TimeSeries {
 		String locationId = header.getLocationId();
 		String parameterId = header.getParameterId();
 		String encodedTimeStepId = header.getTimeStep().getEncoded();
-		List<String> qualifierIds = IntStream.range(0, header.getQualifierCount()).mapToObj(header::getQualifierId).sorted().collect(Collectors.toList());
+		List<String> qualifierIds = IntStream.range(0, header.getQualifierCount()).mapToObj(header::getQualifierId).sorted().toList();
 		String qualifierId = new JSONArray(qualifierIds).toString();
 
 		if (moduleInstanceId == null || moduleInstanceId.equals(""))
