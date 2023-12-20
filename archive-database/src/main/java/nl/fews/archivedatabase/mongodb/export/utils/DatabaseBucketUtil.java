@@ -39,8 +39,8 @@ public final class DatabaseBucketUtil {
 
 		existingDocument.append("startTime", sortedTimeseries.get(0).getDate("t"));
 		existingDocument.append("endTime", sortedTimeseries.get(sortedTimeseries.size()-1).getDate("t"));
-		if(existingDocument.containsKey("localStartTime")) existingDocument.append("localStartTime", sortedTimeseries.get(0).getDate("lt"));
-		if(existingDocument.containsKey("localEndTime")) existingDocument.append("localEndTime", sortedTimeseries.get(sortedTimeseries.size()-1).getDate("lt"));
+		if(sortedTimeseries.get(0).containsKey("lt")) existingDocument.append("localStartTime", sortedTimeseries.get(0).getDate("lt"));
+		if(sortedTimeseries.get(sortedTimeseries.size()-1).containsKey("lt")) existingDocument.append("localEndTime", sortedTimeseries.get(sortedTimeseries.size()-1).getDate("lt"));
 		existingDocument.append("timeseries", sortedTimeseries);
 
 		return existingDocument;

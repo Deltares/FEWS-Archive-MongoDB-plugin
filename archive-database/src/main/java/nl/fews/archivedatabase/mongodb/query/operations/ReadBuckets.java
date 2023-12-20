@@ -112,13 +112,13 @@ public final class ReadBuckets implements Read {
 				bucketKeys.forEach(next::remove);
 				if(events.isEmpty()) {
 					next.append("startTime", new Date(Long.MIN_VALUE)).append("endTime", new Date(Long.MIN_VALUE));
-					if (next.containsKey("localStartTime")) next.append("localStartTime", new Date(Long.MIN_VALUE));
-					if (next.containsKey("localEndTime")) next.append("localEndTime", new Date(Long.MIN_VALUE));
+					next.append("localStartTime", new Date(Long.MIN_VALUE));
+					next.append("localEndTime", new Date(Long.MIN_VALUE));
 				}
 				else{
 					next.append("startTime", events.get(0).getDate("t")).append("endTime", events.get(events.size() - 1).getDate("t"));
-					if (next.containsKey("localStartTime") && events.get(0).containsKey("lt")) next.append("localStartTime", events.get(0).getDate("lt"));
-					if (next.containsKey("localEndTime") && events.get(events.size() - 1).containsKey("lt")) next.append("localEndTime", events.get(events.size() - 1).getDate("lt"));
+					if (events.get(0).containsKey("lt")) next.append("localStartTime", events.get(0).getDate("lt"));
+					if (events.get(events.size() - 1).containsKey("lt")) next.append("localEndTime", events.get(events.size() - 1).getDate("lt"));
 				}
 				next.append("timeseries", events);
 			}
