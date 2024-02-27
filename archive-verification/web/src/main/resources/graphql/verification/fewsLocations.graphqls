@@ -1,0 +1,9 @@
+type FewsLocations {
+	_id: ID!
+	locations: JSON!
+	lastUpdated: DateTime!
+}
+extend type Query {
+	fewsLocationsById(_id: ID!): FewsLocations
+	fewsLocationsN: [FewsLocations]
+}

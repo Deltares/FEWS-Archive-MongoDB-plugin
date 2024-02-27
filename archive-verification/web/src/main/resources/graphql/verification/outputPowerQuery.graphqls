@@ -1,0 +1,19 @@
+type OutputPowerQuery {
+	_id: ID!
+	Study: String!
+	Name: String!
+	Month: String!
+	Expression: String!
+}
+extend type Query {
+	outputPowerQueryById(_id: ID!): OutputPowerQuery
+	outputPowerQueryByStudyNameMonth(study: String!, name: String!, month: String!): OutputPowerQuery
+	outputPowerQueryNByStudy(study: String!): [OutputPowerQuery]
+	outputPowerQueryNByStudyName(study: String!, name: String!): [OutputPowerQuery]
+	outputPowerQueryN: [OutputPowerQuery]
+}
+extend type Mutation {
+	createOutputPowerQuery(study: String!, name: String!, month: String!, expression: String!): ID
+	updateOutputPowerQuery(_id: ID!, study: String!, name: String!, month: String!, expression: String!): Int
+	deleteOutputPowerQuery(_id: ID!): Int
+}

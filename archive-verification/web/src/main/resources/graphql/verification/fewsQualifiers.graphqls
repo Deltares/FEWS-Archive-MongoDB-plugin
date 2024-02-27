@@ -1,0 +1,9 @@
+type FewsQualifiers {
+	_id: ID!
+	qualifiers: JSON!
+	lastUpdated: DateTime!
+}
+extend type Query {
+	fewsQualifiersById(_id: ID!): FewsQualifiers
+	fewsQualifiersN: [FewsQualifiers]
+}

@@ -1,0 +1,2013 @@
+{
+  "name": "SemanticModel",
+  "compatibilityLevel": 1600,
+  "model": {
+    "name": "Verification_HP_SixHour",
+    "culture": "en-US",
+    "dataSources": [
+      {
+        "type": "structured",
+        "name": "dataSource",
+        "maxConnections": 32,
+        "connectionDetails": {
+          "protocol": "odbc",
+          "address": {
+            "options": {
+              "driver": "MongoDB ODBC 1.4.5 ANSI Driver",
+              "server": "chadwhh01.main.tva.gov",
+              "port": "3308"
+            }
+          },
+          "authentication": null,
+          "query": null
+        },
+        "credential": {
+          "AuthenticationKind": "UsernamePassword",
+          "kind": "Odbc",
+          "path": "driver={MongoDB ODBC 1.4.5 ANSI Driver};port=3308;server=chadwhh01.main.tva.gov",
+          "Username": "mongo_admin"
+        }
+      }
+    ],
+    "tables": [
+      {
+        "name": "Forecast",
+        "columns": [
+          {
+            "name": "forecast",
+            "dataType": "string",
+            "sourceColumn": "forecast"
+          },
+          {
+            "name": "forecastId",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "forecastId"
+          },
+          {
+            "name": "ensemble",
+            "dataType": "string",
+            "sourceColumn": "ensemble"
+          },
+          {
+            "name": "ensembleMember",
+            "dataType": "string",
+            "sourceColumn": "ensembleMember"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Forecast",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Forecast = Table.Sort(Table.Distinct(Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Forecast_Default\")",
+                "    })), {\"forecast\",\"ensemble\",\"ensembleMember\"})",
+                "",
+                "in",
+                "    Forecast"
+              ]
+            }
+          }
+        ],
+        "hierarchies": [
+          {
+            "name": "ForecastEnsemble",
+            "levels": [
+              {
+                "name": "forecast",
+                "ordinal": 0,
+                "column": "forecast"
+              },
+              {
+                "name": "ensemble",
+                "ordinal": 1,
+                "column": "ensemble"
+              },
+              {
+                "name": "ensembleMember",
+                "ordinal": 2,
+                "column": "ensembleMember"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ForecastClass",
+        "columns": [
+          {
+            "name": "class",
+            "dataType": "string",
+            "sourceColumn": "class"
+          },
+          {
+            "name": "operator",
+            "dataType": "string",
+            "sourceColumn": "operator"
+          },
+          {
+            "name": "order",
+            "dataType": "int64",
+            "sourceColumn": "order"
+          },
+          {
+            "name": "threshold",
+            "dataType": "double",
+            "sourceColumn": "threshold"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "ForecastClass",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Class = Table.Sort(Odbc.Query(Source, \"SELECT * FROM Verification.HP_SixHour_Class\"), {\"order\"})",
+                "",
+                "in",
+                "    Class"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "ObservedClass",
+        "columns": [
+          {
+            "name": "class",
+            "dataType": "string",
+            "sourceColumn": "class"
+          },
+          {
+            "name": "operator",
+            "dataType": "string",
+            "sourceColumn": "operator"
+          },
+          {
+            "name": "order",
+            "dataType": "int64",
+            "sourceColumn": "order"
+          },
+          {
+            "name": "threshold",
+            "dataType": "double",
+            "sourceColumn": "threshold"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "ObservedClass",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Class = Table.Sort(Odbc.Query(Source, \"SELECT * FROM Verification.HP_SixHour_Class\"), {\"order\"})",
+                "",
+                "in",
+                "    Class"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "ContingencyMatrixClass",
+        "columns": [
+          {
+            "name": "class",
+            "dataType": "string",
+            "sourceColumn": "class",
+            "sortByColumn": "order"
+          },
+          {
+            "name": "operator",
+            "dataType": "string",
+            "sourceColumn": "operator"
+          },
+          {
+            "name": "order",
+            "dataType": "int64",
+            "sourceColumn": "order"
+          },
+          {
+            "name": "threshold",
+            "dataType": "double",
+            "sourceColumn": "threshold"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "ContingencyMatrixClass",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Class = Table.Sort(Odbc.Query(Source, \"SELECT * FROM Verification.HP_SixHour_Class\"), {\"order\"})",
+                "",
+                "in",
+                "    Class"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "EventDate",
+        "columns": [
+          {
+            "name": "date",
+            "dataType": "dateTime",
+            "sourceColumn": "date"
+          },
+          {
+            "name": "day",
+            "dataType": "string",
+            "sourceColumn": "day"
+          },
+          {
+            "name": "dayOfMonth",
+            "dataType": "int64",
+            "sourceColumn": "dayOfMonth"
+          },
+          {
+            "name": "dayOfWeek",
+            "dataType": "int64",
+            "sourceColumn": "dayOfWeek"
+          },
+          {
+            "name": "dayOfWeekName",
+            "dataType": "string",
+            "sourceColumn": "dayOfWeekName"
+          },
+          {
+            "name": "dayOfYear",
+            "dataType": "int64",
+            "sourceColumn": "dayOfYear"
+          },
+          {
+            "name": "month",
+            "dataType": "string",
+            "sourceColumn": "month"
+          },
+          {
+            "name": "monthDay",
+            "dataType": "string",
+            "sourceColumn": "monthDay"
+          },
+          {
+            "name": "monthName",
+            "dataType": "string",
+            "sourceColumn": "monthName"
+          },
+          {
+            "name": "monthOfYear",
+            "dataType": "int64",
+            "sourceColumn": "monthOfYear"
+          },
+          {
+            "name": "monthOfYearName",
+            "dataType": "string",
+            "sourceColumn": "monthOfYearName"
+          },
+          {
+            "name": "year",
+            "dataType": "int64",
+            "sourceColumn": "year"
+          },
+          {
+            "name": "weekOfYear",
+            "dataType": "int64",
+            "sourceColumn": "weekOfYear"
+          },
+          {
+            "name": "metSeason",
+            "dataType": "string",
+            "sourceColumn": "metSeason"
+          },
+          {
+            "name": "poolSeason",
+            "dataType": "string",
+            "sourceColumn": "poolSeason"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "EventDate",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    EventDate = Table.Sort(Table.Distinct(Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_EventDate_Default\")",
+                "    })), {\"date\"})",
+                "",
+                "in",
+                "    EventDate"
+              ]
+            }
+          }
+        ],
+        "hierarchies": [
+          {
+            "name": "calendarDate",
+            "levels": [
+              {
+                "name": "year",
+                "ordinal": 0,
+                "column": "year"
+              },
+              {
+                "name": "month",
+                "ordinal": 1,
+                "column": "monthName"
+              },
+              {
+                "name": "date",
+                "ordinal": 2,
+                "column": "date"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ForecastDate",
+        "columns": [
+          {
+            "name": "date",
+            "dataType": "dateTime",
+            "sourceColumn": "date"
+          },
+          {
+            "name": "day",
+            "dataType": "string",
+            "sourceColumn": "day"
+          },
+          {
+            "name": "dayOfMonth",
+            "dataType": "int64",
+            "sourceColumn": "dayOfMonth"
+          },
+          {
+            "name": "dayOfWeek",
+            "dataType": "int64",
+            "sourceColumn": "dayOfWeek"
+          },
+          {
+            "name": "dayOfWeekName",
+            "dataType": "string",
+            "sourceColumn": "dayOfWeekName",
+            "sortByColumn": "dayOfWeek"
+          },
+          {
+            "name": "dayOfYear",
+            "dataType": "int64",
+            "sourceColumn": "dayOfYear"
+          },
+          {
+            "name": "month",
+            "dataType": "string",
+            "sourceColumn": "month"
+          },
+          {
+            "name": "monthDay",
+            "dataType": "string",
+            "sourceColumn": "monthDay"
+          },
+          {
+            "name": "monthName",
+            "dataType": "string",
+            "sourceColumn": "monthName",
+            "sortByColumn": "month"
+          },
+          {
+            "name": "monthOfYear",
+            "dataType": "int64",
+            "sourceColumn": "monthOfYear"
+          },
+          {
+            "name": "monthOfYearName",
+            "dataType": "string",
+            "sourceColumn": "monthOfYearName",
+            "sortByColumn": "monthOfYear"
+          },
+          {
+            "name": "weekOfYear",
+            "dataType": "int64",
+            "sourceColumn": "weekOfYear"
+          },
+          {
+            "name": "year",
+            "dataType": "int64",
+            "sourceColumn": "year"
+          },
+          {
+            "name": "metSeason",
+            "dataType": "string",
+            "sourceColumn": "metSeason",
+            "sortByColumn": "monthOfYear"
+          },
+          {
+            "name": "poolSeason",
+            "dataType": "string",
+            "sourceColumn": "poolSeason",
+            "sortByColumn": "monthOfYear"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "ForecastDate",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    ForecastDate = Table.Sort(Table.Distinct(Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_ForecastDate_Default\")",
+                "    })), {\"date\"})",
+                "",
+                "in",
+                "    ForecastDate"
+              ]
+            }
+          }
+        ],
+        "hierarchies": [
+          {
+            "name": "calendarDate",
+            "levels": [
+              {
+                "name": "year",
+                "ordinal": 0,
+                "column": "year"
+              },
+              {
+                "name": "month",
+                "ordinal": 1,
+                "column": "monthName"
+              },
+              {
+                "name": "date",
+                "ordinal": 2,
+                "column": "date"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "ForecastTime",
+        "columns": [
+          {
+            "name": "hour",
+            "dataType": "double",
+            "sourceColumn": "hour"
+          },
+          {
+            "name": "minute",
+            "dataType": "int64",
+            "sourceColumn": "minute"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "ForecastTime",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    ForecastTime = Table.Sort(Table.Distinct(Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_ForecastTime_Default\")",
+                "    })), {\"minute\"})",
+                "",
+                "in",
+                "    ForecastTime"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "EventTime",
+        "columns": [
+          {
+            "name": "hour",
+            "dataType": "double",
+            "sourceColumn": "hour"
+          },
+          {
+            "name": "minute",
+            "dataType": "int64",
+            "sourceColumn": "minute"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "EventTime",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    EventTime = Table.Sort(Table.Distinct(Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_EventTime_Default\")",
+                "    })), {\"minute\"})",
+                "",
+                "in",
+                "    EventTime"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "Location",
+        "columns": [
+          {
+            "name": "location",
+            "dataType": "string",
+            "sourceColumn": "location"
+          },
+          {
+            "name": "CHATT_ABOVE_BELOW",
+            "dataType": "string",
+            "sourceColumn": "CHATT_ABOVE_BELOW",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "DESCRIPTION",
+            "dataType": "string",
+            "sourceColumn": "DESCRIPTION",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "DRAINAGE_AREA",
+            "dataType": "double",
+            "sourceColumn": "DRAINAGE_AREA",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "FCGROUP",
+            "dataType": "string",
+            "sourceColumn": "FCGROUP",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "HECRAS_MODEL",
+            "dataType": "string",
+            "sourceColumn": "HECRAS_MODEL",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "HYDRO_ORDER",
+            "dataType": "double",
+            "sourceColumn": "HYDRO_ORDER",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "MIN_STORAGE_ACFT",
+            "dataType": "double",
+            "sourceColumn": "MIN_STORAGE_ACFT",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "NUM_GEN_UNITS",
+            "dataType": "double",
+            "sourceColumn": "NUM_GEN_UNITS",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "NWSID Long Name",
+            "dataType": "string",
+            "sourceColumn": "NWSID Long Name",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "OWNER",
+            "dataType": "string",
+            "sourceColumn": "OWNER",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "PLANTID",
+            "dataType": "string",
+            "sourceColumn": "PLANTID",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "PLANT_TYPE",
+            "dataType": "string",
+            "sourceColumn": "PLANT_TYPE",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "lat",
+            "dataType": "double",
+            "sourceColumn": "lat"
+          },
+          {
+            "name": "lon",
+            "dataType": "double",
+            "sourceColumn": "lon"
+          },
+          {
+            "name": "x",
+            "dataType": "double",
+            "sourceColumn": "x"
+          },
+          {
+            "name": "y",
+            "dataType": "double",
+            "sourceColumn": "y"
+          },
+          {
+            "name": "z",
+            "dataType": "double",
+            "sourceColumn": "z"
+          },
+          {
+            "name": "shortName",
+            "dataType": "string",
+            "sourceColumn": "shortName"
+          },
+          {
+            "name": "RIVER_NAME",
+            "dataType": "string",
+            "sourceColumn": "RIVER_NAME",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "RIVER_MILE",
+            "dataType": "double",
+            "sourceColumn": "RIVER_MILE",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "RWID",
+            "dataType": "string",
+            "sourceColumn": "RWID",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "RSNO_MESSAGES",
+            "dataType": "double",
+            "sourceColumn": "RSNO_MESSAGES",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "RW_NAME",
+            "dataType": "string",
+            "sourceColumn": "RW_NAME",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "RW_PAR_NAME",
+            "dataType": "string",
+            "sourceColumn": "RW_PAR_NAME",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "SPILL_NAME",
+            "dataType": "string",
+            "sourceColumn": "SPILL_NAME",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "SPILL_ORDER",
+            "dataType": "string",
+            "sourceColumn": "SPILL_ORDER",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "STEPSIZE",
+            "dataType": "double",
+            "sourceColumn": "STEPSIZE",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "SUMMER_POOL_M",
+            "dataType": "double",
+            "sourceColumn": "SUMMER_POOL_M",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "TIMEZONE_LOCAL",
+            "dataType": "string",
+            "sourceColumn": "TIMEZONE_LOCAL",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "TOG_STORAGE_ACFT",
+            "dataType": "double",
+            "sourceColumn": "TOG_STORAGE_ACFT",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "TVA_FCGROUP",
+            "dataType": "string",
+            "sourceColumn": "TVA_FCGROUP",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "USGSID",
+            "dataType": "double",
+            "sourceColumn": "USGSID",
+            "displayFolder": "Attributes"
+          },
+          {
+            "name": "WV_NAME",
+            "dataType": "string",
+            "sourceColumn": "WV_NAME",
+            "displayFolder": "Attributes"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "Location",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Location = Table.Sort(Table.Distinct(Table.RemoveColumns(Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT s.location, l.* FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Location_Default s INNER JOIN Verification.HP_SixHour_Location l ON l.locationId=s.locationId\")",
+                "    }), {\"locationId\"})), {\"location\"})",
+                "",
+                "in",
+                "    Location"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "IsOriginalForecast",
+        "columns": [
+          {
+            "name": "isOriginalForecast",
+            "dataType": "boolean",
+            "sourceColumn": "isOriginalForecast"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "IsOriginalForecast",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    IsOriginalForecast = Odbc.Query(Source, \"SELECT TRUE AS isOriginalForecast UNION ALL SELECT FALSE\")",
+                "",
+                "in",
+                "    IsOriginalForecast"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "LeadTime",
+        "columns": [
+          {
+            "name": "day",
+            "dataType": "double",
+            "sourceColumn": "day"
+          },
+          {
+            "name": "hour",
+            "dataType": "double",
+            "sourceColumn": "hour"
+          },
+          {
+            "name": "minute",
+            "dataType": "int64",
+            "sourceColumn": "minute"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "LeadTime",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    LeadTime = Table.Sort(Table.Distinct(Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_LeadTime_Default\")",
+                "    })), {\"minute\"})",
+                "",
+                "in",
+                "    LeadTime"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "ForecastObserved",
+        "columns": [
+          {
+            "name": "ensemble",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "ensemble"
+          },
+          {
+            "name": "ensembleMember",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "ensembleMember"
+          },
+          {
+            "name": "eventDate",
+            "dataType": "dateTime",
+            "isHidden": true,
+            "sourceColumn": "eventDate"
+          },
+          {
+            "name": "eventMinute",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "eventMinute"
+          },
+          {
+            "name": "eventTime",
+            "dataType": "dateTime",
+            "isHidden": true,
+            "sourceColumn": "eventTime"
+          },
+          {
+            "name": "forecast",
+            "dataType": "double",
+            "isHidden": true,
+            "sourceColumn": "forecast"
+          },
+          {
+            "name": "forecastClass",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "forecastClass"
+          },
+          {
+            "name": "forecastDate",
+            "dataType": "dateTime",
+            "isHidden": true,
+            "sourceColumn": "forecastDate"
+          },
+          {
+            "name": "forecastMinute",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "forecastMinute"
+          },
+          {
+            "name": "forecastName",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "forecastName"
+          },
+          {
+            "name": "forecastTime",
+            "dataType": "dateTime",
+            "isHidden": true,
+            "sourceColumn": "forecastTime"
+          },
+          {
+            "name": "isOriginalForecast",
+            "dataType": "boolean",
+            "isHidden": true,
+            "sourceColumn": "isOriginalForecast"
+          },
+          {
+            "name": "leadTime",
+            "dataType": "int64",
+            "isHidden": true,
+            "sourceColumn": "leadTime"
+          },
+          {
+            "name": "location",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "location"
+          },
+          {
+            "name": "observed",
+            "dataType": "double",
+            "isHidden": true,
+            "sourceColumn": "observed"
+          },
+          {
+            "name": "observedClass",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "observedClass"
+          },
+          {
+            "name": "forecastId",
+            "dataType": "string",
+            "isHidden": true,
+            "sourceColumn": "forecastId"
+          }
+        ],
+        "partitions": [
+          {
+            "name": "2023-01",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-01\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2023-02",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-02\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2023-03",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-03\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2023-04",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-04\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2023-05",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-05\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2023-06",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-06\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2023-07",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-07\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2023-08",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-08\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2023-09",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-09\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2023-10",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-10\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2023-11",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-11\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2023-12",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2023-12\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          },
+          {
+            "name": "2024-01",
+            "source": {
+              "type": "m",
+              "expression": [
+                "let",
+                "    Source = \"driver={MongoDB ODBC 1.4.5 ANSI Driver};server=chadwhh01.main.tva.gov;port=3308\",",
+                "",
+                "    Month = \"2024-01\",",
+                "    StartDate = Month & \"-01\",",
+                "    EndDate = Date.ToText(Date.AddMonths(Date.FromText(StartDate), 1), \"yyyy-MM-dd\"),",
+                "    ObservedEndDate = Date.ToText(Date.AddDays(Date.FromText(EndDate), 28), \"yyyy-MM-dd\"),",
+                "",
+                "    Observed = Table.Buffer(Table.Combine({",
+                "        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Observed_Default WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})",
+                "    })),",
+                "",
+                "    Forecasts = Table.Combine({",
+                "        Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Flowsheet_Default WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")",
+                "    }),",
+                "",
+                "    DistinctForecasts = Table.Buffer(Table.RemoveColumns(Table.Distinct(Table.Sort(Forecasts, {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\", {\"filterForecastTime\", Order.Descending}}), {\"forecastName\", \"location\", \"ensemble\", \"ensembleMember\", \"forecastTime\", \"eventTime\"}), {\"filterForecastTime\"})),",
+                "    Locations = \"'\" & Text.Combine(Table.ToList(Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\"}))), \"','\") & \"'\",",
+                "",
+                "    NormalForecast = Table.Combine({",
+                "        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM FEWS_ARCHIVE.HP_SixHour_Normal_Default WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})",
+                "    }),",
+                "",
+                "    ForecastObserved = Table.Join(Table.Combine({DistinctForecasts, NormalForecast}), {\"location\", \"eventTime\"}, Observed, {\"location\", \"eventTime\"})",
+                "",
+                "in",
+                "    ForecastObserved"
+              ]
+            }
+          }
+        ],
+        "measures": [
+          {
+            "name": "MeanAbsoluteError",
+            "description": "SUM(|Forecast-Observed|)/Population. What is the average magnitude of the forecast errors?  Range: 0 to âˆž. Perfect score: 0. Does not indicate the direction of the deviations.",
+            "expression": "SUMX(ForecastObserved,ABS([forecast]-[observed]))/[Population]"
+          },
+          {
+            "name": "Population",
+            "description": "{Forecast,Observation} Pair Instance Count",
+            "expression": "COUNTROWS(ForecastObserved)"
+          },
+          {
+            "name": "MeanSquaredError",
+            "description": "SUM((Forecast-Observed)^2)/Population",
+            "expression": "SUMX(ForecastObserved,POWER([forecast]-[observed],2))/[Population]"
+          },
+          {
+            "name": "RootMeanSquaredError",
+            "description": "SQRT(MeanSquaredError). What is the average magnitude of the forecast errors?  Range: 0 to âˆž. Perfect score: 0. Measures \"average\" error, weighted according to the square of the error. Does not indicate the direction of the deviations. The RMSE puts greater influence on large errors than smaller errors, which may be a good things if large errors are especially undesirable, but may also encourage conservative forecasting.",
+            "expression": "SQRT([MeanSquaredError])"
+          },
+          {
+            "name": "MultiplicativeBias",
+            "description": "AVG(Forecast)/AVG(Observed). How does the average forecast magnitude compare to the average observed magnitude?  Range: -âˆž to âˆž. Perfect score: 1. Best suited for quantities that have 0 as a lower or upper bound. Does not measure the magnitude of the errors. Does not measure the correspondence between forecasts and observations, i.e., it is possible to get a perfect score for a bad forecast if there are compensating errors.",
+            "expression": "AVERAGE(ForecastObserved[forecast])/AVERAGE(ForecastObserved[observed])"
+          },
+          {
+            "name": "Covariance",
+            "description": "SUMX(ForecastObserved,([forecast]-AVERAGE([forecast]))*([observed]-AVERAGE([observed])))/[Population]. The average value of the product of the deviations of forecast-observed from their respective means. Used In Correlation. Included For Formula Validation",
+            "expression": "SUMX(ForecastObserved,([forecast]-AVERAGE([forecast]))*([observed]-AVERAGE([observed])))/[Population]"
+          },
+          {
+            "name": "ForecastVariance",
+            "description": "SUMX(ForecastObserved, POWER([forecast]-AVERAGE([forecast]),2))/[Population] Used In Correlation. Included For Formula Validation. ",
+            "expression": "VAR.S(ForecastObserved[forecast])/*SUMX(ForecastObserved, POWER([forecast]-AVERAGE([forecast]),2))/[Population]*/"
+          },
+          {
+            "name": "ObservedVariance",
+            "description": "SUMX(ForecastObserved, POWER([observed]-AVERAGE([observed]),2))/[Population]  Used In Correlation. Included For Formula Validation. ",
+            "expression": "VAR.S(ForecastObserved[observed])/*SUMX(ForecastObserved, POWER([observed]-AVERAGE([observed]),2))/[Population]*/"
+          },
+          {
+            "name": "ForecastStdev",
+            "description": "STDEV.S(Forecast) Used In Correlation. Included For Formula Validation. ",
+            "expression": "STDEV.S(ForecastObserved[forecast])"
+          },
+          {
+            "name": "ObservedStdev",
+            "description": "STDEV.S(Observed) Used In Correlation. Included For Formula Validation. ",
+            "expression": "STDEV.S(ForecastObserved[observed])"
+          },
+          {
+            "name": "Correlation",
+            "description": "[Covariance]/([ForecastStdev]*[ObservedStdev]) How well did the forecast values correspond to the observed values? Range: -1 to 1. Perfect score: 1. Good measure of linear association or phase error. Visually, the correlation measures how close the points of a scatter plot are to a straight line. Does not take forecast bias into account - it is possible for a forecast with large errors to still have a good correlation coefficient with the observations. Sensitive to outliers. Zero shows no correlation.",
+            "expression": "[Covariance]/([ForecastStdev]*[ObservedStdev])"
+          },
+          {
+            "name": "ClassHit",
+            "description": "RowCount(Filter(ForecastClass=ObservedClass)) Whether The Forecasts Fall Within The Observed Values' Range. The Range Is One Of The Normalized Segments Determined By Rainfall Volume Frequencies Of Occurance",
+            "expression": "COUNTROWS(FILTER(ForecastObserved,[ForecastClass]=[ObservedClass]))"
+          },
+          {
+            "name": "ClassMiss",
+            "description": "RowCount(Filter(ForecastClass<>ObservedClass)). Same As Class Hit, But The Forecasts Do Not Fall Within The Observed Values' Range",
+            "expression": "COUNTROWS(FILTER(ForecastObserved,[ForecastClass]<>[ObservedClass]))"
+          },
+          {
+            "name": "OverallAccuracy",
+            "description": "ClassHit/Population",
+            "expression": "[ClassHit]/[Population]"
+          },
+          {
+            "name": "TruePositive",
+            "description": "Hit. The Number Of Rows Where Both The Forecast And Observed Classes Equal The Selected Class",
+            "expression": [
+              "COUNTROWS(",
+              "\tCALCULATETABLE(ForecastObserved, ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\",",
+              "\t\tINTERSECT(ALL(ForecastObserved[forecastClass]),VALUES(ContingencyMatrixClass[class])),",
+              "\t\tINTERSECT(ALL(ForecastObserved[observedClass]),VALUES(ContingencyMatrixClass[class])))",
+              "\t)/*COUNTROWS(FILTER(ForecastObserved,[ForecastClass]=[SelectedClass] && [ObservedClass]=[SelectedClass]))*/"
+            ]
+          },
+          {
+            "name": "SelectedClass",
+            "description": "The Selected Class For The Binary Classification Contingency Matrix",
+            "expression": "SELECTEDVALUE(ContingencyMatrixClass[class],\"Normal\")",
+            "isHidden": true
+          },
+          {
+            "name": "FalsePositive",
+            "description": "False Alarm. The Number Of Rows Where The Forecast Class Equals The Selected Class And The Observed Class Does Not Equal The Selected Class",
+            "expression": "[PredictedConditionPositive]-[TruePositive]/*COUNTROWS(FILTER(ForecastObserved,[ForecastClass]=[SelectedClass] && [ObservedClass]<>[SelectedClass]))*/"
+          },
+          {
+            "name": "FalseNegative",
+            "description": "Miss. The Number Of Rows Where The Forecast Class Does Not Equal The Selected Class And The Observed Class Equals The Selected Class",
+            "expression": "[ConditionPositive]-[TruePositive]/*COUNTROWS(FILTER(ForecastObserved,[ForecastClass]<>[SelectedClass] && [ObservedClass]=[SelectedClass]))*/"
+          },
+          {
+            "name": "ConditionPositive",
+            "description": "Row Count Where The Observed Class Equals The Selected Class (TP+FN) Included For Validation And Formula Result Drill In. No Intrinsic Statistical Value In Isolation",
+            "expression": [
+              "COUNTROWS(",
+              "\t\tCALCULATETABLE(ForecastObserved, ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\",",
+              "\t\tINTERSECT(ALL(ForecastObserved[observedClass]),VALUES(ContingencyMatrixClass[class]))",
+              "\t)/*COUNTROWS(FILTER(ForecastObserved,[ObservedClass]=[SelectedClass]))*/)"
+            ]
+          },
+          {
+            "name": "ConditionNegative",
+            "description": "Row Count Where The Observed Class Is Not Equal To The Selected Class (TN+FP) Included For Validation And Formula Result Drill In. No Intrinsic Statistical Value In Isolation",
+            "expression": [
+              "CALCULATE([Population],ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\")-[PredictedConditionPositive]",
+              "/*COUNTROWS(FILTER(ForecastObserved,[ObservedClass]<>[SelectedClass]))*/"
+            ]
+          },
+          {
+            "name": "PredictedConditionPositive",
+            "description": "Row Count Where Forecast Class Equals The Selected Class (TP+FP) Included For Validation And Formula Result Drill In. No Intrinsic Statistical Value In Isolation",
+            "expression": [
+              "COUNTROWS(",
+              "\t\tCALCULATETABLE(ForecastObserved,ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\",",
+              "\t\tINTERSECT(ALL(ForecastObserved[forecastClass]),VALUES(ContingencyMatrixClass[class])))",
+              "\t)/*COUNTROWS(FILTER(ForecastObserved,[ForecastClass]=[SelectedClass]))*/"
+            ]
+          },
+          {
+            "name": "PredictedConditionNegative",
+            "description": "Row Count Where Forecast Class Is Not Equal To The Selected Class (FN+TN) Included For Validation And Formula Result Drill In. No Intrinsic Statistical Value In Isolation",
+            "expression": [
+              "CALCULATE([Population],ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\")-[ConditionPositive]",
+              "/*COUNTROWS(FILTER(ForecastObserved,[ForecastClass]<>[SelectedClass]))*/"
+            ]
+          },
+          {
+            "name": "Prevalence",
+            "description": "ConditionPositive/ClassPopulation",
+            "expression": "[ConditionPositive]/CALCULATE([Population],ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\")"
+          },
+          {
+            "name": "ClassAccuracy",
+            "description": "(TruePositive+TrueNegative)/ClassPopulation - Effectively TP/ClassPopulation Due To TN=0 Because Of Contrived Binary Classes Limiting The Set Of Forecast-Observed Instances. Use Caution - The Majority Class, Usually No-Rain, Heavily Influences The Accuracy. Consider Using Recall - Positive Predictive Rate",
+            "expression": "([TruePositive]+[TrueNegative])/CALCULATE([Population],ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\")"
+          },
+          {
+            "name": "FalseDiscoveryRate",
+            "description": "FalsePositive/PredictedConditionPositive. False Alarm Ratio (FAR). What fraction of the predicted \"yes\" events actually did not occur (i.e., were false alarms)?  Sensitive to false alarms, but ignores misses. Very sensitive to the climatological frequency of the event.",
+            "expression": "[FalsePositive]/[PredictedConditionPositive]"
+          },
+          {
+            "name": "FalseOmissionRate",
+            "description": "FalseNegative/PredictedConditionNegative",
+            "expression": "[FalseNegative]/[PredictedConditionNegative]"
+          },
+          {
+            "name": "FalsePositiveRate",
+            "description": "FalsePositive/ConditionNegative. Probability Of False Fetection (False Alarm Rate). What fraction of the observed \"no\" events were incorrectly forecast as \"yes\"?",
+            "expression": "[FalsePositive]/[ConditionNegative]"
+          },
+          {
+            "name": "FalseNegativeRate",
+            "description": "FalseNegative/ConditionPositive",
+            "expression": "[FalseNegative]/[ConditionPositive]"
+          },
+          {
+            "name": "TrueNegative",
+            "description": "The Number Of Rows Where Neither The Forecast Or Observed Classes Equal The Selected Class",
+            "expression": [
+              "CALCULATE([Population],ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\")-([ConditionPositive]+[PredictedConditionPositive]-[TruePositive])",
+              "/*COUNTROWS(FILTER(ForecastObserved,[ForecastClass]<>[SelectedClass] && [ObservedClass]<>[SelectedClass]))*/"
+            ]
+          },
+          {
+            "name": "NegativePredictiveValue",
+            "description": "TrueNegative/PredictedConditionNegative",
+            "expression": "[TrueNegative]/[PredictedConditionNegative]"
+          },
+          {
+            "name": "TrueNegativeRate",
+            "description": "TrueNegative/ConditionNegative",
+            "expression": "[TrueNegative]/[ConditionNegative]"
+          },
+          {
+            "name": "BiasStdev",
+            "description": "STDEV(Forecast-Observed). Shows How Consistent the Bias Is. 0 Is Consistently Over, Under, Or Equal In Magnitude. Further From Zero Indicates A Large Spread In The Magnitudes Of Bias Observed",
+            "expression": "STDEVX.S(ForecastObserved,[forecast]-[observed])"
+          },
+          {
+            "name": "FrequencyBias",
+            "description": "PredictedConditionPositive/ConditionPositive. Range: 0 to âˆž. Perfect score: 1. How did the forecast frequency of \"yes\" events compare to the observed frequency of \"yes\" events?  Measures the ratio of the frequency of forecast events to the frequency of observed events. Indicates whether the forecast system has a tendency to underforecast (BIAS<1) or overforecast (BIAS>1) events. Does not measure how well the forecast corresponds to the observations, only measures relative frequencies.",
+            "expression": "[PredictedConditionPositive]/[ConditionPositive]"
+          },
+          {
+            "name": "ThreatScore",
+            "description": "Critical Success Index. TruePositive/([TruePositive+FalseNegative+FalsePositive). How well did the forecast \"yes\" events correspond to the observed \"yes\" events?  Range: 0 to 1, 0 indicates no skill. Perfect score: 1. Measures the fraction of observed and/or forecast events that were correctly predicted. It can be thought of as the accuracy when correct negatives have been removed from consideration, that is, TS is only concerned with forecasts that count. Sensitive to hits, penalizes both misses and false alarms. Does not distinguish source of forecast error. Depends on climatological frequency of events (poorer scores for rarer events) since some hits can occur purely due to random chance.",
+            "expression": "[TruePositive]/([TruePositive]+[FalseNegative]+[FalsePositive])"
+          },
+          {
+            "name": "EquitableThreatScore",
+            "description": "Gilbert Skill Score. (TruePositive-RandomTruePositive)/(TruePositive+FalseNegative+FalsePositive-RandomTruePositive). How well did the forecast \"yes\" events correspond to the observed \"yes\" events?  Range: 0 to 1, 0 indicates no skill. Perfect score: 1. Measures the fraction of observed and/or forecast events that were correctly predicted. It can be thought of as the accuracy when correct negatives have been removed from consideration, that is, TS is only concerned with forecasts that count. Sensitive to hits, penalizes both misses and false alarms. Does not distinguish source of forecast error. Depends on climatological frequency of events (poorer scores for rarer events) since some hits can occur purely due to random chance.",
+            "expression": "([TruePositive]-[RandomTruePositive])/([TruePositive]+[FalseNegative]+[FalsePositive]-[RandomTruePositive])"
+          },
+          {
+            "name": "RandomTruePositive",
+            "description": "FLOOR((([TruePositive]+[FalseNegative])*([TruePositive]+[FalsePositive]))/[ClassPopulation],1). Used In EquitableThreatScore.",
+            "expression": "FLOOR((([TruePositive]+[FalseNegative])*([TruePositive]+[FalsePositive]))/CALCULATE([Population],ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\"),1)",
+            "isHidden": true
+          },
+          {
+            "name": "HanssenAndKuipersDiscriminant",
+            "description": "True Skill Statistic, Peirce's Skill Score. How well did the forecast separate the \"yes\" events from the \"no\" events?  Range: -1 to 1, 0 indicates no skill. Perfect score: 1. Uses all elements in contingency table. Does not depend on climatological event frequency. The expression is identical to HK = POD - POFD, but the Hanssen and Kuipers score can also be interpreted as (accuracy for events) + (accuracy for non-events) - 1. For rare events HK is unduly weighted toward the first term (same as POD), so this score may be more useful for more frequent events.",
+            "expression": "([TruePositive]/([TruePositive]+[FalseNegative]))-([FalsePositive]/([FalsePositive]+[TrueNegative]))"
+          },
+          {
+            "name": "HeidkeSkillScore",
+            "description": "Cohen's K (HSS). What was the accuracy of the forecast relative to that of random chance?  Range: -1 to 1, 0 indicates no skill. Perfect score: 1. Measures the fraction of correct forecasts after eliminating those forecasts which would be correct due purely to random chance. This is a form of the generalized skill score, where the score in the numerator is the number of correct forecasts, and the reference forecast in this case is random chance. In meteorology, at least, random chance is usually not the best forecast to compare to - it may be better to use climatology (long-term average value) or persistence (forecast = most recent observation, i.e., no change) or some other standard.",
+            "expression": "(([TruePositive]+[TrueNegative])-[ExpectedCorrect])/(CALCULATE([Population],ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\")-[ExpectedCorrect])"
+          },
+          {
+            "name": "ExpectedCorrect",
+            "description": "FLOOR((([TruePositive]+[FalseNegative])*([TruePositive]+[FalsePositive])*([TrueNegative]+[FalseNegative])*([TrueNegative]+[FalsePositive]))/[ClassPopulation],1). Used In HeidkeSkillScore",
+            "expression": [
+              "FLOOR(",
+              "    (([TruePositive]+[FalseNegative])*([TruePositive]+[FalsePositive])+",
+              "    ([TrueNegative]+[FalseNegative])*([TrueNegative]+[FalsePositive]))/[Population],1)"
+            ],
+            "isHidden": true
+          },
+          {
+            "name": "OddsRatio",
+            "description": "What is the ratio of the odds of a \"yes\" forecast being correct, to the odds of a \"yes\" forecast being wrong?  Odds ratio - Range: 0 to âˆž, 1 indicates no skill. Perfect score: âˆž. Log odds ratio - Range: -âˆž to âˆž, 0 indicates no skill. Perfect score: âˆž. Measures the ratio of the odds of making a hit to the odds of making a false alarm. The logarithm of the odds ratio is often used instead of the original value. Takes prior probabilities into account. Gives better scores for rarer events. Less sensitive to hedging. Do not use if any of the cells in the contingency table are equal to 0. Used widely in medicine but not yet in meteorology.",
+            "expression": "([TruePositive]*[TrueNegative])/([FalseNegative]*[FalsePositive])"
+          },
+          {
+            "name": "OddsRatioSkillScore",
+            "description": "Yule's Q. What was the improvement of the forecast over random chance?  Range: -1 to 1, 0 indicates no skill. Perfect score: 1. Independent of the marginal totals (i.e., of the threshold chosen to separate \"yes\" and \"no\"), so is difficult to hedge.",
+            "expression": "([TruePositive]*[TrueNegative]-[FalseNegative]*[FalsePositive])/([TruePositive]*[TrueNegative]+[FalsePositive]*[FalseNegative])"
+          },
+          {
+            "name": "MultiClassAccuracy",
+            "description": "Overall, what fraction of the forecasts were in the correct category?  Range: 0 to 1. Perfect score: 1. Simple, intuitive. Can be misleading since it is heavily influenced by the most common category.",
+            "expression": [
+              "SUMX(",
+              "ADDCOLUMNS(",
+              "    SUMMARIZE(",
+              "        FILTER(CROSSJOIN(ForecastClass,ObservedClass),ForecastClass[class]=ObservedClass[class]",
+              "\t && ObservedClass[class]<>\"undefinedLocation\" && ObservedClass[class]<>\"undefinedValue\" && ForecastClass[class]<>\"undefinedLocation\" && ForecastClass[class]<>\"undefinedValue\"),",
+              "\t    ForecastClass[class],ObservedClass[class]),",
+              "\"TruePositive\",CALCULATE(COUNTROWS(ForecastObserved))),[TruePositive])/[Population]"
+            ]
+          },
+          {
+            "name": "MultiClassHeidkeSkillScore",
+            "description": "What was the accuracy of the forecast in predicting the correct category, relative to that of random chance?  Range: -âˆž to 1, 0 indicates no skill. Perfect score: 1. Measures the fraction of correct forecasts after eliminating those forecasts which would be correct due purely to random chance. This is one form of a generalized skill score, where the score in the numerator is the number of correct forecasts, and the reference forecast in this case is random chance. Requires a large sample size to make sure that the elements of the contingency table are all adequately sampled. In meteorology, at least, random chance is usually not the best forecast to compare to - it may be better to use climatology (long-term average value) or persistence (forecast is most recent observation, i.e., no change) or some other standard.",
+            "expression": "([MultiClassAccuracy]-([MultiClassSumClassProductRatio]))/(1-[MultiClassSumClassProductRatio])"
+          },
+          {
+            "name": "MultiClassSumClassProductRatio",
+            "description": "Used In MultiClassHeidkeSkillScore",
+            "expression": [
+              "SUMX(",
+              "ADDCOLUMNS(",
+              "    SUMMARIZE(FILTER(CROSSJOIN(ForecastClass,ObservedClass),ForecastClass[class]=ObservedClass[class] && ObservedClass[class]<>\"undefinedLocation\" && ObservedClass[class]<>\"undefinedValue\" && ForecastClass[class]<>\"undefinedLocation\" && ForecastClass[class]<>\"undefinedValue\"),",
+              "    ForecastClass[class],ObservedClass[class]),",
+              "\"PredicedClass\",CALCULATE(COUNTROWS(ForecastObserved),ALL(ObservedClass)),",
+              "\"ObservedClass\",CALCULATE(COUNTROWS(ForecastObserved),ALL(ForecastClass))),[PredicedClass]*[ObservedClass])/POWER(CALCULATE([Population],ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\"),2)"
+            ],
+            "isHidden": true
+          },
+          {
+            "name": "MultiClassHanssenAndKuipersDiscriminant",
+            "description": "True Skill Statistic, Peirce's Skill Score. What was the accuracy of the forecast in predicting the correct category, relative to that of random chance?  Range: -1 to 1, 0 indicates no skill. Perfect score: 1. Similar to the Heidke skill score, except that in the denominator the fraction of correct forecasts due to random chance is for an unbiased forecast.",
+            "expression": "([MultiClassAccuracy]-[MultiClassSumClassProductRatio])/(1-[MultiClassSumObservedRatioSquared])"
+          },
+          {
+            "name": "MultiClassSumObservedRatioSquared",
+            "description": "MultiClassHanssenAndKuipersDiscriminant",
+            "expression": [
+              "SUMX(",
+              "ADDCOLUMNS(",
+              "    SUMMARIZE(FILTER(CROSSJOIN(ForecastClass,ObservedClass),ForecastClass[class]=ObservedClass[class] && ObservedClass[class]<>\"undefinedLocation\" && ObservedClass[class]<>\"undefinedValue\" && ForecastClass[class]<>\"undefinedLocation\" && ForecastClass[class]<>\"undefinedValue\"),",
+              "    ForecastClass[class],ObservedClass[class]),",
+              "\"ObservedClass\",CALCULATE(COUNTROWS(ForecastObserved),ALL(ForecastClass))),POWER([ObservedClass],2))/POWER(CALCULATE([Population],ObservedClass[class]<>\"undefinedLocation\",ObservedClass[class]<>\"undefinedValue\",ForecastClass[class]<>\"undefinedLocation\",ForecastClass[class]<>\"undefinedValue\"),2)"
+            ],
+            "isHidden": true
+          },
+          {
+            "name": "MultiClassGerrityScore",
+            "description": "What was the accuracy of the forecast in predicting the correct category, relative to that of random chance?  Range: -1 to 1, 0 indicates no skill. Perfect score: 1. Uses all entries in the contingency table, does not depend on the forecast distribution, and is equitable (i.e., random and constant forecasts score a value of 0). GS does not reward conservative forecasting like HSS and HK, but rather rewards forecasts for correctly predicting the less likely categories. Smaller errors are penalized less than larger forecast errors. This is achieved through the use of the scoring matrix.",
+            "expression": "0",
+            "isHidden": true
+          },
+          {
+            "name": "ClassPopulation",
+            "description": "Not Used",
+            "expression": "[ConditionPositive]+[PredictedConditionPositive]-[TruePositive]/*COUNTROWS(FILTER(ForecastObserved,[ObservedClass]=[SelectedClass] || [ForecastClass]=[SelectedClass]))*/",
+            "isHidden": true
+          },
+          {
+            "name": "AvgObserved",
+            "description": "For Plotting Instances. E.g. Scatter Plot",
+            "expression": "AVERAGE(ForecastObserved[observed])"
+          },
+          {
+            "name": "AvgForecast",
+            "description": "For Plotting Instances. E.g. Scatter Plot",
+            "expression": "AVERAGE(ForecastObserved[forecast])"
+          },
+          {
+            "name": "MeanError",
+            "description": "SUM(Forecast-Observed)/Population. What is the average forecast error?  Range: -âˆž to âˆž. Perfect score: 0. Also called the (additive) bias. Does not measure the magnitude of the errors. Does not measure the correspondence between forecasts and observations, i.e., it is possible to get a perfect score for a bad forecast if there are compensating errors.",
+            "expression": "SUMX(ForecastObserved,[forecast]-[observed])/[Population]"
+          },
+          {
+            "name": "SkillScoreMeanError",
+            "description": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-(MeanError/[MeanError]Normal). ",
+            "expression": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-([MeanError]/CALCULATE([MeanError],Forecast[forecast]=\"Normal\",ALL(Forecast))))",
+            "isHidden": true
+          },
+          {
+            "name": "SkillScoreMeanAbsoluteError",
+            "description": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-(MeanAbsoluteError/[MeanAbsoluteError]Normal). Range: -âˆž to 1. Perfect score: 1. Zero Is Random Chance / No Skill",
+            "expression": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-([MeanAbsoluteError]/CALCULATE([MeanAbsoluteError],Forecast[forecast]=\"Normal\",ALL(Forecast))))"
+          },
+          {
+            "name": "SkillScoreRootMeanSquaredError",
+            "description": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-(RootMeanSquaredError/[RootMeanSquaredError]Normal). Range: -âˆž to 1. Perfect score: 1. Zero Is Random Chance / No Skill",
+            "expression": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-([RootMeanSquaredError]/CALCULATE([RootMeanSquaredError],Forecast[forecast]=\"Normal\",ALL(Forecast))))"
+          },
+          {
+            "name": "SkillScoreMeanSquaredError",
+            "description": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-(MeanSquaredError/[MeanSquaredError]Normal). Range: -âˆž to 1. Perfect score: 1. Zero Is Random Chance / No Skill",
+            "expression": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-([MeanSquaredError]/CALCULATE([MeanSquaredError],Forecast[forecast]=\"Normal\",ALL(Forecast))))"
+          },
+          {
+            "name": "ZeroSkillScoreMeanError",
+            "description": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-(MeanError/[MeanError]Zero). ",
+            "expression": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-([MeanError]/CALCULATE(-SUM(ForecastObserved[observed])/[Population],Forecast[forecast]=\"Normal\",ALL(Forecast))))",
+            "isHidden": true
+          },
+          {
+            "name": "ZeroSkillScoreMeanAbsoluteError",
+            "description": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-(MeanAbsoluteError/[MeanAbsoluteError]Zero). Range: -âˆž to 1. Perfect score: 1. Zero Is No Rain",
+            "expression": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-([MeanAbsoluteError]/CALCULATE(SUM(ForecastObserved[observed])/[Population],Forecast[forecast]=\"Normal\",ALL(Forecast))))"
+          },
+          {
+            "name": "ZeroSkillScoreMeanSquaredError",
+            "description": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-(MeanSquaredError/[MeanSquaredError]Zero). Range: -âˆž to 1. Perfect score: 1. Zero Is No Rain",
+            "expression": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-([MeanSquaredError]/CALCULATE(SUMX(ForecastObserved,POWER([observed],2))/[Population],Forecast[forecast]=\"Normal\",ALL(Forecast))))"
+          },
+          {
+            "name": "ZeroSkillScoreRootMeanSquaredError",
+            "description": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-(RootMeanSquaredError/[RootMeanSquaredError]Zero). Range: -âˆž to 1. Perfect score: 1. Zero Is No Rain",
+            "expression": "IF(ISBLANK([MeanAbsoluteError]),BLANK(), 1-([RootMeanSquaredError]/SQRT(CALCULATE(SUMX(ForecastObserved,POWER([observed],2))/[Population],Forecast[forecast]=\"Normal\",ALL(Forecast)))))"
+          },
+          {
+            "name": "BiasOverForecastCount",
+            "description": "RowCount(Filter(Forecast-Observed>0)). Rather Than Magnitude Like BiasOverForecastAvg, The Equally Weighted Count Of Overforecast Instances. Can Be Used Subsequently To Calculate The Distribution Of Over, Under and Equal Forecast Instances Relative To The Total",
+            "expression": "COUNTROWS(FILTER(ForecastObserved,[forecast]-[observed]>0))"
+          },
+          {
+            "name": "BiasUnderForecastCount",
+            "description": "RowCount(Filter(Forecast-Observed<0)). Rather Than Magnitude Like Bias UnderForecastAvg, The Equally Weighted Count Of Underforecast Instances. Can Be Used Subsequently To Calculate The Distribution Of Over, Under and Equal Forecast Instances Relative To The Total",
+            "expression": "COUNTROWS(FILTER(ForecastObserved,[forecast]-[observed]<0))"
+          },
+          {
+            "name": "NoBiasForecastCount",
+            "description": "RowCount(Filter(Forecast-Observed=0)). Can Be Used Subsequently To Calculate The Distribution Of Over, Under and Equal Forecast Instances Relative To The Total",
+            "expression": "COUNTROWS(FILTER(ForecastObserved,[forecast]-[observed]=0))"
+          },
+          {
+            "name": "BiasOverForecastAvg",
+            "description": "SUM(Filter(Forecast-Observed>0),Forecast-Observed)/BiasOverForecastCount. The Average Magnitude When The Forecast Overpredicts. Added Because Mean Error Alone Can Mask Deviance When Equally Over/Under Biased Instances Exist.",
+            "expression": "SUMX(FILTER(ForecastObserved,[forecast]-[observed]>0),[forecast]-[observed])/[BiasOverForecastCount]"
+          },
+          {
+            "name": "BiasUnderForecastAvg",
+            "description": "SUM(Filter(Forecast-Observed<0),Observed-Forecast)/BiasUnderForecastCount (Normalized To A Positive Average Magnitude For Camparison To BiasOverForecastAverage). The Average Magnitude When The Forecast Underpredicts. Added Because Mean Error Alone Can Mask Deviance When Equally Over/Under Biased Instances Exist.",
+            "expression": "SUMX(FILTER(ForecastObserved,[forecast]-[observed]<0),[observed]-[forecast])/[BiasUnderForecastCount]"
+          },
+          {
+            "name": "BiasPercentOver",
+            "description": "BiasOverForecastCount/Population. The Percent Of Overforecast Instances Relative To The Total",
+            "expression": "[BiasOverForecastCount]/[Population]"
+          },
+          {
+            "name": "BiasPercentUnder",
+            "description": "BiasUnderForecastCount/Population. The Percent Of Underforecast Instances Relative To The Total",
+            "expression": "[BiasUnderForecastCount]/[Population]"
+          },
+          {
+            "name": "NoBiasPercent",
+            "description": "NoBiasForecastCount/Population. The Percent Of Perfect Instances Relative To The Total",
+            "expression": "[NoBiasForecastCount]/[Population]"
+          },
+          {
+            "name": "BiasPercentOverUnder",
+            "description": "(BiasOverForecastCount-BiasUnderForecastCount)/(BiasUnderForecastCount+BiasOverForecastCount). Positive Values Indicate More Instances Overforecasting, Nagative Vaues Indicate Underforecasting.Can Mask Deviance When Equally Over/Under Biased Instances Exist. FocusedOnly On The In-Error Instances. Range: -1 To 1 Where 0 Is Equally Over And Under Biased, Positive Is Biased Over, And Negative Is Biased Under ",
+            "expression": "([BiasOverForecastCount]-[BiasUnderForecastCount])/([BiasOverForecastCount]+[BiasUnderForecastCount])"
+          },
+          {
+            "name": "BiasOverUnderForecastAvg",
+            "description": "SUM(FILTER(forecast-Observed<>0),forecast-Observed)/(BiasUnderForecastCount+BiasOverForecastCount). Differs From MeanError In That It Excludes Instances Where forecast=Observed, Focusing Only On The In-Error Instances. Can Mask Deviance When Equally Over/Under Biased Instances Exist.",
+            "expression": "SUMX(FILTER(ForecastObserved,[forecast]-[observed]<>0),[forecast]-[observed])/([BiasUnderForecastCount]+[BiasOverForecastCount])"
+          },
+          {
+            "name": "BiasOverForecastClassCount",
+            "description": "Rather Than Magnitude Like BiasOverForecastAvg, The Equally Weighted Count Of Overforecast Out Of Class Instances. Can Be Used Subsequently To Calculate The Distribution Of Over, Under and Equal forecast Instances Relative To The Total",
+            "expression": "COUNTROWS(FILTER(ForecastObserved,[forecastClass]<>\"undefinedLocation\" && [forecastClass]<>\"undefinedValue\" && RELATED(ForecastClass[order])>RELATED(ObservedClass[order])))"
+          },
+          {
+            "name": "BiasUnderForecastClassCount",
+            "description": "Rather Than Magnitude Like Bias UnderForecastAvg, The Equally Weighted Count Of Underforecast Out Of Class Instances. Can Be Used Subsequently To Calculate The Distribution Of Over, Under and Equal forecast Instances Relative To The Total",
+            "expression": "COUNTROWS(FILTER(ForecastObserved,[forecastClass]<>\"undefinedLocation\" && [forecastClass]<>\"undefinedValue\" && RELATED(ForecastClass[order])<RELATED(ObservedClass[order])))"
+          },
+          {
+            "name": "BiasPercentClassOver",
+            "description": "BiasOverForecastClassCount/Population. The Percent Of Overforecast Out Of Class Instances Relative To The Total",
+            "expression": "[BiasOverForecastClassCount]/[Population]"
+          },
+          {
+            "name": "BiasPercentClassUnder",
+            "description": "BiasUnderForecastClassCount/Population. The Percent Of Underforecast Out Of Class Instances Relative To The Total",
+            "expression": "[BiasUnderForecastClassCount]/[Population]"
+          },
+          {
+            "name": "Precision",
+            "description": "[Positive Predictive Value]. How Well the Forecast Predicted The Selected Class. Increased False Positives Diminish This Score - TruePositive/PredictedConditionPositive = TP/(TP+FP). A Low Ratio Indicates A Poor Predictor Due To Heavy False Positives. Success Ratio (SR). What fraction of the forecast \"yes\" events were correctly observed?  Gives information about the likelihood of an observed event, given that it was forecast. It is sensitive to false alarms but ignores misses.",
+            "expression": "[TruePositive]/[PredictedConditionPositive]"
+          },
+          {
+            "name": "Recall",
+            "description": "[Probability of Detection]. Hit Rate. How Well The Forecast Captures Events Regardless Of False Positives. Increased Flase Negatives Diminish This Score - TruePositive/ConditionPositive = TP/(TP+FN). A Low Score Indicates A Poor Predictor Due To Its Inability To Capture A Majority Of Predictid Cases. What fraction of the observed \"yes\" events were correctly forecast? Range: 0 to 1. Perfect score: 1. Sensitive to hits, but ignores false alarms. Very sensitive to the climatological frequency of the event. Good for rare events.Can be artificially improved by issuing more \"yes\" forecasts to increase the number of hits.",
+            "expression": "[TruePositive]/[ConditionPositive]"
+          },
+          {
+            "name": "MedianAbsoluteError",
+            "description": "MEDIANX(ForecastObserved,ABS([forecast]-[observed])). The middle value of the set of the absolute values of [forecast]-[observed]",
+            "expression": "MEDIANX(ForecastObserved,ABS([forecast]-[observed]))"
+          },
+          {
+            "name": "MedianError",
+            "description": "MEDIANX(ForecastObserved,[forecast]-[observed]). The middle value of the set of [forecast]-[observed]",
+            "expression": "MEDIANX(ForecastObserved,[forecast]-[observed])"
+          },
+          {
+            "name": "Min",
+            "description": "MINX(ForecastObserved,[forecast]-[observed]). The minimum [forecast]-[observed].",
+            "expression": "MINX(ForecastObserved,[forecast]-[observed])"
+          },
+          {
+            "name": "Max",
+            "description": "MAXX(ForecastObserved,[forecast]-[observed]). The maximum [forecast]-[observed].",
+            "expression": "MAXX(ForecastObserved,[forecast]-[observed])"
+          },
+          {
+            "name": "Percentile05",
+            "description": "PERCENTILEX.INC(ForecastObserved,[forecast]-[observed], 0.05). The value at the 5% point in a set.",
+            "expression": "PERCENTILEX.INC(ForecastObserved,[forecast]-[observed], 0.05)"
+          },
+          {
+            "name": "Percentile25",
+            "description": "PERCENTILEX.INC(ForecastObserved,[forecast]-[observed], 0.25). The value at the 25% point in a set.",
+            "expression": "PERCENTILEX.INC(ForecastObserved,[forecast]-[observed], 0.25)"
+          },
+          {
+            "name": "Percentile75",
+            "description": "PERCENTILEX.INC(ForecastObserved,[forecast]-[observed], 0.75). The value at the 75% point in a set.",
+            "expression": "PERCENTILEX.INC(ForecastObserved,[forecast]-[observed], 0.75)"
+          },
+          {
+            "name": "Percentile95",
+            "description": "PERCENTILEX.INC(ForecastObserved,[forecast]-[observed], 0.95). The value at the 95% point in a set.",
+            "expression": "PERCENTILEX.INC(ForecastObserved,[forecast]-[observed], 0.95)"
+          },
+          {
+            "name": "Midpoint",
+            "description": "[Min]+([Max]-[Min])*0.50. The point halfway between the [Min] and [Max]",
+            "expression": "[Min]+([Max]-[Min])*0.50"
+          },
+          {
+            "name": "Point05",
+            "description": "[Min]+([Max]-[Min])*0.05. The point 5% between the [Min] and [Max]",
+            "expression": "[Min]+([Max]-[Min])*0.05"
+          },
+          {
+            "name": "Point25",
+            "description": "[Min]+([Max]-[Min])*0.25. The point 25% between the [Min] and [Max]",
+            "expression": "[Min]+([Max]-[Min])*0.25"
+          },
+          {
+            "name": "Point75",
+            "description": "[Min]+([Max]-[Min])*0.75. The point 75% between the [Min] and [Max]",
+            "expression": "[Min]+([Max]-[Min])*0.75"
+          },
+          {
+            "name": "Point95",
+            "description": "[Min]+([Max]-[Min])*0.95. The point 95% between the [Min] and [Max]",
+            "expression": "[Min]+([Max]-[Min])*0.95"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "ForecastObserved_eventDate_EventDate_date",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "eventDate",
+        "toTable": "EventDate",
+        "toColumn": "date"
+      },
+      {
+        "name": "ForecastObserved_forecastDate_ForecastDate_date",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "forecastDate",
+        "toTable": "ForecastDate",
+        "toColumn": "date"
+      },
+      {
+        "name": "ForecastObserved_forecastMinute_ForecastTime_minute",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "forecastMinute",
+        "toTable": "ForecastTime",
+        "toColumn": "minute"
+      },
+      {
+        "name": "ForecastObserved_location_Location_location",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "location",
+        "toTable": "Location",
+        "toColumn": "location"
+      },
+      {
+        "name": "ForecastObserved_eventMinute_LeadTime_minute",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "eventMinute",
+        "toTable": "EventTime",
+        "toColumn": "minute"
+      },
+      {
+        "name": "ForecastObserved_leadTime_LeadTime_minute",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "leadTime",
+        "toTable": "LeadTime",
+        "toColumn": "minute"
+      },
+      {
+        "name": "ForecastObserved_observedClass_ObservedClass_class",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "observedClass",
+        "toTable": "ObservedClass",
+        "toColumn": "class"
+      },
+      {
+        "name": "ForecastObserved_forecastClass_ForecastClass_class",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "forecastClass",
+        "toTable": "ForecastClass",
+        "toColumn": "class"
+      },
+      {
+        "name": "ForecastObserved_observedClass_ContingencyMatrixClass_class",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "observedClass",
+        "toTable": "ContingencyMatrixClass",
+        "toColumn": "class",
+        "isActive": false
+      },
+      {
+        "name": "ForecastObserved_forecastClass_ContingencyMatrixClass_class",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "forecastClass",
+        "toTable": "ContingencyMatrixClass",
+        "toColumn": "class",
+        "isActive": false
+      },
+      {
+        "name": "ForecastObserved_isOriginalForecast_IsOriginalForecast_isOriginalForecast",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "isOriginalForecast",
+        "toTable": "IsOriginalForecast",
+        "toColumn": "isOriginalForecast"
+      },
+      {
+        "name": "ForecastObserved_forecastId_Forecast_forecastId",
+        "fromTable": "ForecastObserved",
+        "fromColumn": "forecastId",
+        "toTable": "Forecast",
+        "toColumn": "forecastId"
+      }
+    ],
+    "roles": [
+      {
+        "name": "Admin",
+        "modelPermission": "administrator",
+        "members": [
+          {
+            "memberName": "TVA\\FLD_RW_FEWS_ADMINS",
+            "memberId": "S-1-5-21-19610888-1443184010-1631745340-465200"
+          }
+        ]
+      },
+      {
+        "name": "User",
+        "modelPermission": "administrator",
+        "members": [
+          {
+            "memberName": "Everyone",
+            "memberId": "S-1-1-0"
+          }
+        ]
+      }
+    ],
+    "annotations": [
+      {
+        "name": "ClientCompatibilityLevel",
+        "value": "700"
+      }
+    ]
+  },
+  "id": "SemanticModel"
+}

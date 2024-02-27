@@ -1,0 +1,24 @@
+type ExternalForecastingScalarTimeSeries {
+	_id: ID!
+	timeSeriesType: String!
+	moduleInstanceId: String!
+	locationId: String!
+	parameterId: String!
+	qualifierIds: [String]!
+	qualifierId: String!
+	encodedTimeStepId: String!
+	startTime: DateTime!
+	endTime: DateTime!
+	localStartTime: DateTime!
+	localEndTime: DateTime!
+	ensembleId: String!
+	ensembleMemberId: String!
+	forecastTime: DateTime!
+	localForecastTime: DateTime!
+	committed: Boolean!
+	metaData: JSON!
+	timeseries: [JSON]!
+}
+extend type Query {
+	externalForecastingScalarTimeSeriesById(_id: ID!): ExternalForecastingScalarTimeSeries
+}

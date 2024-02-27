@@ -1,0 +1,15 @@
+type TemplateCube {
+	_id: ID!
+	Name: String!
+	Template: JSON!
+}
+extend type Query {
+	templateCubeById(_id: ID!): TemplateCube
+	templateCubeByName(name: String!): TemplateCube
+	templateCubeN: [TemplateCube]
+}
+extend type Mutation {
+	createTemplateCube(name: String!, template: JSON!): ID
+	updateTemplateCube(_id: ID!, name: String!, template: JSON!): Int
+	deleteTemplateCube(_id: ID!): Int
+}
