@@ -1,0 +1,15 @@
+type Seasonality {
+	_id: ID!
+	Name: String!
+	Breakpoint: [JSON]!
+}
+extend type Query {
+	seasonalityById(_id: ID!): Seasonality
+	seasonalityByName(name: String!): Seasonality
+	seasonalityN: [Seasonality]
+}
+extend type Mutation {
+	createSeasonality(name: String!, breakpoint: JSON!): ID
+	updateSeasonality(_id: ID!, name: String!, breakpoint: JSON!): Int
+	deleteSeasonality(_id: ID!): Int
+}

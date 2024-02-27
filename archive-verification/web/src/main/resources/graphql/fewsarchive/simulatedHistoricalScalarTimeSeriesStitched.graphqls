@@ -1,0 +1,24 @@
+type SimulatedHistoricalScalarTimeSeriesStitched {
+	_id: ID!
+	timeSeriesType: String!
+	moduleInstanceId: String!
+	locationId: String!
+	parameterId: String!
+	qualifierIds: [String]!
+	qualifierId: String!
+	encodedTimeStepId: String!
+	startTime: DateTime!
+	endTime: DateTime!
+	ensembleId: String!
+	ensembleMemberId: String!
+	committed: Boolean!
+	metaData: JSON!
+	bucketSize: String!
+	bucket: Int!
+	timeseries: [JSON]!
+	localStartTime: DateTime!
+	localEndTime: DateTime!
+}
+extend type Query {
+	simulatedHistoricalScalarTimeSeriesStitchedById(_id: ID!): SimulatedHistoricalScalarTimeSeriesStitched
+}

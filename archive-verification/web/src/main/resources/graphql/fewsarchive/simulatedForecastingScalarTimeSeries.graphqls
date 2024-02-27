@@ -1,0 +1,26 @@
+type SimulatedForecastingScalarTimeSeries {
+	_id: ID!
+	timeSeriesType: String!
+	moduleInstanceId: String!
+	locationId: String!
+	parameterId: String!
+	qualifierIds: [String]!
+	qualifierId: String!
+	encodedTimeStepId: String!
+	startTime: DateTime!
+	endTime: DateTime!
+	localStartTime: DateTime!
+	localEndTime: DateTime!
+	ensembleId: String!
+	ensembleMemberId: String!
+	forecastTime: DateTime!
+	localForecastTime: DateTime!
+	taskRunId: String!
+	metaData: JSON!
+	runInfo: JSON!
+	timeseries: [JSON]!
+	committed: Boolean!
+}
+extend type Query {
+	simulatedForecastingScalarTimeSeriesById(_id: ID!): SimulatedForecastingScalarTimeSeries
+}

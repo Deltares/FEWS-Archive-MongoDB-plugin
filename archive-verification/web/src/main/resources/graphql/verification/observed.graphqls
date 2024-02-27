@@ -1,0 +1,16 @@
+type Observed {
+	_id: ID!
+	Name: String!
+	Collection: String!
+	Filters: [JSON]!
+}
+extend type Query {
+	observedById(_id: ID!): Observed
+	observedByName(name: String!): Observed
+	observedN: [Observed]
+}
+extend type Mutation {
+	createObserved(name: String!, collection: String!, filters: JSON!): ID
+	updateObserved(_id: ID!, name: String!, collection: String!, filters: JSON!): Int
+	deleteObserved(_id: ID!): Int
+}

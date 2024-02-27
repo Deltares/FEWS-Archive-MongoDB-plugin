@@ -1,0 +1,15 @@
+type TemplatePowerQuery {
+	_id: ID!
+	Name: String!
+	Template: String!
+}
+extend type Query {
+	templatePowerQueryById(_id: ID!): TemplatePowerQuery
+	templatePowerQueryByName(name: String!): TemplatePowerQuery
+	templatePowerQueryN: [TemplatePowerQuery]
+}
+extend type Mutation {
+	createTemplatePowerQuery(name: String!, template: String!): ID
+	updateTemplatePowerQuery(_id: ID!, name: String!, template: String!): Int
+	deleteTemplatePowerQuery(_id: ID!): Int
+}

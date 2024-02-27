@@ -1,0 +1,26 @@
+ type ConfigurationSettings {
+	_id: ID!
+	toEmailAddresses: String!
+	fromEmailAddress: String!
+	drdlYamlPath: String!
+	environment: String!
+	threads: Int!
+	cubeAdmins: String!
+	cubeUsers: String!
+	bimPath: String!
+	databaseConnectionString: String!
+	smtpServer: String!
+	tabularConnectionString: String!
+	drdlYamlServiceRestart: String!
+	execute: Boolean!
+}
+extend type Query {
+	configurationSettingsById(_id: ID!): ConfigurationSettings
+	configurationSettingsByEnvironment(environment: String!): ConfigurationSettings
+	configurationSettingsN: [ConfigurationSettings]
+}
+extend type Mutation {
+	createConfigurationSettings(toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, environment: String!, threads: Int!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: Boolean!): ID
+	updateConfigurationSettings(_id: ID!, toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, environment: String!, threads: Int!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: Boolean!): Int
+	deleteConfigurationSettings(_id: ID!): Int
+}

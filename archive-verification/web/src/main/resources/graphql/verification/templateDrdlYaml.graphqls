@@ -1,0 +1,17 @@
+type TemplateDrdlYaml {
+	_id: ID!
+	Database: String!
+	Type: String!
+	Name: String!
+	Template: String!
+}
+extend type Query {
+	templateDrdlYamlById(_id: ID!): TemplateDrdlYaml
+	templateDrdlYamlByDatabaseTypeName(database: String! ,type: String!, name: String!): TemplateDrdlYaml
+	templateDrdlYamlN: [TemplateDrdlYaml]
+}
+extend type Mutation {
+	createTemplateDrdlYaml(database: String! ,type: String!, name: String!, template: String!): ID
+	updateTemplateDrdlYaml(_id: ID!, database: String! ,type: String!, name: String!, template: String!): Int
+	deleteTemplateDrdlYaml(_id: ID!): Int
+}

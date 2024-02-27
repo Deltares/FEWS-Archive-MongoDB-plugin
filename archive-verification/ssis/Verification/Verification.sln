@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34408.163
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{C9674DCB-5085-4A16-B785-4C70DD1589BD}") = "Verification", "Verification\Verification.dtproj", "{64FB8CC9-861B-4A31-8349-1C1F39323A7A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VerificationDebug", "VerificationDebug\VerificationDebug.csproj", "{A951160D-CECE-4F57-A90F-7E5C033C68B1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Development|Any CPU = Development|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{64FB8CC9-861B-4A31-8349-1C1F39323A7A}.Debug|Any CPU.ActiveCfg = Development
+		{64FB8CC9-861B-4A31-8349-1C1F39323A7A}.Debug|Any CPU.Build.0 = Development
+		{64FB8CC9-861B-4A31-8349-1C1F39323A7A}.Development|Any CPU.ActiveCfg = Development
+		{64FB8CC9-861B-4A31-8349-1C1F39323A7A}.Development|Any CPU.Build.0 = Development
+		{64FB8CC9-861B-4A31-8349-1C1F39323A7A}.Release|Any CPU.ActiveCfg = Development
+		{64FB8CC9-861B-4A31-8349-1C1F39323A7A}.Release|Any CPU.Build.0 = Development
+		{A951160D-CECE-4F57-A90F-7E5C033C68B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A951160D-CECE-4F57-A90F-7E5C033C68B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A951160D-CECE-4F57-A90F-7E5C033C68B1}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{A951160D-CECE-4F57-A90F-7E5C033C68B1}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{A951160D-CECE-4F57-A90F-7E5C033C68B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A951160D-CECE-4F57-A90F-7E5C033C68B1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5ED27E1F-C888-4D4B-9A34-81490E6AA659}
+	EndGlobalSection
+EndGlobal
