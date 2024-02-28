@@ -23,6 +23,8 @@ public final class GenerateTimer {
 
 	private static boolean running = false;
 
+	private static final long delay = 1000;
+
 	public static void start(){
 		if (task != null)
 			task.cancel();
@@ -56,6 +58,6 @@ public final class GenerateTimer {
 				}
 			}
 		};
-		timer.scheduleAtFixedRate(task, 0, Duration.parse(Settings.get("taskInterval")).toMillis());
+		timer.scheduleAtFixedRate(task, delay, Duration.parse(Settings.get("taskInterval")).toMillis());
 	}
 }

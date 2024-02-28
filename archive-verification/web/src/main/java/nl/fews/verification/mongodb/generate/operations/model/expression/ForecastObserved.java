@@ -56,16 +56,16 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 			String month = m.format(format);
 
 			String observed = Mongo.findOne("Observed", new Document("Name", studyDocument.getString("Observed"))).getList("Filters", Document.class).stream().map(
-				f -> String.format("        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM %s.%s WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})", Settings.get("archiveDB"), String.format("%s_Observed_%s", study, f.getString("FilterName")))).collect(Collectors.joining(",\n"));
+				f -> String.format("        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM %s.%s WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})", Settings.get("archiveDb"), String.format("%s_Observed_%s", study, f.getString("FilterName")))).collect(Collectors.joining(",\n"));
 
 			String forecasts = studyDocument.getList("Forecasts", String.class).stream().map(s -> {
 				Document forecastDocument = Mongo.findOne("Forecast", new Document("Name", s));
 				return forecastDocument.getList("Filters", Document.class).stream().map(
-					f -> String.format("        Odbc.Query(Source, \"SELECT * FROM %s.%s WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")", Settings.get("archiveDB"), String.format("%s_%s_%s", study, forecastDocument.getString("ForecastName"), f.getString("FilterName")))).collect(Collectors.joining(",\n"));
+					f -> String.format("        Odbc.Query(Source, \"SELECT * FROM %s.%s WHERE filterForecastTime >= '\" & StartDate & \"' AND filterForecastTime < '\" & EndDate & \"';\")", Settings.get("archiveDb"), String.format("%s_%s_%s", study, forecastDocument.getString("ForecastName"), f.getString("FilterName")))).collect(Collectors.joining(",\n"));
 			}).collect(Collectors.joining(",\n"));
 
 			String normal = Mongo.findOne("Normal", new Document("Name", studyDocument.getString("Normal"))).getList("Filters", Document.class).stream().map(
-				f -> String.format("        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM %s.%s WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})", Settings.get("archiveDB"), String.format("%s_Normal_%s", study, f.getString("FilterName")))).collect(Collectors.joining(",\n"));
+				f -> String.format("        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM %s.%s WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})", Settings.get("archiveDb"), String.format("%s_Normal_%s", study, f.getString("FilterName")))).collect(Collectors.joining(",\n"));
 
 			template = template.replace("{database}", database);
 			template = template.replace("{month}", month);

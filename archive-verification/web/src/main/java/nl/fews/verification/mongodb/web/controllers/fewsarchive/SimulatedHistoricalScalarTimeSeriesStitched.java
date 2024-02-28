@@ -15,6 +15,6 @@ public class SimulatedHistoricalScalarTimeSeriesStitched {
 
 	@QueryMapping
 	public Document simulatedHistoricalScalarTimeSeriesStitchedById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne(Settings.get("archiveDB"), "SimulatedHistoricalScalarTimeSeriesStitched", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return  Mongo.findOne(Settings.get("archiveDb"), "SimulatedHistoricalScalarTimeSeriesStitched", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 }

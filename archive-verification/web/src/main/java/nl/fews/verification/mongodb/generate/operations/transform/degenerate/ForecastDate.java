@@ -48,7 +48,7 @@ public final class ForecastDate implements IExecute, IPredecessor {
 				String seasonalities = Conversion.getSeasonalities(StreamSupport.stream(Mongo.find("Seasonality", new Document("Name", new Document("$in", studyDocument.getList("Seasonalities", String.class)))).spliterator(), false).collect(Collectors.toList()));
 				String seasonalityColumns = Conversion.getSeasonalityColumns(studyDocument.getList("Seasonalities", String.class));
 
-				String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDB")).append("Type", "Degenerate").append("Name", "ForecastDate")).getList("Template", String.class));
+				String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDb")).append("Type", "Degenerate").append("Name", "ForecastDate")).getList("Template", String.class));
 				template = template.replace("{study}", study);
 				template = template.replace("{forecast}", forecast);
 				template = template.replace("{filterName}", filterName);

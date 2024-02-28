@@ -50,7 +50,7 @@ public final class Location implements IExecute, IPredecessor {
 				String forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth") == null ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
 				String locationMap = Conversion.getLocationMap(f.get("LocationMap", Document.class));
 
-				String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDB")).append("Type", "Degenerate").append("Name", "Location")).getList("Template", String.class));
+				String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDb")).append("Type", "Degenerate").append("Name", "Location")).getList("Template", String.class));
 				template = template.replace("{study}", study);
 				template = template.replace("{forecast}", forecast);
 				template = template.replace("{filterName}", filterName);

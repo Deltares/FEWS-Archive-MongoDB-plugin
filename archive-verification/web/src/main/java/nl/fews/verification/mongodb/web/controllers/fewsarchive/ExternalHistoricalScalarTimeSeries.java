@@ -15,6 +15,6 @@ public class ExternalHistoricalScalarTimeSeries {
 
 	@QueryMapping
 	public Document externalHistoricalScalarTimeSeriesById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne(Settings.get("archiveDB"), "ExternalHistoricalScalarTimeSeries", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return  Mongo.findOne(Settings.get("archiveDb"), "ExternalHistoricalScalarTimeSeries", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 }

@@ -44,7 +44,7 @@ public final class Forecast implements IExecute, IPredecessor {
 				String locationMap = Conversion.getLocationMap(f.get("LocationMap", Document.class));
 				String forecastClass = Conversion.getForecastClass(Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))));
 
-				String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDB")).append("Type", "Fact").append("Name", "Forecast")).getList("Template", String.class));
+				String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDb")).append("Type", "Fact").append("Name", "Forecast")).getList("Template", String.class));
 				template = template.replace("{study}", study);
 				template = template.replace("{forecast}", forecast);
 				template = template.replace("{filterName}", filterName);
