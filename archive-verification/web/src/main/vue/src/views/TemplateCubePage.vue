@@ -67,9 +67,9 @@ async function mutate(mutation){
     <div class="d-flex w-100 mt-2"><label for="i-template" class="border rounded-lg pa-2 input-label">Template</label><json-editor-vue id="i-template" mode="text" class="border rounded-lg pa-2 flex-grow-1 ml-3 input-data" @change="v => selected.Template = JSON.parse(v.text)" v-model="selected.Template"/></div>
   </div>
   <div class="mt-4">
-    <v-btn variant="outlined" @click="create">Create</v-btn>
-    <v-btn variant="outlined" class="ml-2" @click="update">Update</v-btn>
-    <v-btn variant="outlined" class="ml-2" @click="remove">Delete</v-btn>
+    <v-btn @click="create">Create</v-btn>
+    <v-btn class="ml-2" @click="update">Update</v-btn>
+    <v-btn class="ml-2" @click="remove">Delete</v-btn>
   </div>
 </div>
 </template>

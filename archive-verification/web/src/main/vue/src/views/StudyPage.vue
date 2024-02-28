@@ -101,9 +101,9 @@ async function mutate(mutation){
     <div v-if="templateCube.result.value" class="d-flex w-100 mt-2"><label for="i-cube" class="border rounded-lg pa-2 input-label">Cube</label><select id="i-cube" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Cube"><option v-for="x in templateCube.result.value.templateCubeN" :key="x.Name" :value="x.Name" :label="x.Name"/></select></div>
   </div>
   <div class="mt-4">
-    <v-btn variant="outlined" @click="create">Create</v-btn>
-    <v-btn variant="outlined" class="ml-2" @click="update">Update</v-btn>
-    <v-btn variant="outlined" class="ml-2" @click="remove">Delete</v-btn>
+    <v-btn @click="create">Create</v-btn>
+    <v-btn class="ml-2" @click="update">Update</v-btn>
+    <v-btn class="ml-2" @click="remove">Delete</v-btn>
   </div>
 </div>
 </template>

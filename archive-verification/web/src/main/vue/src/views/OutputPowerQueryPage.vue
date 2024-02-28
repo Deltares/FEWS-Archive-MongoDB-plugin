@@ -82,9 +82,9 @@ async function mutate(mutation){
     <div class="d-flex w-100 mt-2"><label for="i-expression" class="border rounded-lg pa-2 input-label">Expression</label><textarea id="i-expression" spellcheck="false" style="height: 400px; white-space: nowrap;" class="border rounded-lg pa-2 flex-grow-1 ml-3 input-data" v-model="selected.Expression"/></div>
   </div>
   <div class="mt-4">
-    <v-btn variant="outlined" @click="create">Create</v-btn>
-    <v-btn variant="outlined" class="ml-2" @click="update">Update</v-btn>
-    <v-btn variant="outlined" class="ml-2" @click="remove">Delete</v-btn>
+    <v-btn @click="create">Create</v-btn>
+    <v-btn class="ml-2" @click="update">Update</v-btn>
+    <v-btn class="ml-2" @click="remove">Delete</v-btn>
   </div>
 </div>
 </template>
