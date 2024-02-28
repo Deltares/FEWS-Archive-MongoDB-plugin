@@ -21,4 +21,5 @@ jobs:
     - run: mvn -B package --file archive-verification/web/pom.xml
     - uses: actions/upload-artifact@v4
       with:
+        name: verification
         path: ./archive-verification/web/target/verification.war
