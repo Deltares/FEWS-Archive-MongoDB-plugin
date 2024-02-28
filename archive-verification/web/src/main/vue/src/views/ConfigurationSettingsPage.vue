@@ -77,9 +77,9 @@ async function mutate(mutation){
     <div class="d-flex w-100 mt-2"><label for="i-execute" class="border rounded-lg pa-2 input-label">execute</label><div id="i-execute" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data"><input type="checkbox" class="font-weight-bold" v-model="selected.execute"/></div></div>
   </div>
   <div class="mt-4">
-    <v-btn variant="outlined" @click="create">Create</v-btn>
-    <v-btn variant="outlined" class="ml-2" @click="update">Update</v-btn>
-    <v-btn variant="outlined" class="ml-2" @click="remove">Delete</v-btn>
+    <v-btn @click="create">Create</v-btn>
+    <v-btn class="ml-2" @click="update">Update</v-btn>
+    <v-btn class="ml-2" @click="remove">Delete</v-btn>
   </div>
 </div>
 </template>
