@@ -11,12 +11,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@latest
-    - uses: actions/setup-java@latest
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
       with:
         java-version: 17
         distribution: corretto
     - run: mvn -B package --file archive-verification/web/pom.xml
-    - uses: actions/upload-artifact@latest
+    - uses: actions/upload-artifact@v4
       with:
         path: ./archive-verification/web/target/verification.war
