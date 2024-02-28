@@ -68,8 +68,8 @@ public final class TimeSeriesUtil {
 				document.append("timeseries", timeSeries);
 				document.append("startTime", timeSeries.get(0).getDate("t"));
 				document.append("endTime", timeSeries.get(timeSeries.size() - 1).getDate("t"));
-				if (timeSeries.get(0).containsKey("localStartTime")) document.append("localStartTime", timeSeries.get(0).getDate("lt"));
-				if (timeSeries.get(0).containsKey("localEndTime")) document.append("localEndTime", timeSeries.get(timeSeries.size() - 1).getDate("lt"));
+				if (timeSeries.get(0).containsKey("lt")) document.append("localStartTime", timeSeries.get(0).getDate("lt"));
+				if (timeSeries.get(timeSeries.size() - 1).containsKey("lt")) document.append("localEndTime", timeSeries.get(timeSeries.size() - 1).getDate("lt"));
 				timeSeriesDocuments.add(document);
 			});
 		}
@@ -94,7 +94,7 @@ public final class TimeSeriesUtil {
 		for (Document result: results)
 			timeSeries.putAll(result.getList("timeseries", Document.class).stream().collect(Collectors.toMap(x -> x.getDate("t"), x-> x)));
 
-		return timeSeries.values().stream().sorted(Comparator.comparing(s -> s.getDate("t"))).collect(Collectors.toList());
+		return timeSeries.values().stream().sorted(Comparator.comparing(s -> s.getDate("t"))).toList();
 	}
 
 	/**

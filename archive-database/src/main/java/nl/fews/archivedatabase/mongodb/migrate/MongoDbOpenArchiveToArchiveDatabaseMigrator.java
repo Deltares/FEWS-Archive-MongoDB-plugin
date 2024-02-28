@@ -1,7 +1,6 @@
 package nl.fews.archivedatabase.mongodb.migrate;
 
 import com.mongodb.lang.NonNull;
-import nl.fews.archivedatabase.mongodb.export.MongoDbArchiveDatabaseTimeSeriesExporter;
 import nl.fews.archivedatabase.mongodb.migrate.operations.*;
 import nl.fews.archivedatabase.mongodb.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
@@ -21,7 +20,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -107,7 +105,7 @@ public final class MongoDbOpenArchiveToArchiveDatabaseMigrator implements OpenAr
 	@Override
 	public void setProperties(@NonNull Properties properties) {
 		Settings.put("folderMaxDepth", properties.indexOf("folderMaxDepth") == -1 ? 4 : properties.getObject(properties.indexOf("folderMaxDepth")) instanceof Integer ? properties.getInt("folderMaxDepth", 4) : Integer.parseInt(properties.getString("folderMaxDepth", "4")));
-		Settings.put("valueTypes", properties.indexOf("valueTypes") == -1 ? "scalar" : Arrays.stream(properties.getString("valueTypes", "scalar").split(",")).map(String::trim).collect(Collectors.toList()));
+		Settings.put("valueTypes", properties.indexOf("valueTypes") == -1 ? "scalar" : Arrays.stream(properties.getString("valueTypes", "scalar").split(",")).map(String::trim).toList());
 		Settings.put("useBulkInsert", properties.indexOf("useBulkInsert") != -1 && (properties.getObject(properties.indexOf("useBulkInsert")) instanceof Boolean ? properties.getBool("useBulkInsert", false) : Boolean.parseBoolean(properties.getString("useBulkInsert", "false"))));
 		Settings.put("renameFinalizedCollection", properties.indexOf("renameFinalizedCollection") != -1 && (properties.getObject(properties.indexOf("renameFinalizedCollection")) instanceof Boolean ? properties.getBool("renameFinalizedCollection", true) : Boolean.parseBoolean(properties.getString("renameFinalizedCollection", "true"))));
 	}

@@ -88,7 +88,7 @@ public final class ReadBuckets implements Read {
 		 */
 		public MongoBucketCursor(MongoCursor<Document> result, String collection, Date startDate, Date endDate) {
 			super(result);
-			this.collectionKeys = Database.getCollectionKeys(collection).stream().filter(s -> !bucketKeys.contains(s)).collect(Collectors.toList());
+			this.collectionKeys = Database.getCollectionKeys(collection).stream().filter(s -> !bucketKeys.contains(s)).toList();
 			this.startDate = startDate;
 			this.endDate = endDate;
 		}
@@ -107,18 +107,18 @@ public final class ReadBuckets implements Read {
 					String nextKey = collectionKeys.stream().map(s -> peek().get(s).toString()).collect(Collectors.joining("_"));
 					if(!nextKey.equals(currentKey))
 						break;
-					events.addAll(super.next().getList("timeseries", Document.class).stream().filter(s -> !s.getDate("t").before(startDate) && !s.getDate("t").after(endDate)).collect(Collectors.toList()));
+					events.addAll(super.next().getList("timeseries", Document.class).stream().filter(s -> !s.getDate("t").before(startDate) && !s.getDate("t").after(endDate)).toList());
 				}
 				bucketKeys.forEach(next::remove);
 				if(events.isEmpty()) {
 					next.append("startTime", new Date(Long.MIN_VALUE)).append("endTime", new Date(Long.MIN_VALUE));
-					if (next.containsKey("localStartTime")) next.append("localStartTime", new Date(Long.MIN_VALUE));
-					if (next.containsKey("localEndTime")) next.append("localEndTime", new Date(Long.MIN_VALUE));
+					next.append("localStartTime", new Date(Long.MIN_VALUE));
+					next.append("localEndTime", new Date(Long.MIN_VALUE));
 				}
 				else{
 					next.append("startTime", events.get(0).getDate("t")).append("endTime", events.get(events.size() - 1).getDate("t"));
-					if (next.containsKey("localStartTime") && events.get(0).containsKey("lt")) next.append("localStartTime", events.get(0).getDate("lt"));
-					if (next.containsKey("localEndTime") && events.get(events.size() - 1).containsKey("lt")) next.append("localEndTime", events.get(events.size() - 1).getDate("lt"));
+					if (events.get(0).containsKey("lt")) next.append("localStartTime", events.get(0).getDate("lt"));
+					if (events.get(events.size() - 1).containsKey("lt")) next.append("localEndTime", events.get(events.size() - 1).getDate("lt"));
 				}
 				next.append("timeseries", events);
 			}

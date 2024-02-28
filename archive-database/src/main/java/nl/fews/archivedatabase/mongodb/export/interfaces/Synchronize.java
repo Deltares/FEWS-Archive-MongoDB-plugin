@@ -3,8 +3,6 @@ package nl.fews.archivedatabase.mongodb.export.interfaces;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import org.bson.Document;
 
-import java.util.List;
-
 public interface Synchronize {
 
 	/**

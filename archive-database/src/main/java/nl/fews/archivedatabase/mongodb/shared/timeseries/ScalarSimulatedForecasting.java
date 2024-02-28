@@ -68,8 +68,7 @@ public class ScalarSimulatedForecasting extends ScalarTimeSeries implements Time
 		document.append("ensembleMemberIndex", "ensembleMemberIndex");
 		document.append("approvedTime", "approvedTime");
 
-		if(header instanceof FewsTimeSeriesHeader) {
-			FewsTimeSeriesHeader fewsHeader = (FewsTimeSeriesHeader)header;
+		if(header instanceof FewsTimeSeriesHeader fewsHeader) {
 			int ensembleMemberIndex = fewsHeader.getEnsembleMemberIndex();
 			Date approvedTime = new Date(fewsHeader.getApprovedTime());
 
@@ -96,8 +95,7 @@ public class ScalarSimulatedForecasting extends ScalarTimeSeries implements Time
 		document.append("workflowId", "workflowId");
 		document.append("configRevisionNumber", "configRevisionNumber");
 
-		if(header instanceof FewsTimeSeriesHeader){
-			FewsTimeSeriesHeader fewsHeader = (FewsTimeSeriesHeader)header;
+		if(header instanceof FewsTimeSeriesHeader fewsHeader){
 			TaskRunDescriptor taskRun = fewsHeader.getTaskRunDescriptor();
 			TaskDescriptor taskDescriptor = taskRun.getTaskDescriptor();
 

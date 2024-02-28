@@ -12,7 +12,6 @@ import org.javatuples.Triplet;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
@@ -34,7 +33,7 @@ public final class SynchronizeBuckets extends SynchronizeBase implements Synchro
 			if (TimeSeriesTypeUtil.getTimeSeriesTypeBucket(timeSeriesType)) {
 				List<Document> insert = e.getValue().getValue0();
 				List<Document> replace = e.getValue().getValue1();
-				BucketSize bucketSize = BucketUtil.ensureBucketSize(bucketCollection, Stream.of(insert, replace).flatMap(Collection::stream).collect(Collectors.toList()));
+				BucketSize bucketSize = BucketUtil.ensureBucketSize(bucketCollection, Stream.of(insert, replace).flatMap(Collection::stream).toList());
 				bucketResized = bucketResized || bucketSize != null;
 			}
 		}

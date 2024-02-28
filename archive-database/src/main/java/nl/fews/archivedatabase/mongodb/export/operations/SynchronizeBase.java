@@ -49,9 +49,9 @@ public abstract class SynchronizeBase implements Synchronize {
 		Map<String, Triplet<List<Document>, List<Document>, List<Document>>> insertUpdateRemove = getInsertUpdateRemove(timeSeries, timeSeriesType);
 		synchronize(
 				timeSeriesType,
-				insertUpdateRemove.values().stream().flatMap(s -> s.getValue0().stream()).collect(Collectors.toList()),
-				insertUpdateRemove.values().stream().flatMap(s -> s.getValue1().stream()).collect(Collectors.toList()),
-				insertUpdateRemove.values().stream().flatMap(s -> s.getValue2().stream()).collect(Collectors.toList()));
+				insertUpdateRemove.values().stream().flatMap(s -> s.getValue0().stream()).toList(),
+				insertUpdateRemove.values().stream().flatMap(s -> s.getValue1().stream()).toList(),
+				insertUpdateRemove.values().stream().flatMap(s -> s.getValue2().stream()).toList());
 	}
 
 	/**
@@ -71,13 +71,13 @@ public abstract class SynchronizeBase implements Synchronize {
 		}
 
 		if(!replace.isEmpty()) {
-			Database.deleteMany(collection, new Document("_id", new Document("$in", replace.stream().map(s -> s.get("_id")).collect(Collectors.toList()))));
+			Database.deleteMany(collection, new Document("_id", new Document("$in", replace.stream().map(s -> s.get("_id")).toList())));
 			replace.parallelStream().forEach(ts -> Database.insertOne(collection, ts));
 			missingTimeSeriesIndexes.putAll(replace.stream().map(s -> SynchronizeBase.getTimeSeriesIndexKey(s, collection)).filter(key -> !timeSeriesIndex.containsKey(key)).distinct().collect(Collectors.toMap(s -> s, s -> s)));
 		}
 
 		if (!remove.isEmpty())
-			Database.deleteMany(collection, new Document("_id", new Document("$in", remove.stream().map(s -> s.get("_id")).collect(Collectors.toList()))));
+			Database.deleteMany(collection, new Document("_id", new Document("$in", remove.stream().map(s -> s.get("_id")).toList())));
 
 		SynchronizeBase.addMissingTimeSeriesIndexes(missingTimeSeriesIndexes);
 	}

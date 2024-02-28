@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public final class BucketUtil {
 
@@ -71,7 +70,7 @@ public final class BucketUtil {
 	 * @return Document
 	 */
 	public static List<String> getBucketKeyFields(String bucketCollection){
-		return Database.getCollectionKeys(bucketCollection).stream().filter(s -> !s.equals("bucketSize") && !s.equals("bucket")).collect(Collectors.toList());
+		return Database.getCollectionKeys(bucketCollection).stream().filter(s -> !s.equals("bucketSize") && !s.equals("bucket")).toList();
 	}
 
 	/**

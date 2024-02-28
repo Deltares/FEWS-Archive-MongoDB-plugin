@@ -33,7 +33,6 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -126,7 +125,7 @@ public final class Insert {
 			NetcdfMetaData netcdfMetaData = MetaDataUtil.getNetcdfMetaData(metaDataFile);
 			if (netcdfMetaData == null)
 				return;
-			String areaId = netcdfMetaData instanceof SimulationMetaData ? ((SimulationMetaData)netcdfMetaData).getAreaId() : null;
+			String areaId = netcdfMetaData instanceof SimulationMetaData simulationMetaData ? simulationMetaData.getAreaId() : null;
 			ArchiveRunInfo archiveRunInfo = RunInfoUtil.getRunInfo(netcdfMetaData);
 			Map<File, Pair<Date, NetcdfContent>> netcdfFiles = NetcdfUtil.getExistingNetcdfFilesFs(metaDataFile, netcdfMetaData);
 			Map<String, List<ObjectId>> allInsertedIds = new HashMap<>();
@@ -285,7 +284,7 @@ public final class Insert {
 			TimeSeries timeSeries = (TimeSeries) Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "shared.timeseries", TimeSeriesTypeUtil.getTimeSeriesTypeClassName(timeSeriesType))).getConstructor().newInstance();
 			TimeSeriesHeader header = timeSeriesArray.getHeader();
 
-			areaId = netcdfContent.getAreaId() != null && !netcdfContent.getAreaId().equals("") ? netcdfContent.getAreaId() : areaId;
+			areaId = netcdfContent.getAreaId() != null && !netcdfContent.getAreaId().isEmpty() ? netcdfContent.getAreaId() : areaId;
 
 			Document metaDataDocument = timeSeries.getMetaData(header, areaId, netcdfContent.getSourceId());
 			List<Document> eventDocuments = timeSeries.getEvents(timeSeriesArray, metaDataDocument);
@@ -320,10 +319,10 @@ public final class Insert {
 		List<ObjectId> insertedIds = new ArrayList<>();
 		try {
 			Database.insertMany(collection, timeSeries);
-			insertedIds.addAll(timeSeries.stream().map(s -> s.getObjectId("_id")).collect(Collectors.toList()));
+			insertedIds.addAll(timeSeries.stream().map(s -> s.getObjectId("_id")).toList());
 		}
 		catch (MongoBulkWriteException ex) {
-			Database.deleteMany(collection, new Document("_id", new Document("$in", timeSeries.stream().filter(s -> s.containsKey("_id") && s.getObjectId("_id") != null).map(s -> s.getObjectId("_id")).collect(Collectors.toList()))));
+			Database.deleteMany(collection, new Document("_id", new Document("$in", timeSeries.stream().filter(s -> s.containsKey("_id") && s.getObjectId("_id") != null).map(s -> s.getObjectId("_id")).toList())));
 			for (Document ts : timeSeries)
 				insertedIds.addAll(Insert.singleInsertTimeseries(collection, ts, netcdfFile));
 		}

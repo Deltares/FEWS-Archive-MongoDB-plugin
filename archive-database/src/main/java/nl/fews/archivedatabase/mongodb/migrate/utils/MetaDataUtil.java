@@ -103,7 +103,7 @@ public final class MetaDataUtil {
 
 			ExecutorService pool = Executors.newFixedThreadPool(Settings.get("netcdfReadThreads"));
 			ArrayList<Callable<Map<File, Date>>> tasks = new ArrayList<>();
-			List<Path> folders = Files.find(start, folderMaxDepth, (p, a) -> a.isDirectory() && p.getNameCount()-rootDepth == folderMaxDepth).filter(f -> areaIds == null || areaIds.isEmpty() || areaIds.stream().anyMatch(areaId -> PathUtil.containsSegment(f, areaId))).collect(Collectors.toList());
+			List<Path> folders = Files.find(start, folderMaxDepth, (p, a) -> a.isDirectory() && p.getNameCount()-rootDepth == folderMaxDepth).filter(f -> areaIds == null || areaIds.isEmpty() || areaIds.stream().anyMatch(areaId -> PathUtil.containsSegment(f, areaId))).toList();
 			progressExpected = folders.size();
 			progressCurrent = 0;
 
