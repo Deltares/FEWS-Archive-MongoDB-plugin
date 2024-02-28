@@ -2,11 +2,13 @@ name: Database
 on:
   push:
     branches: [ master ]
+    paths: 
+      - 'archive-database/**'
   pull_request:
     branches: [ master ]
+    paths: 
+      - 'archive-database/**'
   workflow_dispatch:
-    paths:
-      - 'archive-database/*'
 jobs:
   build:
     runs-on: ubuntu-latest
