@@ -1,9 +1,9 @@
 name: Database
 on:
   push:
-    branches: [ master ]
+    branches: [ FEWS-202202NA ]
   pull_request:
-    branches: [ master ]
+    branches: [ FEWS-202202NA ]
   workflow_dispatch:
     paths:
       - 'archive-database/*'
