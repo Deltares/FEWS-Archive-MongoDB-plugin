@@ -2,11 +2,13 @@ name: Verification
 on:
   push:
     branches: [ FEWS-202202NA ]
-  pull_request:
-    branches: [ FEWS-202202NA ]
-  workflow_dispatch:
     paths:
       - 'archive-verification/*'
+  pull_request:
+    branches: [ FEWS-202202NA ]
+    paths:
+      - 'archive-verification/*'
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
