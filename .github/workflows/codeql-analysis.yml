@@ -15,5 +15,6 @@ jobs:
     - uses: actions/setup-java@v4
       with:
         java-version: 17
+        distribution: corretto
     - uses: github/codeql-action/autobuild@v3
     - uses: github/codeql-action/analyze@v3
