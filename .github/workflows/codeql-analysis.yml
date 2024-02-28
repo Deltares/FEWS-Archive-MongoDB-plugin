@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: github/codeql-action/init@v3
       with:
-        languages: java
+        languages: java, javascript, html
         java-version: 17
     - uses: actions/setup-java@v4
       with:
