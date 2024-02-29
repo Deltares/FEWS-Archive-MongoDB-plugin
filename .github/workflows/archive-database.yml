@@ -1,13 +1,13 @@
-name: Verification
+name: Database
 on:
   push:
     branches: [ master ]
-    paths:
-      - 'archive-verification/**'
+    paths: 
+      - 'archive-database/archive-database/**'
   pull_request:
     branches: [ master ]
-    paths:
-      - 'archive-verification/**'
+    paths: 
+      - 'archive-database/archive-database/**'
   workflow_dispatch:
 jobs:
   build:
@@ -18,8 +18,8 @@ jobs:
       with:
         java-version: 17
         distribution: corretto
-    - run: mvn -B package --file archive-verification/web/pom.xml
+    - run: mvn -B package --file archive-database/archive-database/pom.xml
     - uses: actions/upload-artifact@v4
       with:
-        name: verification
-        path: ./archive-verification/web/target/verification.war
+        name: archive-database
+        path: ./archive-database/archive-database/target/archive-database*.jar
