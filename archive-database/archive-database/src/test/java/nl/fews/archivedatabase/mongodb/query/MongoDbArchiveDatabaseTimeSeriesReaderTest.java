@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Testcontainers
 class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 	@Container
-	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:5.0.12"));
+	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:6.0"));
 
 	@BeforeEach
 	public void setUpClass(){

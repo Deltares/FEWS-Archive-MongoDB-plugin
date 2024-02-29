@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 
 	@Container
-    public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:5.0.12"));
+    public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:6.0"));
 
 	static{
 		LogUtils.initConsole();
