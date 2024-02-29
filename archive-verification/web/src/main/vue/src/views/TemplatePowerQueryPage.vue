@@ -6,7 +6,7 @@ import { ref, computed } from "vue";
 const { result, loading, error, refetch } = useQuery(gql`query templatePowerQueryN {templatePowerQueryN {_id, Name, Template}}`)
 const selected = ref({})
 const success = ref(null)
-const sorted = computed(() => result.value && result.value.templatePowerQueryN ? result.value.templatePowerQueryN.slice().sort((a, b) => `${a.Study}_${a.Name}_${a.Month}`.localeCompare(`${b.Study}_${b.Name}_${b.Month}`)) : [])
+const sorted = computed(() => result?.value?.templatePowerQueryN ? result.value.templatePowerQueryN.slice().sort((a, b) => `${a.Study}_${a.Name}_${a.Month}`.localeCompare(`${b.Study}_${b.Name}_${b.Month}`)) : [])
 
 const createMutation = useMutation(gql`mutation createTemplatePowerQuery($name: String!, $template: String!) {createTemplatePowerQuery(name: $name, template: $template)}`)
 const updateMutation = useMutation(gql`mutation updateTemplatePowerQuery($_id: ID!, $name: String!, $template: String!) {updateTemplatePowerQuery(_id: $_id, name: $name, template: $template)}`)
@@ -16,7 +16,7 @@ async function create() {
   const {Study, Name, Month, Template} = selected.value
   let month = Month || ""
   const result = await mutate(() => createMutation.mutate({ name: Name, template: Template }))
-  selected.value._id = result && result.data ? result.data.createTemplatePowerQuery : selected.value._id
+  selected.value._id = result?.data ? result.data.createTemplatePowerQuery : selected.value._id
 }
 
 async function update() {
@@ -57,7 +57,7 @@ async function mutate(mutation){
 <v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h2>TemplatePowerQuery Editor</h2></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>TemplatePowerQuery Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
     <thead><tr>
       <th><v-icon>mdi-pencil-outline</v-icon></th>

@@ -6,7 +6,7 @@ import { ref, computed } from "vue";
 const { result, loading, error, refetch } = useQuery(gql`query outputPowerQueryN {outputPowerQueryN {_id, Study, Name, Month, Expression}}`)
 const selected = ref({})
 const success = ref(null)
-const sorted = computed(() => result.value && result.value.outputPowerQueryN ? result.value.outputPowerQueryN.slice().sort((a, b) => `${a.Study}_${a.Name}_${a.Month}`.localeCompare(`${b.Study}_${b.Name}_${b.Month}`)) : [])
+const sorted = computed(() => result?.value?.outputPowerQueryN ? result.value.outputPowerQueryN.slice().sort((a, b) => `${a.Study}_${a.Name}_${a.Month}`.localeCompare(`${b.Study}_${b.Name}_${b.Month}`)) : [])
 
 const createMutation = useMutation(gql`mutation createOutputPowerQuery($study: String!, $name: String!, $month: String!, $expression: String!) {createOutputPowerQuery(study: $study, name: $name, month: $month, expression: $expression)}`)
 const updateMutation = useMutation(gql`mutation updateOutputPowerQuery($_id: ID!, $study: String!, $name: String!, $month: String!, $expression: String!) {updateOutputPowerQuery(_id: $_id, study: $study, name: $name, month: $month, expression: $expression)}`)
@@ -16,7 +16,7 @@ async function create() {
   const {Study, Name, Month, Expression} = selected.value
   let month = Month || ""
   const result = await mutate(() => createMutation.mutate({ study: Study, name: Name, month: month, expression: Expression }))
-  selected.value._id = result && result.data ? result.data.createOutputPowerQuery : selected.value._id
+  selected.value._id = result?.data ? result.data.createOutputPowerQuery : selected.value._id
 }
 
 async function update() {
@@ -57,7 +57,7 @@ async function mutate(mutation){
 <v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h2>OutputPowerQuery Editor</h2></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>OutputPowerQuery Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
     <thead><tr>
       <th><v-icon>mdi-pencil-outline</v-icon></th>

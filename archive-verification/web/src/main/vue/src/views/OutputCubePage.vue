@@ -7,7 +7,7 @@ import JsonEditorVue from 'json-editor-vue'
 const { result, loading, error, refetch } = useQuery(gql`query outputCubeN {outputCubeN {_id, Name, Bim}}`)
 const selected = ref({})
 const success = ref(null)
-const sorted = computed(() => result.value && result.value.outputCubeN ? result.value.outputCubeN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
+const sorted = computed(() => result?.value?.outputCubeN ? result.value.outputCubeN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
 
 const createMutation = useMutation(gql`mutation createOutputCube($name: String!, $bim: JSON!) {createOutputCube(name: $name, bim: $bim)}`)
 const updateMutation = useMutation(gql`mutation updateOutputCube($_id: ID!, $name: String!, $bim: JSON!) {updateOutputCube(_id: $_id, name: $name, bim: $bim)}`)
@@ -16,7 +16,7 @@ const deleteMutation = useMutation(gql`mutation deleteOutputCube($_id: ID!) {del
 async function create() {
   const {Name, Bim} = selected.value
   const result = await mutate(() => createMutation.mutate({ name: Name, bim: Bim }))
-  selected.value._id = result && result.data ? result.data.createOutputCube : selected.value._id
+  selected.value._id = result?.data ? result.data.createOutputCube : selected.value._id
 }
 
 async function update() {
@@ -56,7 +56,7 @@ async function mutate(mutation){
 <v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h2>OutputCube Editor</h2></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>OutputCube Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
     <thead><tr><th><v-icon>mdi-pencil-outline</v-icon></th><th>Name</th><th class="w-100">Bim (JSON)</th></tr></thead>
     <tbody><tr v-for="s in sorted" :key="s._id" :title="s._id"><td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s}" v-model="selected._id" /></td><td><label :for="'r_'+s._id">{{s.Name}}</label></td><td><input type="text" class="w-100" readonly :value="JSON.stringify(s.Bim)"/></td></tr></tbody>

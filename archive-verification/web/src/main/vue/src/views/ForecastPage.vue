@@ -7,7 +7,7 @@ import JsonEditorVue from 'json-editor-vue'
 const { result, loading, error, refetch } = useQuery(gql`query forecastN {forecastN {_id, Name, ForecastName, Collection, Filters}}`)
 const selected = ref({})
 const success = ref(null)
-const sorted = computed(() => result.value && result.value.forecastN ? result.value.forecastN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
+const sorted = computed(() => result?.value?.forecastN ? result.value.forecastN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
 
 const createMutation = useMutation(gql`mutation createForecast($name: String!, $forecastName: String!, $collection: String!, $filters: JSON!) {createForecast(name: $name, forecastName: $forecastName, collection: $collection, filters: $filters)}`)
 const updateMutation = useMutation(gql`mutation updateForecast($_id: ID!, $name: String!, $forecastName: String!, $collection: String!, $filters: JSON!) {updateForecast(_id: $_id, name: $name, forecastName: $forecastName, collection: $collection, filters: $filters)}`)
@@ -16,7 +16,7 @@ const deleteMutation = useMutation(gql`mutation deleteForecast($_id: ID!) {delet
 async function create() {
   const {Name, ForecastName, Collection, Filters} = selected.value
   const result = await mutate(() => createMutation.mutate({ name: Name, forecastName: ForecastName, collection: Collection, filters: Filters }))
-  selected.value._id = result && result.data ? result.data.createForecast : selected.value._id
+  selected.value._id = result?.data ? result.data.createForecast : selected.value._id
 }
 
 async function update() {
@@ -56,7 +56,7 @@ async function mutate(mutation){
 <v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h2>Forecast Editor</h2></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>Forecast Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
     <thead><tr>
       <th><v-icon>mdi-pencil-outline</v-icon></th>

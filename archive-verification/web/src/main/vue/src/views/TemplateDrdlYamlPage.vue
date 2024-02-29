@@ -6,7 +6,7 @@ import { ref, computed } from "vue";
 const { result, loading, error, refetch } = useQuery(gql`query templateDrdlYamlN {templateDrdlYamlN {_id, Database, Type, Name, Template}}`)
 const selected = ref({})
 const success = ref(null)
-const sorted = computed(() => result.value && result.value.templateDrdlYamlN ? result.value.templateDrdlYamlN.slice().sort((a, b) => `${a.Database}_${a.Type}_${a.Name}`.localeCompare(`${b.Database}_${b.Type}_${b.Name}`)) : [])
+const sorted = computed(() => result?.value?.templateDrdlYamlN ? result.value.templateDrdlYamlN.slice().sort((a, b) => `${a.Database}_${a.Type}_${a.Name}`.localeCompare(`${b.Database}_${b.Type}_${b.Name}`)) : [])
 
 const createMutation = useMutation(gql`mutation createTemplateDrdlYaml($database: String!, $type: String!, $name: String!, $template: String!) {createTemplateDrdlYaml(database: $database, type: $type, name: $name, template: $template)}`)
 const updateMutation = useMutation(gql`mutation updateTemplateDrdlYaml($_id: ID!, $database: String!, $type: String!, $name: String!, $template: String!) {updateTemplateDrdlYaml(_id: $_id, database: $database, type: $type, name: $name, template: $template)}`)
@@ -16,7 +16,7 @@ async function create() {
   const {Database, Type, Name, Template} = selected.value
   let name = Name || ""
   const result = await mutate(() => createMutation.mutate({ database: Database, type: Type, name: name, template: Template }))
-  selected.value._id = result && result.data ? result.data.createTemplateDrdlYaml : selected.value._id
+  selected.value._id = result?.data ? result.data.createTemplateDrdlYaml : selected.value._id
 }
 
 async function update() {
@@ -57,7 +57,7 @@ async function mutate(mutation){
 <v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h2>TemplateDrdlYaml Editor</h2></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>TemplateDrdlYaml Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
     <thead><tr>
       <th><v-icon>mdi-pencil-outline</v-icon></th>

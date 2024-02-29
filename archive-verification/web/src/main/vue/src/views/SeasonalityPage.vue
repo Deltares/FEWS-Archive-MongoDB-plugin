@@ -7,7 +7,7 @@ import JsonEditorVue from 'json-editor-vue'
 const { result, loading, error, refetch } = useQuery(gql`query seasonalityN {seasonalityN {_id, Name, Breakpoint}}`)
 const selected = ref({})
 const success = ref(null)
-const sorted = computed(() => result.value && result.value.seasonalityN ? result.value.seasonalityN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
+const sorted = computed(() => result?.value?.seasonalityN ? result.value.seasonalityN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
 
 const createMutation = useMutation(gql`mutation createSeasonality($name: String!, $breakpoint: JSON!) {createSeasonality(name: $name, breakpoint: $breakpoint)}`)
 const updateMutation = useMutation(gql`mutation updateSeasonality($_id: ID!, $name: String!, $breakpoint: JSON!) {updateSeasonality(_id: $_id, name: $name, breakpoint: $breakpoint)}`)
@@ -16,7 +16,7 @@ const deleteMutation = useMutation(gql`mutation deleteSeasonality($_id: ID!) {de
 async function create() {
   const {Name, Breakpoint} = selected.value
   const result = await mutate(() => createMutation.mutate({ name: Name, breakpoint: Breakpoint }))
-  selected.value._id = result && result.data ? result.data.createSeasonality : selected.value._id
+  selected.value._id = result?.data ? result.data.createSeasonality : selected.value._id
 }
 
 async function update() {
@@ -56,7 +56,7 @@ async function mutate(mutation){
 <v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h2>Seasonality Editor</h2></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>Seasonality Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
     <thead><tr><th><v-icon>mdi-pencil-outline</v-icon></th><th>Name</th><th class="w-100">Breakpoint (JSON)</th></tr></thead>
     <tbody><tr v-for="s in sorted" :key="s._id" :title="s._id"><td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s}" v-model="selected._id" /></td><td><label :for="'r_'+s._id">{{s.Name}}</label></td><td><input type="text" class="w-100" readonly :value="JSON.stringify(s.Breakpoint)"/></td></tr></tbody>

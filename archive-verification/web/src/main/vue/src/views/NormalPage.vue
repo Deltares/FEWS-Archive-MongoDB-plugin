@@ -7,7 +7,7 @@ import JsonEditorVue from 'json-editor-vue'
 const { result, loading, error, refetch } = useQuery(gql`query normalN {normalN {_id, Name, Collection, Filters}}`)
 const selected = ref({})
 const success = ref(null)
-const sorted = computed(() => result.value && result.value.normalN ? result.value.normalN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
+const sorted = computed(() => result?.value?.normalN ? result.value.normalN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
 
 const createMutation = useMutation(gql`mutation createNormal($name: String!, $collection: String!, $filters: JSON!) {createNormal(name: $name, collection: $collection, filters: $filters)}`)
 const updateMutation = useMutation(gql`mutation updateNormal($_id: ID!, $name: String!, $collection: String!, $filters: JSON!) {updateNormal(_id: $_id, name: $name, collection: $collection, filters: $filters)}`)
@@ -16,7 +16,7 @@ const deleteMutation = useMutation(gql`mutation deleteNormal($_id: ID!) {deleteN
 async function create() {
   const {Name, Collection, Filters} = selected.value
   const result = await mutate(() => createMutation.mutate({ name: Name, collection: Collection, filters: Filters }))
-  selected.value._id = result && result.data ? result.data.createNormal : selected.value._id
+  selected.value._id = result?.data ? result.data.createNormal : selected.value._id
 }
 
 async function update() {
@@ -56,7 +56,7 @@ async function mutate(mutation){
 <v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h2>Normal Editor</h2></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>Normal Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
     <thead><tr>
       <th><v-icon>mdi-pencil-outline</v-icon></th>
