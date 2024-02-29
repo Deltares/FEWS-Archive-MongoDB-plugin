@@ -3,11 +3,11 @@ on:
   push:
     branches: [ FEWS-202202NA ]
     paths:
-      - 'archive-verification/**'
+      - 'archive-verification/archive-verification/**'
   pull_request:
     branches: [ FEWS-202202NA ]
     paths:
-      - 'archive-verification/**'
+      - 'archive-verification/archive-verification/**'
   workflow_dispatch:
 jobs:
   build:
@@ -18,8 +18,8 @@ jobs:
       with:
         java-version: 17
         distribution: corretto
-    - run: mvn -B package --file archive-verification/web/pom.xml
+    - run: mvn -B package --file archive-verification/archive-verification/pom.xml
     - uses: actions/upload-artifact@v4
       with:
-        name: verification
-        path: ./archive-verification/web/target/verification.war
+        name: archive-verification
+        path: ./archive-verification/archive-verification/target/verification.war
