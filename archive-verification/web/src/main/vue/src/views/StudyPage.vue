@@ -27,7 +27,7 @@ const deleteMutation = useMutation(gql`mutation deleteStudy($_id: ID!) {deleteSt
 async function create() {
   const {Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube} = selected.value
   const result = await mutate(() => createMutation.mutate({ name: Name, observed: Observed, forecasts: Forecasts, seasonalities: Seasonalities, _class: Class, locationAttributes: LocationAttributes, forecastStartMonth: ForecastStartMonth, forecastEndMonth: ForecastEndMonth, time: Time, value: Value, normal: Normal, cube: Cube }))
-  selected.value._id = result && result.data ? result.data.createStudy : selected.value._id
+  selected.value._id = result?.data ? result.data.createStudy : selected.value._id
 }
 
 async function update() {
@@ -80,7 +80,7 @@ async function mutate(mutation){
 <v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h2>Study Editor</h2></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>Study Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
     <thead><tr><th><v-icon>mdi-pencil-outline</v-icon></th><th>Name</th><th class="w-100">Study (JSON)</th></tr></thead>
     <tbody><tr v-for="s in studySorted" :key="s._id" :title="s._id"><td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s}" v-model="selected._id" /></td><td><label :for="'r_'+s._id">{{s.Name}}</label></td><td><input type="text" class="w-100" readonly :value="JSON.stringify(s)"/></td></tr></tbody>

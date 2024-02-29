@@ -7,7 +7,7 @@ import JsonEditorVue from 'json-editor-vue'
 const { result, loading, error, refetch } = useQuery(gql`query templateCubeN {templateCubeN {_id, Name, Template}}`)
 const selected = ref({})
 const success = ref(null)
-const sorted = computed(() => result.value && result.value.templateCubeN ? result.value.templateCubeN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
+const sorted = computed(() => result?.value?.templateCubeN ? result.value.templateCubeN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
 
 const createMutation = useMutation(gql`mutation createTemplateCube($name: String!, $template: JSON!) {createTemplateCube(name: $name, template: $template)}`)
 const updateMutation = useMutation(gql`mutation updateTemplateCube($_id: ID!, $name: String!, $template: JSON!) {updateTemplateCube(_id: $_id, name: $name, template: $template)}`)
@@ -16,7 +16,7 @@ const deleteMutation = useMutation(gql`mutation deleteTemplateCube($_id: ID!) {d
 async function create() {
   const {Name, Template} = selected.value
   const result = await mutate(() => createMutation.mutate({ name: Name, template: Template }))
-  selected.value._id = result && result.data ? result.data.createTemplateCube : selected.value._id
+  selected.value._id = result?.data ? result.data.createTemplateCube : selected.value._id
 }
 
 async function update() {
@@ -56,7 +56,7 @@ async function mutate(mutation){
 <v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h2>TemplateCube Editor</h2></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>TemplateCube Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
     <thead><tr><th><v-icon>mdi-pencil-outline</v-icon></th><th>Name</th><th class="w-100">Template (JSON)</th></tr></thead>
     <tbody><tr v-for="s in sorted" :key="s._id" :title="s._id"><td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s}" v-model="selected._id" /></td><td><label :for="'r_'+s._id">{{s.Name}}</label></td><td><input type="text" class="w-100" readonly :value="JSON.stringify(s.Template)"/></td></tr></tbody>

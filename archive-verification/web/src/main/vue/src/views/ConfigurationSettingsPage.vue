@@ -6,7 +6,7 @@ import { ref, computed } from "vue";
 const { result, loading, error, refetch } = useQuery(gql`query configurationSettingsN {configurationSettingsN {_id, toEmailAddresses, fromEmailAddress, drdlYamlPath, environment, threads, cubeAdmins, cubeUsers, bimPath, databaseConnectionString, smtpServer, tabularConnectionString, drdlYamlServiceRestart, execute}}`)
 const selected = ref({})
 const success = ref(null)
-const sorted = computed(() => result.value && result.value.configurationSettingsN ? result.value.configurationSettingsN.slice().sort((a, b) => a.environment.localeCompare(b.environment)) : [])
+const sorted = computed(() => result?.value?.configurationSettingsN ? result.value.configurationSettingsN.slice().sort((a, b) => a.environment.localeCompare(b.environment)) : [])
 
 const createMutation = useMutation(gql`mutation createConfigurationSettings($toEmailAddresses: String!, $fromEmailAddress: String!, $drdlYamlPath: String!, $environment: String!, $threads: Int!, $cubeAdmins: String!, $cubeUsers: String!, $bimPath: String!, $databaseConnectionString: String!, $smtpServer: String!, $tabularConnectionString: String!,$drdlYamlServiceRestart: String!, $execute: Boolean!) {createConfigurationSettings(toEmailAddresses: $toEmailAddresses, fromEmailAddress: $fromEmailAddress, drdlYamlPath: $drdlYamlPath, environment: $environment, threads: $threads, cubeAdmins: $cubeAdmins, cubeUsers: $cubeUsers, bimPath: $bimPath, databaseConnectionString: $databaseConnectionString, smtpServer: $smtpServer, tabularConnectionString: $tabularConnectionString, drdlYamlServiceRestart: $drdlYamlServiceRestart, execute: $execute)}`)
 const updateMutation = useMutation(gql`mutation updateConfigurationSettings($_id: ID!, $toEmailAddresses: String!, $fromEmailAddress: String!, $drdlYamlPath: String!, $environment: String!, $threads: Int!, $cubeAdmins: String!, $cubeUsers: String!, $bimPath: String!, $databaseConnectionString: String!, $smtpServer: String!, $tabularConnectionString: String!,$drdlYamlServiceRestart: String!, $execute: Boolean!) {updateConfigurationSettings(_id: $_id, toEmailAddresses: $toEmailAddresses, fromEmailAddress: $fromEmailAddress, drdlYamlPath: $drdlYamlPath, environment: $environment, threads: $threads, cubeAdmins: $cubeAdmins, cubeUsers: $cubeUsers, bimPath: $bimPath, databaseConnectionString: $databaseConnectionString, smtpServer: $smtpServer, tabularConnectionString: $tabularConnectionString, drdlYamlServiceRestart: $drdlYamlServiceRestart, execute: $execute)}`)
@@ -15,7 +15,7 @@ const deleteMutation = useMutation(gql`mutation deleteConfigurationSettings($_id
 async function create() {
   const {toEmailAddresses, fromEmailAddress, drdlYamlPath, environment, threads, cubeAdmins, cubeUsers, bimPath, databaseConnectionString, smtpServer, tabularConnectionString, drdlYamlServiceRestart, execute} = selected.value
   const result = await mutate(() => createMutation.mutate({ toEmailAddresses: toEmailAddresses, fromEmailAddress: fromEmailAddress, drdlYamlPath: drdlYamlPath, environment: environment, threads: threads, cubeAdmins: cubeAdmins, cubeUsers: cubeUsers, bimPath: bimPath, databaseConnectionString: databaseConnectionString, smtpServer: smtpServer, tabularConnectionString: tabularConnectionString, drdlYamlServiceRestart: drdlYamlServiceRestart, execute: execute }))
-  selected.value._id = result && result.data ? result.data.createConfigurationSettings : selected.value._id
+  selected.value._id = result?.data ? result.data.createConfigurationSettings : selected.value._id
 }
 
 async function update() {
@@ -55,7 +55,7 @@ async function mutate(mutation){
 <v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h2>ConfigurationSettings Editor</h2></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>ConfigurationSettings Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
     <thead><tr><th><v-icon>mdi-pencil-outline</v-icon></th><th>environment</th><th class="w-100">Settings (JSON)</th></tr></thead>
     <tbody><tr v-for="s in sorted" :key="s._id" :title="s._id"><td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s}" v-model="selected._id" /></td><td><label :for="'r_'+s._id">{{s.environment}}</label></td><td><input type="text" class="w-100" readonly :value="JSON.stringify(s)"/></td></tr></tbody>
