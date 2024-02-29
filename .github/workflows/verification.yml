@@ -3,11 +3,11 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'archive-verification/*'
+      - 'archive-verification/**'
   pull_request:
     branches: [ master ]
     paths:
-      - 'archive-verification/*'
+      - 'archive-verification/**'
   workflow_dispatch:
 jobs:
   build:
