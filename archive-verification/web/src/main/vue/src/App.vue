@@ -26,19 +26,20 @@ function updateClock() {
 
 <template>
   <v-app>
-    <v-app-bar color="#f8f8f8" flat class="d-flex align-center border-b border-opacity-50">
+    <v-app-bar color="#f8f8f8" density="compact" flat class="d-flex align-center border-b border-opacity-25">
       <v-app-bar-nav-icon @click="drawer = !drawer"/>
-      <v-app-bar-title><router-link class="text-h5 link" to="/">TVA VERIFICATION</router-link></v-app-bar-title>
+      <v-app-bar-title><router-link class="text-h6 link" to="/">TVA VERIFICATION</router-link></v-app-bar-title>
       <v-divider vertical/>
       <div class="pa-4" title="Location"><v-icon>mdi-map-marker-outline</v-icon>{{route}}</div><v-divider vertical/>
       <div class="pa-4" title="User"><v-icon>mdi-account-outline</v-icon>{{computedUser}}</div><v-divider vertical/>
       <div class="pa-4" title="Clock"><v-icon>mdi-clock-outline</v-icon></div>
-      <div class="pr-2" title="Clock" style="font-family: monospace; font-size: 10pt; line-height: 10pt" v-html="clock"></div>
+      <div class="pr-2" title="Clock" style="font-family: monospace; font-size: 10pt; line-height: 9pt" v-html="clock"></div>
     </v-app-bar>
 
     <v-navigation-drawer color="#f8f8f8" class="border-r border-opacity-50" rail v-model="drawer">
       <v-list density="compact" nav>
         <v-list-item prepend-icon="mdi-home-outline" to="/" :title.attr="'Home'"/>
+        <v-list-item prepend-icon="mdi-cog-outline" to="/configurationSettings" :title.attr="'Settings'"/>
         <v-divider></v-divider>
         <v-list-item prepend-icon="mdi-check-all" :title.attr="'Verification'">
           <v-menu activator="parent" location="left" open-on-hover>
@@ -79,8 +80,6 @@ function updateClock() {
             </v-list>
           </v-menu>
         </v-list-item>
-        <v-divider></v-divider>
-        <v-list-item prepend-icon="mdi-cog-outline" to="/configurationSettings" :title.attr="'Settings'"/>
       </v-list>
     </v-navigation-drawer>
 

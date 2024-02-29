@@ -7,53 +7,70 @@
     <div class="position-absolute bg-transparent">
       <v-card width="400" class="ma-6 rounded-xl text-white bg-transparent" variant="flat">
         <div class="pa-2" style="background-color: #000000cc; border-bottom: solid 1px #999999;">
-          <v-card-title class="text-h5">TVA VERIFICATION</v-card-title>
-          <v-card-subtitle class="text-sm-body-1">Forecast Analytics System</v-card-subtitle>
+          <v-card-title class="text-h6">TVA VERIFICATION</v-card-title>
+          <v-card-subtitle>Forecast Analytics System</v-card-subtitle>
         </div>
-        <v-list density="compact" class="pb-6 text-white" style="background-color: #000000a0;">
-          <v-list-item prepend-icon="mdi-home-outline" to="/">Home</v-list-item>
-          <v-list-item style="background-color: #00000032" prepend-icon="mdi-check-all">Verification</v-list-item>
-          <div class="ml-14">
-            <v-list-item prepend-icon="mdi-link" to="/class">Class</v-list-item>
-            <v-list-item prepend-icon="mdi-link" to="/forecast">Forecast</v-list-item>
-            <v-list-item prepend-icon="mdi-link" to="/locationAttributes">LocationAttributes</v-list-item>
-            <v-list-item prepend-icon="mdi-link" to="/normal">Normal</v-list-item>
-            <v-list-item prepend-icon="mdi-link" to="/observed">Observed</v-list-item>
-            <v-list-item prepend-icon="mdi-link" to="/seasonality">Seasonality</v-list-item>
-            <v-list-item prepend-icon="mdi-link" to="/study">Study</v-list-item>
-          </div>
-          <v-list-item style="background-color: #00000032" prepend-icon="mdi-waves">Fews</v-list-item>
-          <div class="ml-14">
-            <v-list-item prepend-icon="mdi-link" to="/fewsLocations">Locations</v-list-item>
-            <v-list-item prepend-icon="mdi-link" to="/fewsParameters">Parameters</v-list-item>
-            <v-list-item prepend-icon="mdi-link" to="/fewsQualifiers">Qualifiers</v-list-item>
-          </div>
-          <v-list-item style="background-color: #00000032" prepend-icon="mdi-export">Output</v-list-item>
-          <div class="ml-14">
-            <v-list-item prepend-icon="mdi-link" to="/outputCube">Cube</v-list-item>
-            <v-list-item prepend-icon="mdi-link" to="/outputPowerQuery">PowerQuery</v-list-item>
-          </div>
-          <v-list-item style="background-color: #00000032" prepend-icon="mdi-artboard">Template</v-list-item>
-          <div class="ml-14">
-            <v-list-item prepend-icon="mdi-link" to="/templateCube">Cube</v-list-item>
-            <v-list-item prepend-icon="mdi-link" to="/templateDrdlYaml">DrdlYaml</v-list-item>
-            <v-list-item prepend-icon="mdi-link" to="/templatePowerQuery">PowerQuery</v-list-item>
-          </div>
-          <v-list-item prepend-icon="mdi-cog-outline" to="/configurationSettings">Settings</v-list-item>
-        </v-list>
+        <div class="pa-6" style="background-color: #000000a0;">
+          <ul class="ml-4 mb-4">
+            <li><a href="/"><span class="mdi mdi-home-outline"/>Home</a></li>
+            <li><a href="/configurationSettings"><span class="mdi mdi-cog-outline"/>Settings</a></li>
+          </ul>
+          <div><span class="mdi mdi-check-all mr-2"/>Verification</div>
+          <ul class="ml-4 mb-4">
+            <li><a href="/class"><span class="mdi mdi-link"/>Class</a></li>
+            <li><a href="/forecast"><span class="mdi mdi-link"/>Forecast</a></li>
+            <li><a href="/locationAttributes"><span class="mdi mdi-link"/>LocationAttributes</a></li>
+            <li><a href="/normal"><span class="mdi mdi-link"/>Normal</a></li>
+            <li><a href="/observed"><span class="mdi mdi-link"/>Observed</a></li>
+            <li><a href="/seasonality"><span class="mdi mdi-link"/>Seasonality</a></li>
+            <li><a href="/study"><span class="mdi mdi-link"/>Study</a></li>
+          </ul>
+          <div><span class="mdi mdi-waves mr-2"/>Fews</div>
+          <ul class="ml-4 mb-4">
+            <li><a href="/fewsLocations"><span class="mdi mdi-link"/>Locations</a></li>
+            <li><a href="/fewsParameters"><span class="mdi mdi-link"/>Parameters</a></li>
+            <li><a href="/fewsQualifiers"><span class="mdi mdi-link"/>Qualifiers</a></li>
+          </ul>
+          <div><span class="mdi mdi-export mr-2"/>Output</div>
+          <ul class="ml-4 mb-4">
+            <li><a href="/outputCube"><span class="mdi mdi-link"/>Cube</a></li>
+            <li><a href="/outputPowerQuery"><span class="mdi mdi-link"/>PowerQuery</a></li>
+          </ul>
+          <div><span class="mdi mdi-artboard mr-2"/>Template</div>
+          <ul class="ml-4 mb-4">
+            <li><a href="/templateCube"><span class="mdi mdi-link"/>Cube</a></li>
+            <li><a href="/templateDrdlYaml"><span class="mdi mdi-link"/>DrdlYaml</a></li>
+            <li><a href="/templatePowerQuery"><span class="mdi mdi-link"/>PowerQuery</a></li>
+          </ul>
+        </div>
       </v-card>
     </div>
   </div>
 </template>
 
 <style scoped>
-.v-list div{
-  padding: 5px 15px 15px;
+ul span {
+  margin-right: 10px;
+  width: 20px;
 }
-.v-list div .v-list-item{
-  min-height: unset;
-  padding: 0;
+
+a {
+  color: white;
+  text-decoration: none;
 }
+
+a:hover{
+  color: #dddddd;
+  span{
+    color:orange;
+  }
+}
+
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
 .home-bg{
   background: url('@/assets/background2.jpg') top left / cover no-repeat fixed;
   height: 100%;
