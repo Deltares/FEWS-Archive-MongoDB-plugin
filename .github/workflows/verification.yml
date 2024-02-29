@@ -3,11 +3,11 @@ on:
   push:
     branches: [ FEWS-202202NA ]
     paths:
-      - 'archive-verification/*'
+      - 'archive-verification/**'
   pull_request:
     branches: [ FEWS-202202NA ]
     paths:
-      - 'archive-verification/*'
+      - 'archive-verification/**'
   workflow_dispatch:
 jobs:
   build:
