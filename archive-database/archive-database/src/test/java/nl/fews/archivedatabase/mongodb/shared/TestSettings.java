@@ -38,8 +38,7 @@ public class TestSettings {
 			Settings.put("valueTypes", List.of("scalar"));
 			Settings.put("runInfoFileName", "runInfo.xml");
 			Settings.put("archiveDatabaseUserName", "fews_admin");
-			String testType = testSettings != null && InetAddress.getLocalHost().getHostName().equalsIgnoreCase(testSettings.getString("hostName")) ? "full" : "minimal";
-			Settings.put("baseDirectoryArchive", Paths.get("src", "test", "resources", testType).toAbsolutePath().toString());
+			Settings.put("baseDirectoryArchive", Paths.get("src", "test", "resources").toAbsolutePath().toString());
 
 			Settings.put("archiveDatabaseUnitConverter", new TestUtil.ArchiveDatabaseUnitConverterTestImplementation());
 			Settings.put("archiveDatabaseTimeConverter", new TestUtil.ArchiveDatabaseTimeConverterTestImplementation());
