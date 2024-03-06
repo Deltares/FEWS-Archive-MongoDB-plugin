@@ -30,7 +30,7 @@ public final class Observed implements IExecute, IPredecessor {
 		Document observedDocument = Mongo.findOne("Observed", new Document("Name", studyDocument.getString("Observed")));
 		String collection = observedDocument.getString("Collection");
 		observedDocument.getList("Filters", Document.class).forEach(f -> {
-			String filter = Conversion.getFilter(f.get("Filter", Document.class));
+			String filter = f.get("Filter", Document.class).toJson();
 			String filterName = f.getString("FilterName");
 			String startTime = Conversion.getStartTime(studyDocument.getString("Time"));
 			String endTime = Conversion.getEndTime(studyDocument.getString("Time"));

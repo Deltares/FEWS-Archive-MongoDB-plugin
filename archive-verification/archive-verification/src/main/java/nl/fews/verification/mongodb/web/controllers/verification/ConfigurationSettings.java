@@ -11,7 +11,6 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.StreamSupport;
 
 @Controller
@@ -45,7 +44,9 @@ public class ConfigurationSettings {
 			@Argument String smtpServer,
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
-			@Argument boolean execute){
+			@Argument boolean execute,
+			@Argument String archiveDb,
+			@Argument String taskInterval){
 		return Mongo.insertOne("configuration.Settings",
 				new Document("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)
@@ -60,6 +61,8 @@ public class ConfigurationSettings {
 				.append("tabularConnectionString", tabularConnectionString)
 				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
 				.append("execute", execute)
+				.append("archiveDb", archiveDb)
+				.append("taskInterval", taskInterval)
 		).getInsertedId().asObjectId().getValue().toString();
 	}
 
@@ -78,7 +81,9 @@ public class ConfigurationSettings {
 			@Argument String smtpServer,
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
-			@Argument boolean execute){
+			@Argument boolean execute,
+			@Argument String archiveDb,
+			@Argument String taskInterval){
 		return Mongo.updateOne("configuration.Settings", new Document("_id", new ObjectId(_id)), new Document("$set",
 				new Document("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)
@@ -92,7 +97,9 @@ public class ConfigurationSettings {
 				.append("smtpServer", smtpServer)
 				.append("tabularConnectionString", tabularConnectionString)
 				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
-				.append("execute", execute))).getModifiedCount();
+				.append("execute", execute)
+				.append("archiveDb", archiveDb)
+				.append("taskInterval", taskInterval))).getModifiedCount();
 	}
 
 	@MutationMapping
