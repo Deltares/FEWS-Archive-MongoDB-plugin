@@ -11,7 +11,6 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -19,12 +18,12 @@ import java.util.stream.StreamSupport;
 public class ConfigurationSettings {
 	@QueryMapping
 	public Document configurationSettingsById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne("configuration.Settings", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return Mongo.findOne("configuration.Settings", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
 	public Document configurationSettingsByEnvironment(@Argument String environment, DataFetchingEnvironment e){
-		return  Mongo.findOne("configuration.Settings", new Document("Environment", environment), Conversion.getProjection(e));
+		return Mongo.findOne("configuration.Settings", new Document("Environment", environment), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
@@ -33,13 +32,75 @@ public class ConfigurationSettings {
 	}
 
 	@MutationMapping
-	public String createConfigurationSettings(@Argument Map<String, Object> document){
-		return Mongo.insertOne("configuration.Settings", new Document(document)).getInsertedId().asObjectId().getValue().toString();
+	public String createConfigurationSettings(
+			@Argument String toEmailAddresses,
+			@Argument String fromEmailAddress,
+			@Argument String drdlYamlPath,
+			@Argument String environment,
+			@Argument int threads,
+			@Argument String cubeAdmins,
+			@Argument String cubeUsers,
+			@Argument String bimPath,
+			@Argument String databaseConnectionString,
+			@Argument String smtpServer,
+			@Argument String tabularConnectionString,
+			@Argument String drdlYamlServiceRestart,
+			@Argument boolean execute,
+			@Argument String archiveDb,
+			@Argument String taskInterval){
+		return Mongo.insertOne("configuration.Settings",
+				new Document("toEmailAddresses", toEmailAddresses)
+				.append("fromEmailAddress", fromEmailAddress)
+				.append("drdlYamlPath", drdlYamlPath)
+				.append("environment", environment)
+				.append("threads", threads)
+				.append("cubeAdmins", cubeAdmins)
+				.append("cubeUsers", cubeUsers)
+				.append("bimPath", bimPath)
+				.append("databaseConnectionString", databaseConnectionString)
+				.append("smtpServer", smtpServer)
+				.append("tabularConnectionString", tabularConnectionString)
+				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
+				.append("execute", execute)
+				.append("archiveDb", archiveDb)
+				.append("taskInterval", taskInterval)
+		).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateConfigurationSettings(@Argument String _id, @Argument Map<String, Object> document){
-		return Mongo.updateOne("configuration.Settings", new Document("_id", new ObjectId(_id)), new Document(document)).getModifiedCount();
+	public Long updateConfigurationSettings(
+			@Argument String _id,
+			@Argument String toEmailAddresses,
+			@Argument String fromEmailAddress,
+			@Argument String drdlYamlPath,
+			@Argument String environment,
+			@Argument int threads,
+			@Argument String cubeAdmins,
+			@Argument String cubeUsers,
+			@Argument String bimPath,
+			@Argument String databaseConnectionString,
+			@Argument String smtpServer,
+			@Argument String tabularConnectionString,
+			@Argument String drdlYamlServiceRestart,
+			@Argument boolean execute,
+			@Argument String archiveDb,
+			@Argument String taskInterval){
+		return Mongo.updateOne("configuration.Settings", new Document("_id", new ObjectId(_id)), new Document("$set",
+				new Document("toEmailAddresses", toEmailAddresses)
+				.append("fromEmailAddress", fromEmailAddress)
+				.append("drdlYamlPath", drdlYamlPath)
+				.append("environment", environment)
+				.append("threads", threads)
+				.append("cubeAdmins", cubeAdmins)
+				.append("cubeUsers", cubeUsers)
+				.append("bimPath", bimPath)
+				.append("databaseConnectionString", databaseConnectionString)
+				.append("smtpServer", smtpServer)
+				.append("tabularConnectionString", tabularConnectionString)
+				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
+				.append("execute", execute)
+				.append("archiveDb", archiveDb)
+				.append("taskInterval", taskInterval))).getModifiedCount();
 	}
 
 	@MutationMapping

@@ -50,7 +50,7 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 		Document studyDocument = Mongo.findOne("Study", new Document("Name", study));
 		String database = Settings.get("databaseConnectionString");
 		DateTimeFormatter format = Conversion.getMonthDateTimeFormatter();
-		YearMonth endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth") == null ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format);
+		YearMonth endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format);
 		for(YearMonth m = YearMonth.parse(studyDocument.getString("ForecastStartMonth")); m.compareTo(endMonth) <= 0; m = m.plusMonths(1)){
 			String template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", "ForecastObserved")).getList("Template", String.class));
 			String month = m.format(format);

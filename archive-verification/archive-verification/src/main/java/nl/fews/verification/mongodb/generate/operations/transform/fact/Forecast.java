@@ -36,7 +36,7 @@ public final class Forecast implements IExecute, IPredecessor {
 			String collection = forecastDocument.getString("Collection");
 			String forecast = forecastDocument.getString("ForecastName");
 			forecastDocument.getList("Filters", Document.class).forEach(f -> {
-				String filter = Conversion.getFilter(f.get("Filter", Document.class));
+				String filter = f.get("Filter", Document.class).toJson();
 				String filterName = f.getString("FilterName");
 				String forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
 				String eventTime = Conversion.getEventTime(studyDocument.getString("Time"));

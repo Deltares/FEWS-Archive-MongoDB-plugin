@@ -1,6 +1,7 @@
 package nl.fews.verification.mongodb.generate;
 
 import nl.fews.verification.mongodb.shared.io.IO;
+import nl.fews.verification.mongodb.shared.mail.Mail;
 import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.json.JSONObject;
 
@@ -48,6 +49,7 @@ public final class GenerateTimer {
 					}
 					catch (Exception ex) {
 						logger.warn(ex.getMessage(), ex);
+						Mail.send("ERROR - Verification GenerateTimer", ex.toString());
 					}
 					finally {
 						running = false;
@@ -59,5 +61,6 @@ public final class GenerateTimer {
 			}
 		};
 		timer.scheduleAtFixedRate(task, delay, Duration.parse(Settings.get("taskInterval")).toMillis());
+		Mail.send("INFO - Verification GenerateTimer", "Started");
 	}
 }

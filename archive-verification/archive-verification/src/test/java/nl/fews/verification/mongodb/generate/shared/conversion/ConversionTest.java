@@ -44,11 +44,6 @@ class ConversionTest {
 	}
 
 	@Test
-	void getFilter() {
-        assertEquals("\n        {\n          \"key\": \"value\"\n        }", Conversion.getFilter(new Document("key", "value")));
-	}
-
-	@Test
 	void getForecastTime() {
 		assertEquals("localForecastTime", Conversion.getForecastTime("local"));
 		assertEquals("forecastTime", Conversion.getForecastTime("other"));

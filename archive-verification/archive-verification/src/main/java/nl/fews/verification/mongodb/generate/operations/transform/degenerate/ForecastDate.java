@@ -40,11 +40,11 @@ public final class ForecastDate implements IExecute, IPredecessor {
 			DateTimeFormatter format = Conversion.getMonthDateTimeFormatter();
 			String forecast = forecastDocument.getString("ForecastName");
 			forecastDocument.getList("Filters", Document.class).forEach(f -> {
-				String filter = Conversion.getFilter(f.get("Filter", Document.class));
+				String filter = f.get("Filter", Document.class).toJson();
 				String filterName = f.getString("FilterName");
 				String forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
 				String forecastStartMonth = studyDocument.getString("ForecastStartMonth");
-				String forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth") == null ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
+				String forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
 				String seasonalities = Conversion.getSeasonalities(StreamSupport.stream(Mongo.find("Seasonality", new Document("Name", new Document("$in", studyDocument.getList("Seasonalities", String.class)))).spliterator(), false).collect(Collectors.toList()));
 				String seasonalityColumns = Conversion.getSeasonalityColumns(studyDocument.getList("Seasonalities", String.class));
 

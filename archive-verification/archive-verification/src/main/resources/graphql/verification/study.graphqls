@@ -7,7 +7,7 @@ type Study {
 	Class: String!
 	LocationAttributes: String!
 	ForecastStartMonth: String!
-	ForecastEndMonth: String
+	ForecastEndMonth: String!
 	Time: String!
 	Value: String!
 	Normal: String!
@@ -19,7 +19,7 @@ extend type Query {
 	studyN: [Study]
 }
 extend type Mutation {
-	createStudy(name: String!, observed: String!, forecasts: [String!]!, seasonalities: [String!]!, _class: String!, locationAttributes: String!, forecastStartMonth: String!, forecastEndMonth: String, time: String!, value: String!, normal: String!, cube: String!): ID
-	updateStudy(_id: ID!, name: String!, observed: String!, forecasts: [String!]!, seasonalities: [String!]!, _class: String!, locationAttributes: String!, forecastStartMonth: String!, forecastEndMonth: String, time: String!, value: String!, normal: String!, cube: String!): Int
+	createStudy(name: String!, observed: String!, forecasts: [String!]!, seasonalities: [String!]!, _class: String!, locationAttributes: String!, forecastStartMonth: String!, forecastEndMonth: String!, time: String!, value: String!, normal: String!, cube: String!): ID
+	updateStudy(_id: ID!, name: String!, observed: String!, forecasts: [String!]!, seasonalities: [String!]!, _class: String!, locationAttributes: String!, forecastStartMonth: String!, forecastEndMonth: String!, time: String!, value: String!, normal: String!, cube: String!): Int
 	deleteStudy(_id: ID!): Int
 }

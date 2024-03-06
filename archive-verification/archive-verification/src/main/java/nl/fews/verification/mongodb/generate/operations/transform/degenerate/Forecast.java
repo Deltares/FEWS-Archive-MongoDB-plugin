@@ -29,8 +29,6 @@ public final class Forecast implements IExecute, IPredecessor {
 	 * information such as collection, forecast name, filters, and time range. For each filter in the filters list,
 	 * replaces the placeholders in the template DRDL YAML file with the corresponding values, and writes the updated
 	 * template to a file named "{study}_{forecast}_Forecast_{filterName}.drdl.yml" in the specified DRDL YAML path.
-	 *
-	 * Note: This method does not return any value.
 	 */
 	@Override
 	public void execute(){
@@ -41,11 +39,11 @@ public final class Forecast implements IExecute, IPredecessor {
 			DateTimeFormatter format = Conversion.getMonthDateTimeFormatter();
 			String forecast = forecastDocument.getString("ForecastName");
 			forecastDocument.getList("Filters", Document.class).forEach(f -> {
-				String filter = Conversion.getFilter(f.get("Filter", Document.class));
+				String filter = f.get("Filter", Document.class).toJson();
 				String filterName = f.getString("FilterName");
 				String forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
 				String forecastStartMonth = studyDocument.getString("ForecastStartMonth");
-				String forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth") == null ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
+				String forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
 
 				String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDb")).append("Type", "Degenerate").append("Name", "Forecast")).getList("Template", String.class));
 				template = template.replace("{study}", study);
