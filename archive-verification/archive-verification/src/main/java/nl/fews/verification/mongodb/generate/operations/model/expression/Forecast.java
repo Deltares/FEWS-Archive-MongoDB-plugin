@@ -58,7 +58,7 @@ public final class Forecast implements IExecute, IPredecessor {
 		template = template.replace("{database}", database);
 		template = template.replace("{queries}", queries);
 
-		Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", "Forecast").append("Month", "").append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).toList()));
+		Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", "Forecast").append("Month", "").append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).collect(Collectors.toList())));
 	}
 
 	/**
