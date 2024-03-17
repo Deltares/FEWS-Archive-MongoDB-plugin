@@ -25,11 +25,12 @@ public class Deploy {
 	 */
 	public static void execute(){
 		IO.deleteFiles(Path.of(Settings.get("bimPath"), ""));
-		Mongo.find("Study", new Document()).forEach(study ->
+		Mongo.find("Study", new Document("Active", true)).forEach(study ->
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(Deploy.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));
 		var result = (String)IO.execute(Settings.get("drdlYamlServiceRestart"))[1];
 		if (!result.contains("2  START_PENDING") || !result.contains("4  RUNNING"))
 			throw new RuntimeException(result);
 		IO.writeString(Path.of(Settings.get("bimPath"), "Settings.json").toString(), Settings.toJsonString(2));
+		Mongo.updateOne("configuration.Settings", new Document(), new Document("$set", new Document("reprocessCubes", "")));
 	}
 }

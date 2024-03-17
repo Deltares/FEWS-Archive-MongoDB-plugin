@@ -33,13 +33,67 @@ public class Study {
 	}
 	
 	@MutationMapping
-	public String createStudy(@Argument Map<String, Object> document){
-		return Mongo.insertOne("Study", new Document(document)).getInsertedId().asObjectId().getValue().toString();
+	public String createStudy(
+			@Argument String name,
+			@Argument String observed,
+			@Argument List<String> forecasts,
+			@Argument List<String> seasonalities,
+			@Argument String _class,
+			@Argument String locationAttributes,
+			@Argument String forecastStartMonth,
+			@Argument String forecastEndMonth,
+			@Argument String time,
+			@Argument String value,
+			@Argument String normal,
+			@Argument String cube,
+			@Argument boolean active){
+		return Mongo.insertOne("Study",
+				new Document("Name", name)
+				.append("Observed", observed)
+				.append("Forecasts", forecasts)
+				.append("Seasonalities", seasonalities)
+				.append("Class", _class)
+				.append("LocationAttributes", locationAttributes)
+				.append("ForecastStartMonth", forecastStartMonth)
+				.append("ForecastEndMonth", forecastEndMonth)
+				.append("Time", time)
+				.append("Value", value)
+				.append("Normal", normal)
+				.append("Cube", cube)
+				.append("Active", active)
+		).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateStudy(@Argument String _id, @Argument Map<String, Object> document){
-		return Mongo.updateOne("Study", new Document("_id", new ObjectId(_id)), new Document(document)).getModifiedCount();
+	public Long updateStudy(
+			@Argument String _id,
+			@Argument String name,
+			@Argument String observed,
+			@Argument List<String> forecasts,
+			@Argument List<String> seasonalities,
+			@Argument String _class,
+			@Argument String locationAttributes,
+			@Argument String forecastStartMonth,
+			@Argument String forecastEndMonth,
+			@Argument String time,
+			@Argument String value,
+			@Argument String normal,
+			@Argument String cube,
+			@Argument boolean active){
+		return Mongo.updateOne("Study", new Document("_id", new ObjectId(_id)), new Document("$set",
+				new Document("Name", name)
+				.append("Observed", observed)
+				.append("Forecasts", forecasts)
+				.append("Seasonalities", seasonalities)
+				.append("Class", _class)
+				.append("LocationAttributes", locationAttributes)
+				.append("ForecastStartMonth", forecastStartMonth)
+				.append("ForecastEndMonth", forecastEndMonth)
+				.append("Time", time)
+				.append("Value", value)
+				.append("Normal", normal)
+				.append("Cube", cube)
+				.append("Active", active))).getModifiedCount();
 	}
 
 	@MutationMapping

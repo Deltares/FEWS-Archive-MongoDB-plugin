@@ -116,7 +116,7 @@ public class Conversion {
 			return "\"NA\"";
 		}
 		return String.format("{\"$switch\":\n          {\"branches\": [\n%s\n          ],\n          \"default\": \"undefinedLocation\"}}", _class.getList("Locations", Document.class).stream().map(
-			l -> String.format("            {\"case\": {\"$or\": [{\"$eq\": [\"$location\", \"\"]}, {\"$eq\": [\"$location\", \"%s\"]}]}, \"then\": %s}", l.getString("Location"), String.format("{\"$switch\":\n              {\"branches\": [\n%s\n              ],\n              \"default\": \"undefinedValue\"}}", l.getList("Breakpoint", Document.class).stream().map(
+			l -> String.format("            {\"case\": {\"$or\": [{\"$eq\": [\"\", \"%s\"]}, {\"$eq\": [\"$location\", \"%s\"]}]}, \"then\": %s}", l.getString("Location"), l.getString("Location"), String.format("{\"$switch\":\n              {\"branches\": [\n%s\n              ],\n              \"default\": \"undefinedValue\"}}", l.getList("Breakpoint", Document.class).stream().map(
 				b -> String.format("                {\"case\": {\"$%s\": [\"$%s\", %s]}, \"then\": \"%s\"}", b.getString("Operator"), classType, b.get("Threshold"), b.getString("Name"))).collect(Collectors.joining(",\n"))))).collect(Collectors.joining(",\n")));
 	}
 }

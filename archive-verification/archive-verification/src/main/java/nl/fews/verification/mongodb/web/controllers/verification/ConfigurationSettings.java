@@ -47,7 +47,10 @@ public class ConfigurationSettings {
 			@Argument String drdlYamlServiceRestart,
 			@Argument boolean execute,
 			@Argument String archiveDb,
-			@Argument String taskInterval){
+			@Argument String taskInterval,
+			@Argument String databaseConnectionAesPassword,
+			@Argument String databaseConnectionUsername,
+			@Argument int parallelPartitions){
 		return Mongo.insertOne("configuration.Settings",
 				new Document("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)
@@ -64,6 +67,9 @@ public class ConfigurationSettings {
 				.append("execute", execute)
 				.append("archiveDb", archiveDb)
 				.append("taskInterval", taskInterval)
+				.append("databaseConnectionAesPassword", databaseConnectionAesPassword)
+				.append("databaseConnectionUsername", databaseConnectionUsername)
+				.append("parallelPartitions", parallelPartitions)
 		).getInsertedId().asObjectId().getValue().toString();
 	}
 
@@ -84,7 +90,10 @@ public class ConfigurationSettings {
 			@Argument String drdlYamlServiceRestart,
 			@Argument boolean execute,
 			@Argument String archiveDb,
-			@Argument String taskInterval){
+			@Argument String taskInterval,
+			@Argument String databaseConnectionAesPassword,
+			@Argument String databaseConnectionUsername,
+			@Argument int parallelPartitions){
 		return Mongo.updateOne("configuration.Settings", new Document("_id", new ObjectId(_id)), new Document("$set",
 				new Document("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)
@@ -100,7 +109,10 @@ public class ConfigurationSettings {
 				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
 				.append("execute", execute)
 				.append("archiveDb", archiveDb)
-				.append("taskInterval", taskInterval))).getModifiedCount();
+				.append("taskInterval", taskInterval)
+				.append("databaseConnectionAesPassword", databaseConnectionAesPassword)
+				.append("databaseConnectionUsername", databaseConnectionUsername)
+				.append("parallelPartitions", parallelPartitions))).getModifiedCount();
 	}
 
 	@MutationMapping

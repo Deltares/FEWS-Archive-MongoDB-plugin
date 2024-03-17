@@ -12,35 +12,35 @@
         </div>
         <div class="pa-6" style="background-color: #000000a0;">
           <ul class="ml-4 mb-4">
-            <li><a href="/"><span class="mdi mdi-home-outline"/>Home</a></li>
-            <li><a href="/configurationSettings"><span class="mdi mdi-cog-outline"/>Settings</a></li>
+            <li><router-link to="/"><span class="mdi mdi-home-outline"/>Home</router-link></li>
+            <li><router-link to="/configurationSettings"><span class="mdi mdi-cog-outline"/>Settings</router-link></li>
           </ul>
           <div><span class="mdi mdi-check-all mr-2"/>Verification</div>
           <ul class="ml-4 mb-4">
-            <li><a href="/class"><span class="mdi mdi-link"/>Class</a></li>
-            <li><a href="/forecast"><span class="mdi mdi-link"/>Forecast</a></li>
-            <li><a href="/locationAttributes"><span class="mdi mdi-link"/>LocationAttributes</a></li>
-            <li><a href="/normal"><span class="mdi mdi-link"/>Normal</a></li>
-            <li><a href="/observed"><span class="mdi mdi-link"/>Observed</a></li>
-            <li><a href="/seasonality"><span class="mdi mdi-link"/>Seasonality</a></li>
-            <li><a href="/study"><span class="mdi mdi-link"/>Study</a></li>
+            <li><router-link to="/class"><span class="mdi mdi-link"/>Class</router-link></li>
+            <li><router-link to="/forecast"><span class="mdi mdi-link"/>Forecast</router-link></li>
+            <li><router-link to="/locationAttributes"><span class="mdi mdi-link"/>LocationAttributes</router-link></li>
+            <li><router-link to="/normal"><span class="mdi mdi-link"/>Normal</router-link></li>
+            <li><router-link to="/observed"><span class="mdi mdi-link"/>Observed</router-link></li>
+            <li><router-link to="/seasonality"><span class="mdi mdi-link"/>Seasonality</router-link></li>
+            <li><router-link to="/study"><span class="mdi mdi-link"/>Study</router-link></li>
           </ul>
           <div><span class="mdi mdi-waves mr-2"/>Fews</div>
           <ul class="ml-4 mb-4">
-            <li><a href="/fewsLocations"><span class="mdi mdi-link"/>Locations</a></li>
-            <li><a href="/fewsParameters"><span class="mdi mdi-link"/>Parameters</a></li>
-            <li><a href="/fewsQualifiers"><span class="mdi mdi-link"/>Qualifiers</a></li>
+            <li><router-link to="/fewsLocations"><span class="mdi mdi-link"/>Locations</router-link></li>
+            <li><router-link to="/fewsParameters"><span class="mdi mdi-link"/>Parameters</router-link></li>
+            <li><router-link to="/fewsQualifiers"><span class="mdi mdi-link"/>Qualifiers</router-link></li>
           </ul>
           <div><span class="mdi mdi-export mr-2"/>Output</div>
           <ul class="ml-4 mb-4">
-            <li><a href="/outputCube"><span class="mdi mdi-link"/>Cube</a></li>
-            <li><a href="/outputPowerQuery"><span class="mdi mdi-link"/>PowerQuery</a></li>
+            <li><router-link to="/outputCube"><span class="mdi mdi-link"/>Cube</router-link></li>
+            <li><router-link to="/outputPowerQuery"><span class="mdi mdi-link"/>PowerQuery</router-link></li>
           </ul>
           <div><span class="mdi mdi-artboard mr-2"/>Template</div>
           <ul class="ml-4 mb-4">
-            <li><a href="/templateCube"><span class="mdi mdi-link"/>Cube</a></li>
-            <li><a href="/templateDrdlYaml"><span class="mdi mdi-link"/>DrdlYaml</a></li>
-            <li><a href="/templatePowerQuery"><span class="mdi mdi-link"/>PowerQuery</a></li>
+            <li><router-link to="/templateCube"><span class="mdi mdi-link"/>Cube</router-link></li>
+            <li><router-link to="/templateDrdlYaml"><span class="mdi mdi-link"/>DrdlYaml</router-link></li>
+            <li><router-link to="/templatePowerQuery"><span class="mdi mdi-link"/>PowerQuery</router-link></li>
           </ul>
         </div>
       </v-card>

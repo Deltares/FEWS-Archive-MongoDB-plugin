@@ -33,13 +33,13 @@ public class Normal {
 	}
 	
 	@MutationMapping
-	public String createNormal(@Argument Map<String, Object> document){
-		return Mongo.insertOne("Normal", new Document(document)).getInsertedId().asObjectId().getValue().toString();
+	public String createNormal(@Argument String name, @Argument String collection, @Argument int generateDays, @Argument List<Map<String, Object>> filters){
+		return Mongo.insertOne("Normal", new Document("Name", name).append("Collection", collection).append("GenerateDays", generateDays).append("Filters", filters)).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateNormal(@Argument String _id, @Argument Map<String, Object> document){
-		return Mongo.updateOne("Normal", new Document("_id", new ObjectId(_id)), new Document(document)).getModifiedCount();
+	public Long updateNormal(@Argument String _id, @Argument String name, @Argument String collection, @Argument int generateDays, @Argument List<Map<String, Object>> filters){
+		return Mongo.updateOne("Normal", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Name", name).append("Collection", collection).append("GenerateDays", generateDays).append("Filters", filters))).getModifiedCount();
 	}
 
 	@MutationMapping

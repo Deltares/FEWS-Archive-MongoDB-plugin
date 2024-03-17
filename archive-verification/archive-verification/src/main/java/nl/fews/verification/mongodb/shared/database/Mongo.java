@@ -29,12 +29,12 @@ public final class Mongo {
 	private Mongo(){}
 
 	static{
-		String connectionString = Settings.get("mongoArchiveDbConnection");
+		String connectionString = Settings.get("mongoVerificationDbConnection");
 		Mongo.database = new ConnectionString(connectionString).getDatabase();
 	}
 
 	private static synchronized MongoClient create(){
-		String connectionString = Settings.get("mongoArchiveDbConnection");
+		String connectionString = Settings.get("mongoVerificationDbConnection");
 		if (Mongo.mongoClient == null || Mongo.connectionString == null || !Mongo.connectionString.equals(connectionString)) {
 			Mongo.mongoClient = MongoClients.create(connectionString);
 			if(Mongo.connectionString == null || !Mongo.connectionString.equals(connectionString)){

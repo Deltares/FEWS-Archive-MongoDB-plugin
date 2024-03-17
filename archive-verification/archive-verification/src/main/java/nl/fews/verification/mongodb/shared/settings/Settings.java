@@ -40,8 +40,8 @@ public final class Settings {
 
 	static{
 		try {
-			String mongoArchiveDbConnection = getMongoArchiveDbConnection();
-			getSettings(mongoArchiveDbConnection, InetAddress.getLocalHost().getHostName().toUpperCase());
+			String mongoVerificationDbConnection = getMongoVerificationDbConnection();
+			getSettings(mongoVerificationDbConnection, InetAddress.getLocalHost().getHostName().toUpperCase());
 		}
 		catch (Exception ex){
 			logger.error(ex.getMessage(), ex);
@@ -50,65 +50,65 @@ public final class Settings {
 	}
 
 	/**
-	 * Retrieves and sets the settings for the given mongoArchiveDbConnection and hostName.
+	 * Retrieves and sets the settings for the given mongoVerificationDbConnection and hostName.
 	 * If the settings for the given hostName are not found in the database, it will fallback
 	 * to the "Default" settings.
 	 *
-	 * @param mongoArchiveDbConnection the connection string for the MongoDB archive database
+	 * @param mongoDbConnection the connection string for the MongoDB database
 	 * @param hostName the name of the host environment
 	 */
-	private static void getSettings(String mongoArchiveDbConnection, String hostName){
-		Settings.put("mongoArchiveDbConnection", mongoArchiveDbConnection);
-		try (MongoClient db = MongoClients.create(mongoArchiveDbConnection)) {
+	private static void getSettings(String mongoDbConnection, String hostName){
+		Settings.put("mongoVerificationDbConnection", mongoDbConnection);
+		try (MongoClient db = MongoClients.create(mongoDbConnection)) {
 			Document settings = db.getDatabase("Verification").getCollection("configuration.Settings").find(new Document("environment", hostName)).limit(1).projection(new Document("_id", 0)).first();
 			if(settings == null) {
 				logger.warn(String.format("[%s] not found in database settings.  Using [Default] instead.", hostName));
 				settings = db.getDatabase("Verification").getCollection("configuration.Settings").find(new Document("environment", "Default")).limit(1).projection(new Document("_id", 0)).first();
 			}
 			if(settings == null) {
-				throw new RuntimeException(String.format("[Default] settings not found on [%s]", mongoArchiveDbConnection.replaceAll("^.*@", "")));
+				throw new RuntimeException(String.format("[Default] settings not found on [%s]", mongoDbConnection.replaceAll("^.*@", "")));
 			}
 			settings.forEach(Settings::put);
 		}
 	}
 
 	/**
-	 * Retrieves the MongoDB archive database connection string.
+	 * Retrieves the MongoDB database connection string.
 	 *
-	 * @return The MongoDB archive database connection string.
-	 * @throws RuntimeException If the [FEWS_ARCHIVE_DB_CONNECTION] environment variable is not found or the connection string is invalid.
+	 * @return The MongoDB database connection string.
+	 * @throws RuntimeException If the [FEWS_VERIFICATION_DB_CONNECTION] environment variable is not found or the connection string is invalid.
 	 */
-	private static String getMongoArchiveDbConnection(){
-		String mongoArchiveDbConnection = System.getenv("FEWS_ARCHIVE_DB_CONNECTION");
-		String mongoArchiveDbUsername = System.getenv("FEWS_ARCHIVE_DB_USERNAME");
-		String mongoArchiveDbAesPassword = System.getenv("FEWS_ARCHIVE_DB_AES_PASSWORD");
+	private static String getMongoVerificationDbConnection(){
+		String mongoVerificationDbConnection = System.getenv("FEWS_VERIFICATION_DB_CONNECTION");
+		String mongoVerificationDbUsername = System.getenv("FEWS_VERIFICATION_DB_USERNAME");
+		String mongoVerificationDbAesPassword = System.getenv("FEWS_VERIFICATION_DB_AES_PASSWORD");
 		String userDnsDomain = System.getenv("USERDNSDOMAIN");
 
-		if (mongoArchiveDbConnection == null || mongoArchiveDbConnection.isEmpty()) {
-			throw new RuntimeException("[FEWS_ARCHIVE_DB_CONNECTION] environment variable not found.");
+		if (mongoVerificationDbConnection == null || mongoVerificationDbConnection.isEmpty()) {
+			throw new RuntimeException("[FEWS_VERIFICATION_DB_CONNECTION] environment variable not found.");
 		}
 
 		try {
-			return validMongoArchiveDbConnection(mongoArchiveDbConnection);
+			return validMongoVerificationDbConnection(mongoVerificationDbConnection);
 		}
 		catch (Exception ex){
 			//TRY NEXT
 		}
 
-		if (mongoArchiveDbUsername != null && !mongoArchiveDbUsername.isEmpty() && mongoArchiveDbAesPassword != null && !mongoArchiveDbAesPassword.isEmpty()){
+		if (mongoVerificationDbUsername != null && !mongoVerificationDbUsername.isEmpty() && mongoVerificationDbAesPassword != null && !mongoVerificationDbAesPassword.isEmpty()){
 			try{
-				var m = Pattern.compile("^(.+://)(.+)$").matcher(mongoArchiveDbConnection);
-				return validMongoArchiveDbConnection(m.find() ? m.replaceFirst(String.format("$1%s:%s@$2", mongoArchiveDbUsername, Crypto.decrypt(mongoArchiveDbAesPassword))) : mongoArchiveDbConnection);
+				var m = Pattern.compile("^(.+://)(.+)$").matcher(mongoVerificationDbConnection);
+				return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s:%s@$2", mongoVerificationDbUsername, Crypto.decrypt(mongoVerificationDbAesPassword))) : mongoVerificationDbConnection);
 			}
 			catch (Exception ex){
 				//TRY NEXT
 			}
 		}
 
-		if (!mongoArchiveDbConnection.contains("@")){
+		if (!mongoVerificationDbConnection.contains("@")){
 			try{
-				var m = Pattern.compile("^(.+://)(.+)$").matcher(mongoArchiveDbConnection);
-			 	return validMongoArchiveDbConnection(m.find() ? m.replaceFirst(String.format("$1%s%%40%s@$2", System.getProperty("user.name"), userDnsDomain)) : mongoArchiveDbConnection);
+				var m = Pattern.compile("^(.+://)(.+)$").matcher(mongoVerificationDbConnection);
+			 	return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s%%40%s@$2", System.getProperty("user.name"), userDnsDomain)) : mongoVerificationDbConnection);
 			}
 			catch (Exception ex){
 				//TRY NEXT
@@ -116,39 +116,39 @@ public final class Settings {
 		}
 
 		try {
-			var m = Pattern.compile("^(.+:.+:)(.+)(@.+)$").matcher(mongoArchiveDbConnection);
-			return validMongoArchiveDbConnection(m.find() ? m.replaceFirst(String.format("$1%s$3", Crypto.decrypt(m.group(2)))) : mongoArchiveDbConnection);
+			var m = Pattern.compile("^(.+:.+:)(.+)(@.+)$").matcher(mongoVerificationDbConnection);
+			return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s$3", Crypto.decrypt(m.group(2)))) : mongoVerificationDbConnection);
 		}
 		catch (Exception ex) {
 			//TRY NEXT
 		}
 
 		try {
-			return validMongoArchiveDbConnection(Crypto.decrypt(mongoArchiveDbConnection));
+			return validMongoVerificationDbConnection(Crypto.decrypt(mongoVerificationDbConnection));
 		}
 		catch (Exception ex){
 			//TRY NEXT
 		}
 
-		throw new RuntimeException(String.format("Connection string [%s] is invalid.", mongoArchiveDbConnection));
+		throw new RuntimeException(String.format("Connection string [%s] is invalid.", mongoVerificationDbConnection));
 	}
 
 	/**
-	 * Validates the given MongoDB archive database connection string.
+	 * Validates the given MongoDB database connection string.
 	 *
-	 * @param mongoArchiveDbConnection the connection string for the MongoDB archive database
+	 * @param mongoVerificationDbConnection the connection string for the MongoDB database
 	 * @return the validated connection string if it is valid
 	 * @throws RuntimeException if the connection string is invalid
 	 */
-	private static String validMongoArchiveDbConnection(String mongoArchiveDbConnection){
-		if(new ConnectionString(mongoArchiveDbConnection).getHosts().isEmpty()){
-			throw new RuntimeException(String.format("Connection string [%s] is invalid.", mongoArchiveDbConnection));
+	private static String validMongoVerificationDbConnection(String mongoVerificationDbConnection){
+		if(new ConnectionString(mongoVerificationDbConnection).getHosts().isEmpty()){
+			throw new RuntimeException(String.format("Connection string [%s] is invalid.", mongoVerificationDbConnection));
 		}
 
-		try(var x = MongoClients.create(mongoArchiveDbConnection)){
+		try(var x = MongoClients.create(mongoVerificationDbConnection)){
 			x.listDatabaseNames().first();
 		}
-		return mongoArchiveDbConnection;
+		return mongoVerificationDbConnection;
 	}
 
 	/**

@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { ref, computed } from "vue";
 
-const study = useQuery(gql`query studyN {studyN {_id, Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube}}`)
+const study = useQuery(gql`query studyN {studyN {_id, Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube, Active}}`)
 const observed = useQuery(gql`query observedN {observedN {_id, Name}}`)
 const forecast = useQuery(gql`query forecastN {forecastN {_id, Name}}`)
 const normal = useQuery(gql`query normalN {normalN {_id, Name}}`)
@@ -20,19 +20,19 @@ const loading = computed(() => study.loading.value || observed.loading.value || 
 const error = computed(() => study.error.value || observed.error.value || forecast.error.value || normal.error.value || seasonality.error.value || _class.error.value || locationAttributes.error.value || templateCube.error.value || mutateError.value)
 const studySorted = computed(() => study.result.value && study.result.value.studyN ? study.result.value.studyN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
 
-const createMutation = useMutation(gql`mutation createStudy($name: String!, $observed: String!, $forecasts: [String!]!, $seasonalities: [String!]!, $_class: String!, $locationAttributes: String!, $forecastStartMonth: String!, $forecastEndMonth: String!, $time: String!, $value: String!, $normal: String!, $cube: String!) {createStudy(name: $name, observed: $observed, forecasts: $forecasts, seasonalities: $seasonalities, _class: $_class, locationAttributes: $locationAttributes, forecastStartMonth: $forecastStartMonth, forecastEndMonth: $forecastEndMonth, time: $time, value: $value, normal: $normal, cube: $cube)}`)
-const updateMutation = useMutation(gql`mutation updateStudy($_id: ID!, $name: String!, $observed: String!, $forecasts: [String!]!, $seasonalities: [String!]!, $_class: String!, $locationAttributes: String!, $forecastStartMonth: String!, $forecastEndMonth: String!, $time: String!, $value: String!, $normal: String!, $cube: String!) {updateStudy(_id: $_id, name: $name, observed: $observed, forecasts: $forecasts, seasonalities: $seasonalities, _class: $_class, locationAttributes: $locationAttributes, forecastStartMonth: $forecastStartMonth, forecastEndMonth: $forecastEndMonth, time: $time, value: $value, normal: $normal, cube: $cube)}`)
+const createMutation = useMutation(gql`mutation createStudy($name: String!, $observed: String!, $forecasts: [String!]!, $seasonalities: [String!]!, $_class: String!, $locationAttributes: String!, $forecastStartMonth: String!, $forecastEndMonth: String!, $time: String!, $value: String!, $normal: String!, $cube: String!, $active: Boolean!) {createStudy(name: $name, observed: $observed, forecasts: $forecasts, seasonalities: $seasonalities, _class: $_class, locationAttributes: $locationAttributes, forecastStartMonth: $forecastStartMonth, forecastEndMonth: $forecastEndMonth, time: $time, value: $value, normal: $normal, cube: $cube, active: $active)}`)
+const updateMutation = useMutation(gql`mutation updateStudy($_id: ID!, $name: String!, $observed: String!, $forecasts: [String!]!, $seasonalities: [String!]!, $_class: String!, $locationAttributes: String!, $forecastStartMonth: String!, $forecastEndMonth: String!, $time: String!, $value: String!, $normal: String!, $cube: String!, $active: Boolean!) {updateStudy(_id: $_id, name: $name, observed: $observed, forecasts: $forecasts, seasonalities: $seasonalities, _class: $_class, locationAttributes: $locationAttributes, forecastStartMonth: $forecastStartMonth, forecastEndMonth: $forecastEndMonth, time: $time, value: $value, normal: $normal, cube: $cube, active: $active)}`)
 const deleteMutation = useMutation(gql`mutation deleteStudy($_id: ID!) {deleteStudy(_id: $_id)}`)
 
 async function create() {
-  const {Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube} = selected.value
-  const result = await mutate(() => createMutation.mutate({ name: Name, observed: Observed, forecasts: Forecasts, seasonalities: Seasonalities, _class: Class, locationAttributes: LocationAttributes, forecastStartMonth: ForecastStartMonth, forecastEndMonth: ForecastEndMonth, time: Time, value: Value, normal: Normal, cube: Cube }))
+  const {Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube, Active} = selected.value
+  const result = await mutate(() => createMutation.mutate({ name: Name, observed: Observed, forecasts: Forecasts, seasonalities: Seasonalities, _class: Class, locationAttributes: LocationAttributes, forecastStartMonth: ForecastStartMonth, forecastEndMonth: ForecastEndMonth, time: Time, value: Value, normal: Normal, cube: Cube, active: Active }))
   selected.value._id = result?.data ? result.data.createStudy : selected.value._id
 }
 
 async function update() {
-  const {_id, Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube} = selected.value
-  await mutate(() => updateMutation.mutate({ _id: _id, name: Name, observed: Observed, forecasts: Forecasts, seasonalities: Seasonalities, _class: Class, locationAttributes: LocationAttributes, forecastStartMonth: ForecastStartMonth, forecastEndMonth: ForecastEndMonth, time: Time, value: Value, normal: Normal, cube: Cube }))
+  const {_id, Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube, Active} = selected.value
+  await mutate(() => updateMutation.mutate({ _id: _id, name: Name, observed: Observed, forecasts: Forecasts, seasonalities: Seasonalities, _class: Class, locationAttributes: LocationAttributes, forecastStartMonth: ForecastStartMonth, forecastEndMonth: ForecastEndMonth, time: Time, value: Value, normal: Normal, cube: Cube, active: Active }))
 }
 
 async function remove() {
@@ -99,6 +99,7 @@ async function mutate(mutation){
     <div class="d-flex w-100 mt-2"><label for="i-value" class="border rounded-lg pa-2 input-label">Value</label><select id="i-value" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Value"><option value="display" label="display"/><option value="native" label="native"/></select></div>
     <div v-if="normal.result.value" class="d-flex w-100 mt-2"><label for="i-normal" class="border rounded-lg pa-2 input-label">Normal</label><select id="i-normal" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Normal"><option v-for="x in normal.result.value.normalN" :key="x.Name" :value="x.Name" :label="x.Name"/></select></div>
     <div v-if="templateCube.result.value" class="d-flex w-100 mt-2"><label for="i-cube" class="border rounded-lg pa-2 input-label">Cube</label><select id="i-cube" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Cube"><option v-for="x in templateCube.result.value.templateCubeN" :key="x.Name" :value="x.Name" :label="x.Name"/></select></div>
+    <div class="d-flex w-100 mt-2"><label for="i-active" class="border rounded-lg pa-2 input-label">Active</label><div id="i-active" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data"><input type="checkbox" class="font-weight-bold" v-model="selected.Active"/></div></div>
   </div>
   <div class="mt-4">
     <v-btn @click="create">Create</v-btn>

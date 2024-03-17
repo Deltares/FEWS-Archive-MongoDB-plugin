@@ -56,7 +56,7 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 			String month = m.format(format);
 
 			String observed = Mongo.findOne("Observed", new Document("Name", studyDocument.getString("Observed"))).getList("Filters", Document.class).stream().map(
-				f -> String.format("        Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM %s.%s WHERE endTime >= '\" & StartDate & \"' AND startTime < '\" & ObservedEndDate & \"' AND eventTime >= '\" & StartDate & \"' AND eventTime < '\" & ObservedEndDate & \"';\"), {\"startTime\", \"endTime\"})", Settings.get("archiveDb"), String.format("%s_Observed_%s", study, f.getString("FilterName")))).collect(Collectors.joining(",\n"));
+				f -> String.format("        Odbc.Query(Source, \"SELECT * FROM %s.%s WHERE location IN (\" & Locations & \") AND endTime >= '\" & EventTimeStart & \"' AND startTime < '\" & EventTimeEnd & \"' AND eventTime >= '\" & EventTimeStart & \"' AND eventTime < '\" & EventTimeEnd & \"';\")", Settings.get("archiveDb"), String.format("%s_Observed_%s", study, f.getString("FilterName")))).collect(Collectors.joining(",\n"));
 
 			String forecasts = studyDocument.getList("Forecasts", String.class).stream().map(s -> {
 				Document forecastDocument = Mongo.findOne("Forecast", new Document("Name", s));
@@ -65,7 +65,7 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 			}).collect(Collectors.joining(",\n"));
 
 			String normal = Mongo.findOne("Normal", new Document("Name", studyDocument.getString("Normal"))).getList("Filters", Document.class).stream().map(
-				f -> String.format("        Table.Join(Table.RemoveColumns(Odbc.Query(Source, \"SELECT * FROM %s.%s WHERE location IN (\" & Locations & \") AND endTime >= '\" & StartDate & \"' AND startTime < '\" & EndDate & \"' AND forecastTime >= '\" & StartDate & \"' AND forecastTime < '\" & EndDate & \"';\"), {\"startTime\", \"endTime\"}), {\"location\", \"forecastTime\"}, Table.Distinct(Table.SelectColumns(DistinctForecasts, {\"location\", \"forecastTime\"})), {\"location\", \"forecastTime\"})", Settings.get("archiveDb"), String.format("%s_Normal_%s", study, f.getString("FilterName")))).collect(Collectors.joining(",\n"));
+				f -> String.format("        Odbc.Query(Source, \"SELECT * FROM %s.%s WHERE location IN (\" & Locations & \") AND HOUR(forecastTime) IN (\" & ForecastTimeHours & \") AND endTime >= '\" & ForecastTimeStart & \"' AND startTime < '\" & ForecastTimeEnd & \"' AND forecastTime >= '\" & ForecastTimeStart & \"' AND forecastTime < '\" & ForecastTimeEnd & \"';\")", Settings.get("archiveDb"), String.format("%s_Normal_%s", study, f.getString("FilterName")))).collect(Collectors.joining(",\n"));
 
 			template = template.replace("{database}", database);
 			template = template.replace("{month}", month);
@@ -73,7 +73,7 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 			template = template.replace("{forecasts}", forecasts);
 			template = template.replace("{normal}", normal);
 
-			Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", "ForecastObserved").append("Month", month).append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).collect(Collectors.toList())));
+			Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", "ForecastObserved").append("Month", month).append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).toList()));
 		}
 	}
 
