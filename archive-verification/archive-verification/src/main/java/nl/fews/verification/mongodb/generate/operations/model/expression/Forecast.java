@@ -49,8 +49,11 @@ public final class Forecast implements IExecute, IPredecessor {
 		String queries = studyDocument.getList("Forecasts", String.class).stream().map(s -> {
 			Document forecastDocument = Mongo.findOne("Forecast", new Document("Name", s));
 			return forecastDocument.getList("Filters", Document.class).stream().map(
-				f -> String.format("        Odbc.Query(Source, \"SELECT * FROM %s.%s\")", Settings.get("archiveDb"), String.format("%s_%s_Forecast_%s", study, forecastDocument.getString("ForecastName"), f.getString("FilterName")))).collect(Collectors.joining(",\n"));
+				f -> String.format("        Odbc.Query(Source, \"SELECT forecastId, forecast, ensemble, ensembleMember FROM %s.%s\")", Settings.get("archiveDb"), String.format("%s_%s_Forecast_%s", study, forecastDocument.getString("ForecastName"), f.getString("FilterName")))).collect(Collectors.joining(",\n"));
 		}).collect(Collectors.joining(",\n"));
+		if(!studyDocument.getString("Normal").isEmpty()){
+			queries = String.format("%s,\n        Odbc.Query(Source, \"SELECT 'Normal' AS forecastId, 'Normal' AS forecast, '' AS ensemble, '' AS ensembleMember\")", queries);
+		}
 
 		template = template.replace("{database}", database);
 		template = template.replace("{queries}", queries);

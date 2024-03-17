@@ -47,7 +47,7 @@ public final class MongoIndex {
 	}
 
 	private static synchronized MongoClient create(){
-		String connectionString = Settings.get("mongoArchiveDbConnection");
+		String connectionString = Settings.get("mongoVerificationDbConnection");
 		if (MongoIndex.mongoClient == null || MongoIndex.connectionString == null || !MongoIndex.connectionString.equals(connectionString)) {
 			MongoIndex.mongoClient = MongoClients.create(connectionString);
 			MongoIndex.database = new ConnectionString(connectionString).getDatabase();

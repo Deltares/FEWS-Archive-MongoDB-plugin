@@ -19,7 +19,7 @@ public class Cube {
 	 */
 	public static void execute(){
 		Mongo.deleteMany("output.Cube", new Document());
-		Mongo.find("Study", new Document()).forEach(study ->
+		Mongo.find("Study", new Document("Active", true)).forEach(study ->
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(Cube.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));
 	}
 }

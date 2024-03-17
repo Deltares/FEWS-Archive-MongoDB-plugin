@@ -4,24 +4,24 @@ import gql from 'graphql-tag'
 import { ref, computed } from "vue";
 import JsonEditorVue from 'json-editor-vue'
 
-const { result, loading, error, refetch } = useQuery(gql`query normalN {normalN {_id, Name, Collection, Filters}}`)
+const { result, loading, error, refetch } = useQuery(gql`query normalN {normalN {_id, Name, Collection, GenerateDays, Filters}}`)
 const selected = ref({})
 const success = ref(null)
 const sorted = computed(() => result?.value?.normalN ? result.value.normalN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
 
-const createMutation = useMutation(gql`mutation createNormal($name: String!, $collection: String!, $filters: JSON!) {createNormal(name: $name, collection: $collection, filters: $filters)}`)
-const updateMutation = useMutation(gql`mutation updateNormal($_id: ID!, $name: String!, $collection: String!, $filters: JSON!) {updateNormal(_id: $_id, name: $name, collection: $collection, filters: $filters)}`)
+const createMutation = useMutation(gql`mutation createNormal($name: String!, $collection: String!, $generateDays: Int!, $filters: JSON!) {createNormal(name: $name, collection: $collection, generateDays: $generateDays, filters: $filters)}`)
+const updateMutation = useMutation(gql`mutation updateNormal($_id: ID!, $name: String!, $collection: String!, $generateDays: Int!, $filters: JSON!) {updateNormal(_id: $_id, name: $name, collection: $collection, generateDays: $generateDays, filters: $filters)}`)
 const deleteMutation = useMutation(gql`mutation deleteNormal($_id: ID!) {deleteNormal(_id: $_id)}`)
 
 async function create() {
-  const {Name, Collection, Filters} = selected.value
-  const result = await mutate(() => createMutation.mutate({ name: Name, collection: Collection, filters: Filters }))
+  const {Name, Collection, GenerateDays, Filters} = selected.value
+  const result = await mutate(() => createMutation.mutate({ name: Name, collection: Collection, generateDays: GenerateDays, filters: Filters }))
   selected.value._id = result?.data ? result.data.createNormal : selected.value._id
 }
 
 async function update() {
-  const {_id, Name, Collection, Filters} = selected.value
-  await mutate(() => updateMutation.mutate({ _id: _id, name: Name, collection: Collection, filters: Filters }))
+  const {_id, Name, Collection, GenerateDays, Filters} = selected.value
+  await mutate(() => updateMutation.mutate({ _id: _id, name: Name, collection: Collection, generateDays: GenerateDays, filters: Filters }))
 }
 
 async function remove() {
@@ -75,6 +75,7 @@ async function mutate(mutation){
   <div class="input">
     <div class="d-flex w-100 mt-2"><label for="i-name" class="border rounded-lg pa-2 input-label">Name</label><input id="i-name" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Name"/></div>
     <div class="d-flex w-100 mt-2"><label for="i-collection" class="border rounded-lg pa-2 input-label">Collection</label><input id="i-collection" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Collection"/></div>
+    <div class="d-flex w-100 mt-2"><label for="i-generateDays" class="border rounded-lg pa-2 input-label">GenerateDays</label><input id="i-generateDays" type="number" min="1" max="999" step="1" pattern="\d+" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.GenerateDays"/></div>
     <div class="d-flex w-100 mt-2"><label for="i-filters" class="border rounded-lg pa-2 input-label">Filters</label><json-editor-vue id="i-filters" mode="text" class="border rounded-lg pa-2 flex-grow-1 ml-3 input-data" @change="v => selected.Filters = JSON.parse(v.text)" v-model="selected.Filters"/></div>
   </div>
   <div class="mt-4">

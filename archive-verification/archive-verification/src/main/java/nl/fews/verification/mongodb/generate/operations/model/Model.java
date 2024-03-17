@@ -16,7 +16,7 @@ public class Model {
 	 */
 	public static void execute(){
 		Mongo.deleteMany("output.PowerQuery", new Document());
-		Mongo.find("Study", new Document()).forEach(study ->
+		Mongo.find("Study", new Document("Active", true)).forEach(study ->
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(Model.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));
 	}
 }

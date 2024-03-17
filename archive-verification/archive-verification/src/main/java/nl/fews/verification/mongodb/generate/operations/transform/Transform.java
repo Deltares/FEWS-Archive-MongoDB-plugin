@@ -19,7 +19,7 @@ public class Transform {
 	 */
 	public static void execute(){
 		IO.deleteFiles(Path.of(Settings.get("drdlYamlPath"), ""));
-		Mongo.find("Study", new Document()).forEach(study ->
+		Mongo.find("Study", new Document("Active", true)).forEach(study ->
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(Transform.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));
 	}
 }
