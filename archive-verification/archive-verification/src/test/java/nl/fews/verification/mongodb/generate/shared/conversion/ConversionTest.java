@@ -107,14 +107,14 @@ class ConversionTest {
 	@Test
 	void getObservedClass() {
 		assertEquals(
-			"{\"$switch\":\n          {\"branches\": [\n            {\"case\": {\"$or\": [{\"$eq\": [\"$location\", \"\"]}, {\"$eq\": [\"$location\", \"loc1\"]}]}, \"then\": {\"$switch\":\n              {\"branches\": [\n                {\"case\": {\"$lte\": [\"$observed\", 1.0]}, \"then\": \"one\"}\n              ],\n              \"default\": \"undefinedValue\"}}}\n          ],\n          \"default\": \"undefinedLocation\"}}",
+			"{\"$switch\":\n          {\"branches\": [\n            {\"case\": {\"$or\": [{\"$eq\": [\"\", \"loc1\"]}, {\"$eq\": [\"$location\", \"loc1\"]}]}, \"then\": {\"$switch\":\n              {\"branches\": [\n                {\"case\": {\"$lte\": [\"$observed\", 1.0]}, \"then\": \"one\"}\n              ],\n              \"default\": \"undefinedValue\"}}}\n          ],\n          \"default\": \"undefinedLocation\"}}",
 			Conversion.getObservedClass(new Document("Locations", List.of(new Document("Location", "loc1").append("Breakpoint", List.of(new Document("Operator", "lte").append("Threshold", 1.0).append("Name", "one")))))));
 	}
 
 	@Test
 	void getForecastClass() {
 		assertEquals(
-			"{\"$switch\":\n          {\"branches\": [\n            {\"case\": {\"$or\": [{\"$eq\": [\"$location\", \"\"]}, {\"$eq\": [\"$location\", \"loc1\"]}]}, \"then\": {\"$switch\":\n              {\"branches\": [\n                {\"case\": {\"$lte\": [\"$forecast\", 1.0]}, \"then\": \"one\"}\n              ],\n              \"default\": \"undefinedValue\"}}}\n          ],\n          \"default\": \"undefinedLocation\"}}",
+			"{\"$switch\":\n          {\"branches\": [\n            {\"case\": {\"$or\": [{\"$eq\": [\"\", \"loc1\"]}, {\"$eq\": [\"$location\", \"loc1\"]}]}, \"then\": {\"$switch\":\n              {\"branches\": [\n                {\"case\": {\"$lte\": [\"$forecast\", 1.0]}, \"then\": \"one\"}\n              ],\n              \"default\": \"undefinedValue\"}}}\n          ],\n          \"default\": \"undefinedLocation\"}}",
 			Conversion.getForecastClass(new Document("Locations", List.of(new Document("Location", "loc1").append("Breakpoint", List.of(new Document("Operator", "lte").append("Threshold", 1.0).append("Name", "one")))))));
 	}
 }
