@@ -81,7 +81,7 @@ class ConversionTest {
 
 	@Test
 	void getLocationMap() {
-		assertEquals("$locationId", Conversion.getLocationMap(new Document()));
+		assertEquals("\"$locationId\"", Conversion.getLocationMap(new Document()));
 		assertEquals("{\"$switch\":\n          {\"branches\": [\n            {\"case\": {\"$eq\": [\"$locationId\", \"loc1\"]}, \"then\": \"MappedLoc1\"},\n            {\"case\": {\"$eq\": [\"$locationId\", \"loc2\"]}, \"then\": \"MappedLoc2\"}\n          ],\n          \"default\": \"$locationId\"}}", Conversion.getLocationMap(new Document("loc1", "MappedLoc1").append("loc2", "MappedLoc2")));
 	}
 
