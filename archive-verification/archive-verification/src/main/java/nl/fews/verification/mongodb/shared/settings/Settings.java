@@ -62,26 +62,27 @@ public final class Settings {
 		Settings.put("mongoVerificationDbConnection", mongoDbConnection);
 		Settings.put("verificationDb", new ConnectionString(mongoDbConnection).getDatabase());
 		try (MongoClient db = MongoClients.create(mongoDbConnection)) {
+
 			Document settings = db.getDatabase(Settings.get("verificationDb")).getCollection("configuration.Settings").find(new Document("environment", settingsType)).limit(1).projection(new Document("_id", 0)).first();
+			if(settings != null)
+				logger.info(String.format("Using database settings [environment] for [%s].", settingsType));
+
 			if(settings == null) {
 				settings = db.getDatabase(Settings.get("verificationDb")).getCollection("configuration.Settings").find(new Document("environment", hostName)).limit(1).projection(new Document("_id", 0)).first();
+				if(settings != null)
+					logger.info(String.format("Using database settings [environment] for [%s].", hostName));
 			}
-			else{
-				logger.info(String.format("Using database settings [environment] from [%s].", settingsType));
-			}
+
 			if(settings == null) {
-				logger.warn(String.format("[%s] or [%s] not found in database settings [environment]. Using [Default] instead.", hostName, settingsType));
 				settings = db.getDatabase(Settings.get("verificationDb")).getCollection("configuration.Settings").find(new Document("environment", "Default")).limit(1).projection(new Document("_id", 0)).first();
+				if(settings != null)
+					logger.info(String.format("Using database settings [environment] for [%s].", "Default"));
 			}
-			else{
-				logger.info(String.format("Using database settings [environment] from [%s].", hostName));
-			}
+
 			if(settings == null) {
-				throw new RuntimeException(String.format("[Default] settings not found on [%s]", mongoDbConnection.replaceAll("^.*@", "")));
+				throw new RuntimeException(String.format("[%], [%], [Default] settings not found on [%s]", settingsType, hostName, mongoDbConnection.replaceAll("^.*@", "")));
 			}
-			else{
-				logger.info(String.format("Using database settings [environment] from [%s].", "Default"));
-			}
+
 			settings.forEach(Settings::put);
 		}
 	}
