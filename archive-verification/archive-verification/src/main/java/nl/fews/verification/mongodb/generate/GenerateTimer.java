@@ -35,7 +35,7 @@ public final class GenerateTimer {
 				JSONObject settings;
 				try {
 					Path path = Path.of(Settings.get("bimPath"), "Settings.json");
-					settings = path.toFile().exists() ? Settings.fromJsonString(IO.readString(path.toString())) : null;
+					settings = path.toFile().exists() ? Settings.fromJsonString(IO.readString(path)) : null;
 				}
 				catch (Exception ex){
 					logger.warn(ex.getMessage(), ex);

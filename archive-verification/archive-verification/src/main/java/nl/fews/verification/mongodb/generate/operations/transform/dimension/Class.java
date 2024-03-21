@@ -27,9 +27,10 @@ public final class Class implements IExecute, IPredecessor {
 	 */
 	@Override
 	public void execute(){
-		String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", "Verification").append("Type", "Dimension").append("Name", "Class")).getList("Template", String.class));
+		String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("verificationDb")).append("Type", "Dimension").append("Name", "Class")).getList("Template", String.class));
+		template = template.replace("{database}", Settings.get("verificationDb"));
 		template = template.replace("{study}", study);
-		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_Class.drdl.yml", study)).toString(), template);
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_Class.drdl.yml", study)), template);
 	}
 
 	/**

@@ -48,6 +48,7 @@ public final class LeadTime implements IExecute, IPredecessor {
 				String forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
 
 				String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDb")).append("Type", "Degenerate").append("Name", "LeadTime")).getList("Template", String.class));
+				template = template.replace("{database}", Settings.get("archiveDb"));
 				template = template.replace("{study}", study);
 				template = template.replace("{forecast}", forecast);
 				template = template.replace("{filterName}", filterName);
@@ -58,7 +59,7 @@ public final class LeadTime implements IExecute, IPredecessor {
 				template = template.replace("{forecastStartMonth}", forecastStartMonth);
 				template = template.replace("{forecastEndMonth}", forecastEndMonth);
 
-				IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s_LeadTime_%s.drdl.yml", study, forecast, filterName)).toString(), template);
+				IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s_LeadTime_%s.drdl.yml", study, forecast, filterName)), template);
 			});
 		});
 	}

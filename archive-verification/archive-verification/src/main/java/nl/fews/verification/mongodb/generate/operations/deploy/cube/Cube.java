@@ -32,7 +32,7 @@ public final class Cube implements IExecute, IPredecessor {
 	 */
 	@Override
 	public void execute(){
-		IO.writeString(Path.of(Settings.get("bimPath"), String.format("Verification_%s.bim", study)).toString(), Mongo.findOne("output.Cube", new Document("Name", study)).get("Bim", Document.class).toJson(JsonWriterSettings.builder().indent(true).build()));
+		IO.writeString(Path.of(Settings.get("bimPath"), String.format("Verification_%s.bim", study)), Mongo.findOne("output.Cube", new Document("Name", study)).get("Bim", Document.class).toJson(JsonWriterSettings.builder().indent(true).build()));
 	}
 
 	/**

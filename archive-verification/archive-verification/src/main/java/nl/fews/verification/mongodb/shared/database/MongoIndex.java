@@ -50,7 +50,7 @@ public final class MongoIndex {
 		String connectionString = Settings.get("mongoVerificationDbConnection");
 		if (MongoIndex.mongoClient == null || MongoIndex.connectionString == null || !MongoIndex.connectionString.equals(connectionString)) {
 			MongoIndex.mongoClient = MongoClients.create(connectionString);
-			MongoIndex.database = new ConnectionString(connectionString).getDatabase();
+			MongoIndex.database = Settings.get("verificationDb");
 			MongoIndex.connectionString = connectionString;
 		}
 		return mongoClient;

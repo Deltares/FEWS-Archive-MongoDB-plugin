@@ -45,6 +45,7 @@ public final class Normal implements IExecute, IPredecessor {
 			String forecastClass = Conversion.getForecastClass(Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))));
 
 			String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDb")).append("Type", "Fact").append("Name", "Normal")).getList("Template", String.class));
+			template = template.replace("{database}", Settings.get("archiveDb"));
 			template = template.replace("{study}", study);
 			template = template.replace("{filterName}", filterName);
 			template = template.replace("{collection}", collection);
@@ -58,7 +59,7 @@ public final class Normal implements IExecute, IPredecessor {
 			template = template.replace("{forecastClass}", forecastClass);
 			template = template.replace("{generateDays}", generateDays);
 
-			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_Normal_%s.drdl.yml", study, filterName)).toString(), template);
+			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_Normal_%s.drdl.yml", study, filterName)), template);
 		});
 	}
 

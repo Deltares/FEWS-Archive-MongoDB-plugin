@@ -32,9 +32,9 @@ public class IO {
 	 * @param s the string to be written to the file
 	 * @throws RuntimeException if an error occurs while writing the string to the file
 	 */
-	public static void writeString(String path, String s){
+	public static void writeString(Path path, String s){
 		try{
-			Files.writeString(Path.of(path), s);
+			Files.writeString(path, s);
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);
@@ -47,9 +47,9 @@ public class IO {
 	 * @param path the path of the file to read
 	 * @throws RuntimeException if an error occurs while reading
 	 */
-	public static String readString(String path){
+	public static String readString(Path path){
 		try{
-			return Files.readString(Path.of(path));
+			return Files.readString(path);
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);
