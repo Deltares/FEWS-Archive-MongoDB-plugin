@@ -2,6 +2,7 @@ type Normal {
 	_id: ID!
 	Name: String!
 	Collection: String!
+	GenerateDays: Int!
 	Filters: [JSON]!
 }
 extend type Query {
@@ -10,7 +11,7 @@ extend type Query {
 	normalN: [Normal]
 }
 extend type Mutation {
-	createNormal(name: String!, collection: String!, filters: JSON!): ID
-	updateNormal(_id: ID!, name: String!, collection: String!, filters: JSON!): Int
+	createNormal(name: String!, collection: String!, generateDays: Int!, filters: JSON!): ID
+	updateNormal(_id: ID!, name: String!, collection: String!, generateDays: Int!, filters: JSON!): Int
 	deleteNormal(_id: ID!): Int
 }
