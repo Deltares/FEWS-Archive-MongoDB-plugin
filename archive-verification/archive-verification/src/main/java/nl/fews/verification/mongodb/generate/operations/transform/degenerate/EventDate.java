@@ -58,6 +58,7 @@ public final class EventDate implements IExecute, IPredecessor {
 				String seasonalityColumns = Conversion.getSeasonalityColumns(studyDocument.getList("Seasonalities", String.class));
 
 				String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDb")).append("Type", "Degenerate").append("Name", "EventDate")).getList("Template", String.class));
+				template = template.replace("{database}", Settings.get("archiveDb"));
 				template = template.replace("{study}", study);
 				template = template.replace("{forecast}", forecast);
 				template = template.replace("{filterName}", filterName);
@@ -70,7 +71,7 @@ public final class EventDate implements IExecute, IPredecessor {
 				template = template.replace("{seasonalities}", seasonalities);
 				template = template.replace("{seasonalityColumns}", seasonalityColumns);
 
-				IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s_EventDate_%s.drdl.yml", study, forecast, filterName)).toString(), template);
+				IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s_EventDate_%s.drdl.yml", study, forecast, filterName)), template);
 			});
 		});
 	}

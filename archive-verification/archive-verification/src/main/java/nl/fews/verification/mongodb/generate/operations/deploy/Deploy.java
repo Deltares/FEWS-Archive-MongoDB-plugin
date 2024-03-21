@@ -7,6 +7,7 @@ import nl.fews.verification.mongodb.shared.io.IO;
 import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class Deploy {
@@ -24,13 +25,26 @@ public class Deploy {
 	 * @throws RuntimeException if an error occurs during the deployment process or if the drdlYamlService restart fails
 	 */
 	public static void execute(){
+		Path timingsPath = Path.of(Settings.get("bimPath"), "Timings.json");
+		String timings;
+		try {
+			timings = Files.exists(timingsPath) ? IO.readString(timingsPath) : "";
+		}
+		catch (Exception ex){
+			timings = "";
+		}
 		IO.deleteFiles(Path.of(Settings.get("bimPath"), ""));
+		IO.writeString(timingsPath, timings);
+
 		Mongo.find("Study", new Document("Active", true)).forEach(study ->
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(Deploy.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));
+
 		var result = (String)IO.execute(Settings.get("drdlYamlServiceRestart"))[1];
+
 		if (!result.contains("2  START_PENDING") || !result.contains("4  RUNNING"))
 			throw new RuntimeException(result);
-		IO.writeString(Path.of(Settings.get("bimPath"), "Settings.json").toString(), Settings.toJsonString(2));
+
+		IO.writeString(Path.of(Settings.get("bimPath"), "Settings.json"), Settings.toJsonString(2));
 		Mongo.updateOne("configuration.Settings", new Document(), new Document("$set", new Document("reprocessCubes", "")));
 	}
 }

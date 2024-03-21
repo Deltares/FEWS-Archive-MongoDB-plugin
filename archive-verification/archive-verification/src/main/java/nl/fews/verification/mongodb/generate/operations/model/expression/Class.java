@@ -36,9 +36,10 @@ public final class Class implements IExecute, IPredecessor {
 		String template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", "Class")).getList("Template", String.class));
 
 		String database = Settings.get("databaseConnectionString");
+		String query = String.format("SELECT * FROM %s.`%s`", Settings.get("verificationDb"), String.format("%s_Class", study));
 
-		template = template.replace("{study}", study);
 		template = template.replace("{database}", database);
+		template = template.replace("{query}", query);
 
 		List<String> _class = Arrays.stream(template.replace("\r", "").split("\n")).collect(Collectors.toList());
 		Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", "ForecastClass").append("Month", "").append("Expression", _class));

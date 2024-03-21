@@ -12,7 +12,7 @@ class IOTest {
 
 	@Test
 	void writeString() throws Exception{
-        IO.writeString("writeString.txt", "test");
+        IO.writeString(Path.of("writeString.txt"), "test");
         assertEquals("test", Files.readString(Path.of("writeString.txt")));
         Files.delete(Path.of("writeString.txt"));
 	}
@@ -41,8 +41,8 @@ class IOTest {
 
 	@Test
 	void readString() throws Exception {
-		IO.writeString("writeString.txt", "test");
-        assertEquals("test", IO.readString("writeString.txt"));
+		IO.writeString(Path.of("writeString.txt"), "test");
+        assertEquals("test", IO.readString(Path.of("writeString.txt")));
         Files.delete(Path.of("writeString.txt"));
 	}
 }

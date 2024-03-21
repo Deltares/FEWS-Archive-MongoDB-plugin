@@ -29,8 +29,7 @@ public final class Mongo {
 	private Mongo(){}
 
 	static{
-		String connectionString = Settings.get("mongoVerificationDbConnection");
-		Mongo.database = new ConnectionString(connectionString).getDatabase();
+		Mongo.database = Settings.get("verificationDb");
 	}
 
 	private static synchronized MongoClient create(){

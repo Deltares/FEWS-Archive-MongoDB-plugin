@@ -40,7 +40,7 @@ public final class Location implements IExecute, IPredecessor {
 	 */
 	@Override
 	public void execute(){
-		String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", "Verification").append("Type", "Dimension").append("Name", "Location")).getList("Template", String.class));
+		String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("verificationDb")).append("Type", "Dimension").append("Name", "Location")).getList("Template", String.class));
 
 		Document studyDocument = Mongo.findOne("Study", new Document("Name", study));
 		Document locationAttributes = Mongo.findOne("LocationAttributes", new Document("Name", studyDocument.getString("LocationAttributes")));
@@ -52,10 +52,11 @@ public final class Location implements IExecute, IPredecessor {
 			attributes.add(0, "locationId");
 		List<String> columns = attributes.stream().map(s -> String.format("      - Name: %s\n        MongoType: %s\n        SqlName: %s\n        SqlType: %s\n", s, Conversion.getBsonType(locationAttributeTypes.getString(s)), s, Conversion.getSqlType(Conversion.getBsonType(locationAttributeTypes.getString(s))))).collect(Collectors.toList());
 
+		template = template.replace("{database}", Settings.get("verificationDb"));
 		template = template.replace("{study}", study);
 		template = template.replace("{columns}", String.join("", columns));
 
-		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_Location.drdl.yml", study)).toString(), template);
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_Location.drdl.yml", study)), template);
 	}
 
 	/**
