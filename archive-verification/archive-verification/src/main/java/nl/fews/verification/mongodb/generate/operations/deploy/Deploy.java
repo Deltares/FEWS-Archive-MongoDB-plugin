@@ -15,7 +15,6 @@ public class Deploy {
 
 	/**
 	 * Executes the deployment process.
-	 *
 	 * This method performs the following steps:
 	 * 1. Deletes all files located within the specified bimPath.
 	 * 2. Retrieves all studies from the "Verification" collection in the MongoDB database and executes the deployment process for each study.

@@ -21,5 +21,8 @@ public class Transform {
 		IO.deleteFiles(Path.of(Settings.get("drdlYamlPath"), ""));
 		Mongo.find("Study", new Document("Active", true)).forEach(study ->
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(Transform.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));
+
+		String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("verificationDb")).append("Type", "").append("Name", "Info")).getList("Template", String.class));
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"),"Info.drdl.yml"), template);
 	}
 }

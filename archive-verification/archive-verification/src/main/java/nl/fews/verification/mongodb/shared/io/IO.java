@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class IO {
@@ -64,7 +65,7 @@ public class IO {
 	 */
 	public static void deleteFiles(Path path){
 		try (Stream<Path> list = Files.list(path)){
-			list.map(Path::toFile).forEach(File::delete);
+			list.collect(Collectors.toList()).parallelStream().forEach(f -> f.toFile().delete());
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);

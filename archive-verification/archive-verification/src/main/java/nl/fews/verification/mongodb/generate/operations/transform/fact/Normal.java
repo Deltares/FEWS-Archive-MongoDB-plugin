@@ -42,7 +42,7 @@ public final class Normal implements IExecute, IPredecessor {
 			String eventTime = Conversion.getEventTime(studyDocument.getString("Time"));
 			String eventValue = Conversion.getEventValue(studyDocument.getString("Value"));
 			String locationMap = Conversion.getLocationMap(f.get("LocationMap", Document.class));
-			String forecastClass = Conversion.getForecastClass(Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))));
+			String forecastClass = Conversion.getForecastClass(studyDocument.getString("Class").isEmpty() ? null : Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))));
 
 			String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDb")).append("Type", "Fact").append("Name", "Normal")).getList("Template", String.class));
 			template = template.replace("{database}", Settings.get("archiveDb"));
