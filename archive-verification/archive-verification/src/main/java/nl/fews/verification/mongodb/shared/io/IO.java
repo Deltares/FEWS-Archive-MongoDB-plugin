@@ -1,6 +1,5 @@
 package nl.fews.verification.mongodb.shared.io;
 
-import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
