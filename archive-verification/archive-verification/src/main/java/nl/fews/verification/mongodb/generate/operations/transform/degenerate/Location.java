@@ -46,7 +46,7 @@ public final class Location implements IExecute, IPredecessor {
 				String filter = f.get("Filter", Document.class).toJson();
 				String filterName = f.getString("FilterName");
 				String forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
-				String forecastStartMonth = studyDocument.getString("ForecastStartMonth");
+				String forecastStartMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(-1).format(format);
 				String forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
 				String locationMap = Conversion.getLocationMap(f.get("LocationMap", Document.class));
 

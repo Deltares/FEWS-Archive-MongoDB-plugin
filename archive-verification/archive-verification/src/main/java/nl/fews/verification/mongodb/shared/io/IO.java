@@ -64,7 +64,7 @@ public class IO {
 	 */
 	public static void deleteFiles(Path path){
 		try (Stream<Path> list = Files.list(path)){
-			list.map(Path::toFile).forEach(File::delete);
+			list.toList().parallelStream().forEach(f -> f.toFile().delete());
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);

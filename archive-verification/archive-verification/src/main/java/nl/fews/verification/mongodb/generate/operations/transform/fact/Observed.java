@@ -37,7 +37,7 @@ public final class Observed implements IExecute, IPredecessor {
 			String eventTime = Conversion.getEventTime(studyDocument.getString("Time"));
 			String eventValue= Conversion.getEventValue(studyDocument.getString("Value"));
 			String locationMap = Conversion.getLocationMap(f.get("LocationMap", Document.class));
-			String observedClass = Conversion.getObservedClass(Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))));
+			String observedClass = Conversion.getObservedClass(studyDocument.getString("Class").isEmpty() ? null : Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))));
 
 			String template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Database", Settings.get("archiveDb")).append("Type", "Fact").append("Name", "Observed")).getList("Template", String.class));
 			template = template.replace("{database}", Settings.get("archiveDb"));

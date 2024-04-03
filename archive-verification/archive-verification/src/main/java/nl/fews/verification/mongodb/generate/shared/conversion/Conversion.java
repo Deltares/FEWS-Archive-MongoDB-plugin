@@ -86,6 +86,10 @@ public class Conversion {
 		return DateTimeFormatter.ofPattern("yyyy-MM");
 	}
 
+	public static DateTimeFormatter getDateTimeFormatter(){
+		return DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	}
+
 	public static Document getLocationAttributeTypes(Document locations, Document locationAttributes){
 		Document r = new Document();
 		Map<String, Object> locationAttributesMap = locationAttributes.getList("Attributes", String.class).stream().collect(Collectors.toMap(a -> a, a -> a));

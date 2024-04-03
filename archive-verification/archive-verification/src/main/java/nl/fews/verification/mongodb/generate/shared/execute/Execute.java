@@ -20,7 +20,7 @@ public class Execute {
 	 */
 	public static void execute(List<Object> group){
 		try {
-			ExecutorService pool = Executors.newFixedThreadPool(Settings.get("threads"));
+			ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()*2);
 
 
 			class ExecutionCallable implements Callable<Void> {
