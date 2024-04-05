@@ -1,6 +1,5 @@
 package nl.fews.verification.mongodb.web;
 
-import nl.fews.verification.mongodb.generate.GenerateTimer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
@@ -31,6 +30,5 @@ public class Application extends SpringBootServletInitializer {
 		System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
 		Configuration.setConfiguration(new JaasConfiguration());
         SpringApplication.run(Application.class, args);
-		new Thread(GenerateTimer::start).start();
     }
 }

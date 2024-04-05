@@ -1,11 +1,15 @@
 package nl.fews.verification.mongodb.shared.mail;
 
 import nl.fews.verification.mongodb.shared.settings.Settings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 public final class Mail{
 	private Mail(){}
+
+	private static final Logger logger = LoggerFactory.getLogger(Mail.class);
 
 	public static void send(String subject, String message){
 		try{
@@ -19,7 +23,7 @@ public final class Mail{
         	sender.send(mail);
 		}
 		catch (Exception ex){
-			//IGNORE
+			logger.warn(ex.getMessage(), ex);
 		}
 	}
 }

@@ -1,5 +1,6 @@
-package nl.fews.verification.mongodb.generate.shared.conversion;
+package nl.fews.verification.mongodb.shared.conversion;
 
+import nl.fews.verification.mongodb.generate.shared.conversion.Conversion;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 

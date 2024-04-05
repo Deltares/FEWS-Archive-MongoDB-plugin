@@ -1,7 +1,8 @@
-package nl.fews.verification.mongodb.generate.shared.graph;
+package nl.fews.verification.mongodb.shared.graph;
 
 import nl.fews.verification.mongodb.generate.interfaces.IExecute;
 import nl.fews.verification.mongodb.generate.interfaces.IPredecessor;
+import nl.fews.verification.mongodb.generate.shared.graph.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.junit.jupiter.api.Test;

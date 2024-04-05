@@ -1,0 +1,6 @@
+type Version {
+	Version: String!
+}
+extend type Query {
+	version: Version
+}

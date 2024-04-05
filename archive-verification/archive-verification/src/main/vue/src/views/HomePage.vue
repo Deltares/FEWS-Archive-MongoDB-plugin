@@ -14,6 +14,7 @@
           <ul class="ml-4 mb-4">
             <li><router-link to="/"><span class="mdi mdi-home-outline"/>Home</router-link></li>
             <li><router-link to="/configurationSettings"><span class="mdi mdi-cog-outline"/>Settings</router-link></li>
+            <li><router-link to="/configurationDescription"><span class="mdi mdi-cogs"/>Description</router-link></li>
           </ul>
           <div><span class="mdi mdi-check-all mr-2"/>Verification</div>
           <ul class="ml-4 mb-4">
