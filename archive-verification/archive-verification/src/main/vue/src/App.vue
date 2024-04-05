@@ -9,7 +9,9 @@ const rt = useRoute()
 const route = computed(() => rt?.path)
 const clock = ref(null)
 const { result: user } = useQuery(gql`query user {user {Name, Email}}`)
+const { result: version } = useQuery(gql`query version {version {Version}}`)
 const computedUser = computed(() => user?.value?.user?.Email?.split('@')[0])
+const computedVersion = computed(() => `Version: ${version?.value?.version?.Version}`)
 
 const dateFormat = { year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZoneName: 'short' }
 let clockTimeout = setTimeout(updateClock, 100)
@@ -30,6 +32,7 @@ function updateClock() {
       <v-app-bar-nav-icon @click="drawer = !drawer"/>
       <v-app-bar-title><router-link class="text-h6 link" to="/">TVA VERIFICATION</router-link></v-app-bar-title>
       <v-divider vertical/>
+      <div class="pa-4" :title="computedVersion"><v-icon>mdi-update</v-icon></div><v-divider vertical/>
       <div class="pa-4" title="Location"><v-icon>mdi-map-marker-outline</v-icon>{{route}}</div><v-divider vertical/>
       <div class="pa-4" title="User"><v-icon>mdi-account-outline</v-icon>{{computedUser}}</div><v-divider vertical/>
       <div class="pa-4" title="Clock"><v-icon>mdi-clock-outline</v-icon></div>
@@ -40,6 +43,7 @@ function updateClock() {
       <v-list density="compact" nav>
         <v-list-item prepend-icon="mdi-home-outline" to="/" :title.attr="'Home'"/>
         <v-list-item prepend-icon="mdi-cog-outline" to="/configurationSettings" :title.attr="'Settings'"/>
+        <v-list-item prepend-icon="mdi-cogs" to="/configurationDescription" :title.attr="'Description'"/>
         <v-divider></v-divider>
         <v-list-item prepend-icon="mdi-check-all" :title.attr="'Verification'">
           <v-menu activator="parent" location="left" open-on-hover>

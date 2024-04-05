@@ -19,12 +19,12 @@ import java.util.stream.StreamSupport;
 public class Study {
 	@QueryMapping
 	public Document studyById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne("Study", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return Mongo.findOne("Study", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
 	public Document studyByName(@Argument String name, DataFetchingEnvironment e){
-		return  Mongo.findOne("Study", new Document("Name", name), Conversion.getProjection(e));
+		return Mongo.findOne("Study", new Document("Name", name), Conversion.getProjection(e));
 	}
 
 	@QueryMapping

@@ -8,6 +8,6 @@ class MailTest {
 
 	@Test
 	void send() {
-		//Mail.send("Test", "Me");
+		Mail.send("Test", "Me");
 	}
 }

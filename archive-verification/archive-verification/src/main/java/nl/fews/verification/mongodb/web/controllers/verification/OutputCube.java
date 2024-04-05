@@ -19,12 +19,12 @@ import java.util.stream.StreamSupport;
 public class OutputCube {
 	@QueryMapping
 	public Document outputCubeById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne("output.Cube", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return Mongo.findOne("output.Cube", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
 	public Document outputCubeByName(@Argument String name, DataFetchingEnvironment e){
-		return  Mongo.findOne("output.Cube", new Document("Name", name), Conversion.getProjection(e));
+		return Mongo.findOne("output.Cube", new Document("Name", name), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
@@ -33,13 +33,13 @@ public class OutputCube {
 	}
 	
 	@MutationMapping
-	public String createOutputCube(@Argument Map<String, Object> document){
-		return Mongo.insertOne("output.Cube", new Document(document)).getInsertedId().asObjectId().getValue().toString();
+	public String createOutputCube(@Argument String name, @Argument Map<String, Object> bim){
+		return Mongo.insertOne("output.Cube", new Document("Name", name).append("Bim", bim)).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateOutputCube(@Argument String _id, @Argument Map<String, Object> document){
-		return Mongo.updateOne("output.Cube", new Document("_id", new ObjectId(_id)), new Document(document)).getModifiedCount();
+	public Long updateOutputCube(@Argument String _id, @Argument String name, @Argument Map<String, Object> bim){
+		return Mongo.updateOne("output.Cube", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Name", name).append("Bim", bim))).getModifiedCount();
 	}
 
 	@MutationMapping

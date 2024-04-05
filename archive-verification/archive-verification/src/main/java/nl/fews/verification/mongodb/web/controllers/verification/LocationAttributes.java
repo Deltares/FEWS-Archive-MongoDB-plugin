@@ -19,12 +19,12 @@ import java.util.stream.StreamSupport;
 public class LocationAttributes {
 	@QueryMapping
 	public Document locationAttributesById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne("LocationAttributes", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return Mongo.findOne("LocationAttributes", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
 	public Document locationAttributesByName(@Argument String name, DataFetchingEnvironment e){
-		return  Mongo.findOne("LocationAttributes", new Document("Name", name), Conversion.getProjection(e));
+		return Mongo.findOne("LocationAttributes", new Document("Name", name), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
@@ -33,13 +33,13 @@ public class LocationAttributes {
 	}
 	
 	@MutationMapping
-	public String createLocationAttributes(@Argument Map<String, Object> document){
-		return Mongo.insertOne("LocationAttributes", new Document(document)).getInsertedId().asObjectId().getValue().toString();
+	public String createLocationAttributes(@Argument String name, @Argument List<String> attributes){
+		return Mongo.insertOne("LocationAttributes", new Document("Name", name).append("Attributes", attributes)).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateLocationAttributes(@Argument String _id, @Argument Map<String, Object> document){
-		return Mongo.updateOne("LocationAttributes", new Document("_id", new ObjectId(_id)), new Document(document)).getModifiedCount();
+	public Long updateLocationAttributes(@Argument String _id, @Argument String name, @Argument List<String> attributes){
+		return Mongo.updateOne("LocationAttributes", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Name", name).append("Attributes", attributes))).getModifiedCount();
 	}
 
 	@MutationMapping

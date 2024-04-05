@@ -19,12 +19,12 @@ import java.util.stream.StreamSupport;
 public class Class {
 	@QueryMapping
 	public Document classById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne("Class", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return Mongo.findOne("Class", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
 	public Document classByName(@Argument String name, DataFetchingEnvironment e){
-		return  Mongo.findOne("Class", new Document("Name", name), Conversion.getProjection(e));
+		return Mongo.findOne("Class", new Document("Name", name), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
@@ -33,13 +33,13 @@ public class Class {
 	}
 
 	@MutationMapping
-	public String createClass(@Argument Map<String, Object> document){
-		return Mongo.insertOne("Class", new Document(document)).getInsertedId().asObjectId().getValue().toString();
+	public String createClass(@Argument String name, @Argument List<Map<String, Object>> locations){
+		return Mongo.insertOne("Class", new Document("Name", name).append("Locations", locations)).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateClass(@Argument String _id, @Argument Map<String, Object> document){
-		return Mongo.updateOne("Class", new Document("_id", new ObjectId(_id)), new Document(document)).getModifiedCount();
+	public Long updateClass(@Argument String _id, @Argument String name, @Argument List<Map<String, Object>> locations){
+		return Mongo.updateOne("Class", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Name", name).append("Locations", locations))).getModifiedCount();
 	}
 
 	@MutationMapping

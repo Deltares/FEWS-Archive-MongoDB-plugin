@@ -19,12 +19,12 @@ import java.util.stream.StreamSupport;
 public class Observed {
 	@QueryMapping
 	public Document observedById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne("Observed", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return Mongo.findOne("Observed", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
 	public Document observedByName(@Argument String name, DataFetchingEnvironment e){
-		return  Mongo.findOne("Observed", new Document("Name", name), Conversion.getProjection(e));
+		return Mongo.findOne("Observed", new Document("Name", name), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
@@ -33,13 +33,13 @@ public class Observed {
 	}
 	
 	@MutationMapping
-	public String createObserved(@Argument Map<String, Object> document){
-		return Mongo.insertOne("Observed", new Document(document)).getInsertedId().asObjectId().getValue().toString();
+	public String createObserved(@Argument String name, @Argument String collection, @Argument List<Map<String, Object>> filters){
+		return Mongo.insertOne("Observed", new Document("Name", name).append("Collection", collection).append("Filters", filters)).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateObserved(@Argument String _id, @Argument Map<String, Object> document){
-		return Mongo.updateOne("Observed", new Document("_id", new ObjectId(_id)), new Document(document)).getModifiedCount();
+	public Long updateObserved(@Argument String _id, @Argument String name, @Argument String collection, @Argument List<Map<String, Object>> filters){
+		return Mongo.updateOne("Observed", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Name", name).append("Collection", collection).append("Filters", filters))).getModifiedCount();
 	}
 
 	@MutationMapping

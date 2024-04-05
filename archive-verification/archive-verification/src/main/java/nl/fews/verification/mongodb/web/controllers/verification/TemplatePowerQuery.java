@@ -10,6 +10,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,27 +20,31 @@ import java.util.stream.StreamSupport;
 public class TemplatePowerQuery {
 	@QueryMapping
 	public Document templatePowerQueryById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne("template.PowerQuery", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		var r = Mongo.findOne("template.PowerQuery", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		r.put("Template", String.join("\n", r.getList("Template", String.class)));
+		return r;
 	}
 
 	@QueryMapping
 	public Document templatePowerQueryByName(@Argument String name, DataFetchingEnvironment e){
-		return  Mongo.findOne("template.PowerQuery", new Document("Name", name), Conversion.getProjection(e));
+		var r = Mongo.findOne("template.PowerQuery", new Document("Name", name), Conversion.getProjection(e));
+		r.put("Template", String.join("\n", r.getList("Template", String.class)));
+		return r;
 	}
 
 	@QueryMapping
 	public List<Document> templatePowerQueryN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("template.PowerQuery", new Document(), Conversion.getProjection(e)).spliterator(), false).collect(Collectors.toList());
+		return StreamSupport.stream(Mongo.find("template.PowerQuery", new Document(), Conversion.getProjection(e)).spliterator(), false).peek(r -> r.put("Template", String.join("\n", r.getList("Template", String.class)))).collect(Collectors.toList());
 	}
 	
 	@MutationMapping
-	public String createTemplatePowerQuery(@Argument Map<String, Object> document){
-		return Mongo.insertOne("template.PowerQuery", new Document(document)).getInsertedId().asObjectId().getValue().toString();
+	public String createTemplatePowerQuery(@Argument String name, @Argument String template){
+		return Mongo.insertOne("template.PowerQuery", new Document("Name", name).append("Template", Arrays.stream(template.split("\n")).collect(Collectors.toList()))).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateTemplatePowerQuery(@Argument String _id, @Argument Map<String, Object> document){
-		return Mongo.updateOne("template.PowerQuery", new Document("_id", new ObjectId(_id)), new Document(document)).getModifiedCount();
+	public Long updateTemplatePowerQuery(@Argument String _id, @Argument String name, @Argument String template){
+		return Mongo.updateOne("template.PowerQuery", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Name", name).append("Template", Arrays.stream(template.split("\n")).collect(Collectors.toList())))).getModifiedCount();
 	}
 
 	@MutationMapping

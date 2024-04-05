@@ -19,12 +19,12 @@ import java.util.stream.StreamSupport;
 public class Forecast {
 	@QueryMapping
 	public Document forecastById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne("Forecast", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return Mongo.findOne("Forecast", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
 	public Document forecastByName(@Argument String name, DataFetchingEnvironment e){
-		return  Mongo.findOne("Forecast", new Document("Name", name), Conversion.getProjection(e));
+		return Mongo.findOne("Forecast", new Document("Name", name), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
@@ -33,13 +33,13 @@ public class Forecast {
 	}
 	
 	@MutationMapping
-	public String createForecast(@Argument Map<String, Object> document){
-		return Mongo.insertOne("Forecast", new Document(document)).getInsertedId().asObjectId().getValue().toString();
+	public String createForecast(@Argument String name, @Argument String forecastName, @Argument String collection, @Argument List<Map<String, Object>> filters){
+		return Mongo.insertOne("Forecast", new Document("Name", name).append("ForecastName", forecastName).append("Collection", collection).append("Filters", filters)).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateForecast(@Argument String _id, @Argument Map<String, Object> document){
-		return Mongo.updateOne("Forecast", new Document("_id", new ObjectId(_id)), new Document(document)).getModifiedCount();
+	public Long updateForecast(@Argument String _id, @Argument String name, @Argument String forecastName, @Argument String collection, @Argument List<Map<String, Object>> filters){
+		return Mongo.updateOne("Forecast", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Name", name).append("ForecastName", forecastName).append("Collection", collection).append("Filters", filters))).getModifiedCount();
 	}
 
 	@MutationMapping

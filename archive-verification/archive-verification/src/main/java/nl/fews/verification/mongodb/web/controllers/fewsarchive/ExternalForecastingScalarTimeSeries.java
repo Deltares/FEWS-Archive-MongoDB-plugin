@@ -15,6 +15,6 @@ public class ExternalForecastingScalarTimeSeries {
 
 	@QueryMapping
 	public Document externalForecastingScalarTimeSeriesById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne(Settings.get("archiveDb"), "ExternalForecastingScalarTimeSeries", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return Mongo.findOne(Settings.get("archiveDb"), "ExternalForecastingScalarTimeSeries", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 }

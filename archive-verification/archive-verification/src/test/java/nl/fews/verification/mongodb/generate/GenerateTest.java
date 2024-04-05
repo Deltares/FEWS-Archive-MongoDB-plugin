@@ -8,6 +8,6 @@ class GenerateTest {
 
 	@Test
 	void execute() {
-		//Generate.execute();
+		Generate.execute();
 	}
 }

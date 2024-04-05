@@ -19,12 +19,12 @@ import java.util.stream.StreamSupport;
 public class Seasonality {
 	@QueryMapping
 	public Document seasonalityById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne("Seasonality", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return Mongo.findOne("Seasonality", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
 	public Document seasonalityByName(@Argument String name, DataFetchingEnvironment e){
-		return  Mongo.findOne("Seasonality", new Document("Name", name), Conversion.getProjection(e));
+		return Mongo.findOne("Seasonality", new Document("Name", name), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
@@ -33,13 +33,13 @@ public class Seasonality {
 	}
 	
 	@MutationMapping
-	public String createSeasonality(@Argument Map<String, Object> document){
-		return Mongo.insertOne("Seasonality", new Document(document)).getInsertedId().asObjectId().getValue().toString();
+	public String createSeasonality(@Argument String name, @Argument List<Map<String, Object>> breakpoint){
+		return Mongo.insertOne("Seasonality", new Document("Name", name).append("Breakpoint", breakpoint)).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateSeasonality(@Argument String _id, @Argument Map<String, Object> document){
-		return Mongo.updateOne("Seasonality", new Document("_id", new ObjectId(_id)), new Document(document)).getModifiedCount();
+	public Long updateSeasonality(@Argument String _id, @Argument String name, @Argument List<Map<String, Object>> breakpoint){
+		return Mongo.updateOne("Seasonality", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Name", name).append("Breakpoint", breakpoint))).getModifiedCount();
 	}
 
 	@MutationMapping

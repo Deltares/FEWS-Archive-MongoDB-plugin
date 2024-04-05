@@ -19,12 +19,12 @@ import java.util.stream.StreamSupport;
 public class TemplateCube {
 	@QueryMapping
 	public Document templateCubeById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne("template.Cube", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		return Mongo.findOne("template.Cube", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
 	public Document templateCubeByName(@Argument String name, DataFetchingEnvironment e){
-		return  Mongo.findOne("template.Cube", new Document("Name", name), Conversion.getProjection(e));
+		return Mongo.findOne("template.Cube", new Document("Name", name), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
@@ -33,13 +33,13 @@ public class TemplateCube {
 	}
 	
 	@MutationMapping
-	public String createTemplateCube(@Argument Map<String, Object> document){
-		return Mongo.insertOne("template.Cube", new Document(document)).getInsertedId().asObjectId().getValue().toString();
+	public String createTemplateCube(@Argument String name, @Argument Map<String, Object> template){
+		return Mongo.insertOne("template.Cube", new Document("Name", name).append("Template", template)).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateTemplateCube(@Argument String _id, @Argument Map<String, Object> document){
-		return Mongo.updateOne("template.Cube", new Document("_id", new ObjectId(_id)), new Document(document)).getModifiedCount();
+	public Long updateTemplateCube(@Argument String _id, @Argument String name, @Argument Map<String, Object> template){
+		return Mongo.updateOne("template.Cube", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Name", name).append("Template", template))).getModifiedCount();
 	}
 
 	@MutationMapping

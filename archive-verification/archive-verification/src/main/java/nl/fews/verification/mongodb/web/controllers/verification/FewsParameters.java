@@ -17,11 +17,13 @@ import java.util.stream.StreamSupport;
 public class FewsParameters {
 	@QueryMapping
 	public Document fewsParametersById(@Argument String _id, DataFetchingEnvironment e){
-		return  Mongo.findOne("fews.Parameters", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		var r = Mongo.findOne("fews.Parameters", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+		r.put("lastUpdated", Conversion.dateToOffsetDateTime(r.getDate("lastUpdated")));
+		return r;
 	}
 
 	@QueryMapping
 	public List<Document> fewsParametersN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("fews.Parameters", new Document(), Conversion.getProjection(e)).spliterator(), false).collect(Collectors.toList());
+		return StreamSupport.stream(Mongo.find("fews.Parameters", new Document(), Conversion.getProjection(e)).spliterator(), false).peek(r -> r.put("lastUpdated", Conversion.dateToOffsetDateTime(r.getDate("lastUpdated")))).collect(Collectors.toList());
 	}
 }

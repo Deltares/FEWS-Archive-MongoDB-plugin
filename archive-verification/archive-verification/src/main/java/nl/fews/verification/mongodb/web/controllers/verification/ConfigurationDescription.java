@@ -15,29 +15,30 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Controller
-public class ConfigurationSettings {
+public class ConfigurationDescription {
 	@QueryMapping
-	public Document configurationSettingsById(@Argument String _id, DataFetchingEnvironment e){
-		return Mongo.findOne("configuration.Settings", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
+	public Document configurationDescriptionById(@Argument String _id, DataFetchingEnvironment e){
+		return Mongo.findOne("configuration.Description", new Document("_id", new ObjectId(_id)), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
-	public Document configurationSettingsByEnvironment(@Argument String environment, DataFetchingEnvironment e){
-		return Mongo.findOne("configuration.Settings", new Document("environment", environment), Conversion.getProjection(e));
+	public Document configurationDescriptionByEnvironment(@Argument String name, DataFetchingEnvironment e){
+		return Mongo.findOne("configuration.Description", new Document("Name", name), Conversion.getProjection(e));
 	}
 
 	@QueryMapping
-	public List<Document> configurationSettingsN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("configuration.Settings", new Document(), Conversion.getProjection(e)).spliterator(), false).collect(Collectors.toList());
+	public List<Document> configurationDescriptionN(DataFetchingEnvironment e){
+		return StreamSupport.stream(Mongo.find("configuration.Description", new Document(), Conversion.getProjection(e)).spliterator(), false).collect(Collectors.toList());
 	}
 
 	@MutationMapping
-	public String createConfigurationSettings(
+	public String createConfigurationDescription(
+			@Argument String name,
 			@Argument String toEmailAddresses,
 			@Argument String fromEmailAddress,
 			@Argument String drdlYamlPath,
 			@Argument String environment,
-			@Argument int threads,
+			@Argument String threads,
 			@Argument String cubeAdmins,
 			@Argument String cubeUsers,
 			@Argument String bimPath,
@@ -45,14 +46,15 @@ public class ConfigurationSettings {
 			@Argument String smtpServer,
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
-			@Argument boolean execute,
+			@Argument String execute,
 			@Argument String archiveDb,
 			@Argument String taskInterval,
 			@Argument String databaseConnectionAesPassword,
 			@Argument String databaseConnectionUsername,
-			@Argument int parallelPartitions){
-		return Mongo.insertOne("configuration.Settings",
-				new Document("toEmailAddresses", toEmailAddresses)
+			@Argument String parallelPartitions){
+		return Mongo.insertOne("configuration.Description",
+				new Document("Name", name)
+				.append("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)
 				.append("drdlYamlPath", drdlYamlPath)
 				.append("environment", environment)
@@ -74,13 +76,14 @@ public class ConfigurationSettings {
 	}
 
 	@MutationMapping
-	public Long updateConfigurationSettings(
+	public Long updateConfigurationDescription(
 			@Argument String _id,
+			@Argument String name,
 			@Argument String toEmailAddresses,
 			@Argument String fromEmailAddress,
 			@Argument String drdlYamlPath,
 			@Argument String environment,
-			@Argument int threads,
+			@Argument String threads,
 			@Argument String cubeAdmins,
 			@Argument String cubeUsers,
 			@Argument String bimPath,
@@ -88,14 +91,15 @@ public class ConfigurationSettings {
 			@Argument String smtpServer,
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
-			@Argument boolean execute,
+			@Argument String execute,
 			@Argument String archiveDb,
 			@Argument String taskInterval,
 			@Argument String databaseConnectionAesPassword,
 			@Argument String databaseConnectionUsername,
-			@Argument int parallelPartitions){
-		return Mongo.updateOne("configuration.Settings", new Document("_id", new ObjectId(_id)), new Document("$set",
-				new Document("toEmailAddresses", toEmailAddresses)
+			@Argument String parallelPartitions){
+		return Mongo.updateOne("configuration.Description", new Document("_id", new ObjectId(_id)), new Document("$set",
+				new Document("Name", name)
+				.append("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)
 				.append("drdlYamlPath", drdlYamlPath)
 				.append("environment", environment)
@@ -116,7 +120,7 @@ public class ConfigurationSettings {
 	}
 
 	@MutationMapping
-	public Long deleteConfigurationSettings(@Argument String _id){
-		return Mongo.deleteOne("configuration.Settings", new Document("_id", new ObjectId(_id))).getDeletedCount();
+	public Long deleteConfigurationDescription(@Argument String _id){
+		return Mongo.deleteOne("configuration.Description", new Document("_id", new ObjectId(_id))).getDeletedCount();
 	}
 }

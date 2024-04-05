@@ -3,6 +3,7 @@ import {createRouter, createWebHashHistory} from "vue-router";
 import HomePage from '../views/HomePage.vue';
 import ClassPage from '../views/ClassPage.vue';
 import ConfigurationSettingsPage from '../views/ConfigurationSettingsPage.vue';
+import ConfigurationDescriptionPage from '../views/ConfigurationDescriptionPage.vue';
 import FewsLocationsPage from '../views/FewsLocationsPage.vue';
 import FewsParametersPage from '../views/FewsParametersPage.vue';
 import FewsQualifiersPage from '../views/FewsQualifiersPage.vue';
@@ -24,6 +25,7 @@ export default createRouter({
         {path: '/', name: "Home", component: HomePage},
         {path: '/class', name: "Class", component: ClassPage},
         {path: '/configurationSettings', name: "ConfigurationSettings", component: ConfigurationSettingsPage},
+        {path: '/configurationDescription', name: "ConfigurationDescription", component: ConfigurationDescriptionPage},
         {path: '/fewsLocations', name: "FewsLocations", component: FewsLocationsPage},
         {path: '/fewsParameters', name: "FewsParameters", component: FewsParametersPage},
         {path: '/fewsQualifiers', name: "FewsQualifiers", component: FewsQualifiersPage},
