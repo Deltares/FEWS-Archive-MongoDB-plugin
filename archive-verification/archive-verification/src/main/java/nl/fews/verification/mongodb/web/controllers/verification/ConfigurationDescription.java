@@ -51,7 +51,9 @@ public class ConfigurationDescription {
 			@Argument String taskInterval,
 			@Argument String databaseConnectionAesPassword,
 			@Argument String databaseConnectionUsername,
-			@Argument String parallelPartitions){
+			@Argument String parallelPartitions,
+			@Argument String drdlYamlConfigPath,
+			@Argument String drdlYamlMongoDbUri){
 		return Mongo.insertOne("configuration.Description",
 				new Document("Name", name)
 				.append("toEmailAddresses", toEmailAddresses)
@@ -72,6 +74,8 @@ public class ConfigurationDescription {
 				.append("databaseConnectionAesPassword", databaseConnectionAesPassword)
 				.append("databaseConnectionUsername", databaseConnectionUsername)
 				.append("parallelPartitions", parallelPartitions)
+				.append("drdlYamlConfigPath", drdlYamlConfigPath)
+				.append("drdlYamlMongoDbUri", drdlYamlMongoDbUri)
 		).getInsertedId().asObjectId().getValue().toString();
 	}
 
@@ -96,7 +100,9 @@ public class ConfigurationDescription {
 			@Argument String taskInterval,
 			@Argument String databaseConnectionAesPassword,
 			@Argument String databaseConnectionUsername,
-			@Argument String parallelPartitions){
+			@Argument String parallelPartitions,
+			@Argument String drdlYamlConfigPath,
+			@Argument String drdlYamlMongoDbUri){
 		return Mongo.updateOne("configuration.Description", new Document("_id", new ObjectId(_id)), new Document("$set",
 				new Document("Name", name)
 				.append("toEmailAddresses", toEmailAddresses)
@@ -116,7 +122,10 @@ public class ConfigurationDescription {
 				.append("taskInterval", taskInterval)
 				.append("databaseConnectionAesPassword", databaseConnectionAesPassword)
 				.append("databaseConnectionUsername", databaseConnectionUsername)
-				.append("parallelPartitions", parallelPartitions))).getModifiedCount();
+				.append("parallelPartitions", parallelPartitions)
+				.append("drdlYamlConfigPath", drdlYamlConfigPath)
+				.append("drdlYamlMongoDbUri", drdlYamlMongoDbUri)
+			)).getModifiedCount();
 	}
 
 	@MutationMapping

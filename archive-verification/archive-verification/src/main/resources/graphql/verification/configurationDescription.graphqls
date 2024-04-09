@@ -19,6 +19,8 @@
 	databaseConnectionAesPassword: String!
 	databaseConnectionUsername: String!
 	parallelPartitions: String!
+	drdlYamlConfigPath: String!
+	drdlYamlMongoDbUri: String!
 }
 extend type Query {
 	configurationDescriptionById(_id: ID!): ConfigurationDescription
@@ -26,7 +28,7 @@ extend type Query {
 	configurationDescriptionN: [ConfigurationDescription]
 }
 extend type Mutation {
-	createConfigurationDescription(name: String!, toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, environment: String!, threads: String!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: String!, archiveDb: String!, taskInterval: String!, databaseConnectionAesPassword: String!, databaseConnectionUsername: String!, parallelPartitions: String!): ID
-	updateConfigurationDescription(_id: ID!, name: String!, toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, environment: String!, threads: String!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: String!, archiveDb: String!, taskInterval: String!, databaseConnectionAesPassword: String!, databaseConnectionUsername: String!, parallelPartitions: String!): Int
+	createConfigurationDescription(name: String!, toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, environment: String!, threads: String!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: String!, archiveDb: String!, taskInterval: String!, databaseConnectionAesPassword: String!, databaseConnectionUsername: String!, parallelPartitions: String!, drdlYamlConfigPath: String!, drdlYamlMongoDbUri: String!): ID
+	updateConfigurationDescription(_id: ID!, name: String!, toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, environment: String!, threads: String!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: String!, archiveDb: String!, taskInterval: String!, databaseConnectionAesPassword: String!, databaseConnectionUsername: String!, parallelPartitions: String!, drdlYamlConfigPath: String!, drdlYamlMongoDbUri: String!): Int
 	deleteConfigurationDescription(_id: ID!): Int
 }
