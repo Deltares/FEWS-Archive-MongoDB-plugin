@@ -104,6 +104,8 @@ public class Conversion {
 			r.putAll(((Document)v).get("attributes", Document.class).entrySet().stream().filter(a -> locationAttributesMap.containsKey(a.getKey())).collect(Collectors.toMap(Map.Entry::getKey, a -> ((Document)a.getValue()).get("value").getClass().getSimpleName())));
 		});
 		r.put("locationId", "String");
+		r.put("group", "String");
+		r.put("power", "String");
 		return r;
 	}
 
