@@ -50,7 +50,7 @@ public final class Location implements IExecute, IPredecessor {
 		List<String> attributes = locationAttributes.getList("Attributes", String.class);
 		if(!attributes.contains("locationId"))
 			attributes.add(0, "locationId");
-		List<String> columns = attributes.stream().map(s -> String.format("      - Name: %s\n        MongoType: %s\n        SqlName: %s\n        SqlType: %s\n", s, Conversion.getBsonType(locationAttributeTypes.getString(s)), s, Conversion.getSqlType(Conversion.getBsonType(locationAttributeTypes.getString(s))))).collect(Collectors.toList());
+		List<String> columns = attributes.stream().map(s -> String.format("      - Name: %s\n        MongoType: %s\n        SqlName: %s\n        SqlType: %s\n", s, Conversion.getBsonType(locationAttributeTypes.get(s, "String")), s, Conversion.getSqlType(Conversion.getBsonType(locationAttributeTypes.get(s, "String"))))).collect(Collectors.toList());
 
 		template = template.replace("{database}", Settings.get("verificationDb"));
 		template = template.replace("{study}", study);

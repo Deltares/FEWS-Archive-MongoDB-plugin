@@ -15,13 +15,13 @@ const deleteMutation = useMutation(gql`mutation deleteTemplateCube($_id: ID!) {d
 
 async function create() {
   const {Name, Template} = selected.value
-  const result = await mutate(() => createMutation.mutate({ name: Name, template: Template }))
+  const result = await mutate(() => createMutation.mutate({ name: Name, template: JSON.parse(Template) }))
   selected.value._id = result?.data ? result.data.createTemplateCube : selected.value._id
 }
 
 async function update() {
   const {_id, Name, Template} = selected.value
-  await mutate(() => updateMutation.mutate({ _id: _id, name: Name, template: Template }))
+  await mutate(() => updateMutation.mutate({ _id: _id, name: Name, template: JSON.parse(Template) }))
 }
 
 async function remove() {
@@ -59,12 +59,12 @@ async function mutate(mutation){
   <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>TemplateCube Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
     <thead><tr><th><v-icon>mdi-pencil-outline</v-icon></th><th>Name</th><th class="w-100">Template (JSON)</th></tr></thead>
-    <tbody><tr v-for="s in sorted" :key="s._id" :title="s._id"><td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s}" v-model="selected._id" /></td><td><label :for="'r_'+s._id">{{s.Name}}</label></td><td><input type="text" class="w-100" readonly :value="JSON.stringify(s.Template)"/></td></tr></tbody>
+    <tbody><tr v-for="s in sorted" :key="s._id" :title="s._id"><td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s, Template: JSON.stringify(s.Template, null, 2)}" v-model="selected._id" /></td><td><label :for="'r_'+s._id">{{s.Name}}</label></td><td><input type="text" class="w-100" readonly :value="JSON.stringify(s.Template)"/></td></tr></tbody>
   </v-table>
   <div class="bg-grey-darken-2 text-center mt-6 border rounded-lg"><h4>Editing: {{selected.Name}}</h4></div>
   <div class="input">
     <div class="d-flex w-100 mt-2"><label for="i-name" class="border rounded-lg pa-2 input-label">Name</label><input id="i-name" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Name"/></div>
-    <div class="d-flex w-100 mt-2"><label for="i-template" class="border rounded-lg pa-2 input-label">Template</label><json-editor-vue id="i-template" mode="text" class="border rounded-lg pa-2 flex-grow-1 ml-3 input-data" @change="v => selected.Template = JSON.parse(v.text)" v-model="selected.Template"/></div>
+    <div class="d-flex w-100 mt-2"><label for="i-template" class="border rounded-lg pa-2 input-label">Template</label><JsonEditorVue id="i-template" mode="text" class="border rounded-lg pa-2 flex-grow-1 ml-3 input-data" v-model="selected.Template"/></div>
   </div>
   <div class="mt-4">
     <v-btn @click="create">Create</v-btn>
