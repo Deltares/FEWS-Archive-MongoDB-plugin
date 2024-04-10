@@ -15,13 +15,13 @@ const deleteMutation = useMutation(gql`mutation deleteForecast($_id: ID!) {delet
 
 async function create() {
   const {Name, ForecastName, Collection, Filters} = selected.value
-  const result = await mutate(() => createMutation.mutate({ name: Name, forecastName: ForecastName, collection: Collection, filters: Filters }))
+  const result = await mutate(() => createMutation.mutate({ name: Name, forecastName: ForecastName, collection: Collection, filters: JSON.parse(Filters) }))
   selected.value._id = result?.data ? result.data.createForecast : selected.value._id
 }
 
 async function update() {
   const {_id, Name, ForecastName, Collection, Filters} = selected.value
-  await mutate(() => updateMutation.mutate({ _id: _id, name: Name, forecastName: ForecastName, collection: Collection, filters: Filters }))
+  await mutate(() => updateMutation.mutate({ _id: _id, name: Name, forecastName: ForecastName, collection: Collection, filters: JSON.parse(Filters) }))
 }
 
 async function remove() {
@@ -66,7 +66,7 @@ async function mutate(mutation){
       <th class="w-100">Filters (JSON)</th>
     </tr></thead>
     <tbody><tr v-for="s in sorted" :key="s._id" :title="s._id">
-      <td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s}" v-model="selected._id" /></td>
+      <td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s, Filters: JSON.stringify(s.Filters, null, 2)}" v-model="selected._id" /></td>
       <td><label :for="'r_'+s._id">{{s.Name}}</label></td>
       <td>{{s.ForecastName}}</td>
       <td>{{s.Collection}}</td>
@@ -78,7 +78,7 @@ async function mutate(mutation){
     <div class="d-flex w-100 mt-2"><label for="i-name" class="border rounded-lg pa-2 input-label">Name</label><input id="i-name" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Name"/></div>
     <div class="d-flex w-100 mt-2"><label for="i-forecastName" class="border rounded-lg pa-2 input-label">ForecastName</label><input id="i-forecastName" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.ForecastName"/></div>
     <div class="d-flex w-100 mt-2"><label for="i-collection" class="border rounded-lg pa-2 input-label">Collection</label><input id="i-collection" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Collection"/></div>
-    <div class="d-flex w-100 mt-2"><label for="i-filters" class="border rounded-lg pa-2 input-label">Filters</label><json-editor-vue id="i-filters" mode="text" class="border rounded-lg pa-2 flex-grow-1 ml-3 input-data" @change="v => selected.Filters = JSON.parse(v.text)" v-model="selected.Filters"/></div>
+    <div class="d-flex w-100 mt-2"><label for="i-filters" class="border rounded-lg pa-2 input-label">Filters</label><JsonEditorVue id="i-filters" mode="text" class="border rounded-lg pa-2 flex-grow-1 ml-3 input-data" v-model="selected.Filters"/></div>
   </div>
   <div class="mt-4">
     <v-btn @click="create">Create</v-btn>

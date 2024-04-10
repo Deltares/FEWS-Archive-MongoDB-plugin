@@ -61,6 +61,6 @@ public class Tables implements IModel {
 
 		template.get("model", Document.class).getList("tables", Document.class).stream().filter(t -> t.getString("name").equals("Location")).forEach(t ->
 			t.getList("columns", Document.class).addAll(locationAttributes.getList("Attributes", String.class).stream().map(s ->
-				new Document("name", s).append("dataType", Conversion.getCubeType(locationAttributeTypes.getString(s))).append("sourceColumn", s).append("displayFolder", "Attributes")).toList()));
+				new Document("name", s).append("dataType", Conversion.getCubeType(locationAttributeTypes.get(s, "String"))).append("sourceColumn", s).append("displayFolder", "Attributes")).toList()));
 	}
 }

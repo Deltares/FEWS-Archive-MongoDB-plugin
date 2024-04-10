@@ -54,7 +54,7 @@ public final class Location implements IExecute, IPredecessor {
         MongoType: %s
         SqlName: %s
         SqlType: %s
-""", s, Conversion.getBsonType(locationAttributeTypes.getString(s)), s, Conversion.getSqlType(Conversion.getBsonType(locationAttributeTypes.getString(s))))).toList();
+""", s, Conversion.getBsonType(locationAttributeTypes.get(s, "String")), s, Conversion.getSqlType(Conversion.getBsonType(locationAttributeTypes.get(s, "String"))))).toList();
 
 		template = template.replace("{database}", Settings.get("verificationDb"));
 		template = template.replace("{study}", study);
