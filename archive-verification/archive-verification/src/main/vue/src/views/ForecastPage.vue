@@ -57,7 +57,7 @@ async function mutate(mutation){
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
   <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>Forecast Editor</h3></div>
-  <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
+  <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="300px">
     <thead><tr>
       <th><v-icon>mdi-pencil-outline</v-icon></th>
       <th>Name</th>

@@ -45,7 +45,8 @@ public class Study {
 			@Argument String value,
 			@Argument String normal,
 			@Argument String cube,
-			@Argument boolean active){
+			@Argument boolean active,
+			@Argument int reprocessDays){
 		return Mongo.insertOne("Study",
 				new Document("Name", name)
 				.append("Observed", observed)
@@ -60,6 +61,7 @@ public class Study {
 				.append("Normal", normal)
 				.append("Cube", cube)
 				.append("Active", active)
+				.append("ReprocessDays", reprocessDays)
 		).getInsertedId().asObjectId().getValue().toString();
 	}
 
@@ -78,7 +80,8 @@ public class Study {
 			@Argument String value,
 			@Argument String normal,
 			@Argument String cube,
-			@Argument boolean active){
+			@Argument boolean active,
+			@Argument int reprocessDays){
 		return Mongo.updateOne("Study", new Document("_id", new ObjectId(_id)), new Document("$set",
 				new Document("Name", name)
 				.append("Observed", observed)
@@ -92,7 +95,9 @@ public class Study {
 				.append("Value", value)
 				.append("Normal", normal)
 				.append("Cube", cube)
-				.append("Active", active))).getModifiedCount();
+				.append("Active", active)
+				.append("ReprocessDays", reprocessDays)
+		)).getModifiedCount();
 	}
 
 	@MutationMapping
