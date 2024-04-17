@@ -28,7 +28,7 @@ public class Normal {
 
 	@QueryMapping
 	public List<Document> normalN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("Normal", new Document(), Conversion.getProjection(e)).spliterator(), false).toList();
+		return StreamSupport.stream(Mongo.find("Normal", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).toList();
 	}
 	
 	@MutationMapping

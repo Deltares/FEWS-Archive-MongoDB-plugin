@@ -28,7 +28,7 @@ public class TemplateCube {
 
 	@QueryMapping
 	public List<Document> templateCubeN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("template.Cube", new Document(), Conversion.getProjection(e)).spliterator(), false).toList();
+		return StreamSupport.stream(Mongo.find("template.Cube", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).toList();
 	}
 	
 	@MutationMapping

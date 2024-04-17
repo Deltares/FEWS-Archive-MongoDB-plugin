@@ -27,7 +27,7 @@ public class ConfigurationSettings {
 
 	@QueryMapping
 	public List<Document> configurationSettingsN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("configuration.Settings", new Document(), Conversion.getProjection(e)).spliterator(), false).toList();
+		return StreamSupport.stream(Mongo.find("configuration.Settings", new Document(), Conversion.getProjection(e)).sort(new Document("environment", 1)).spliterator(), false).toList();
 	}
 
 	@MutationMapping

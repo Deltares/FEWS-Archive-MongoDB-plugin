@@ -28,7 +28,7 @@ public class Observed {
 
 	@QueryMapping
 	public List<Document> observedN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("Observed", new Document(), Conversion.getProjection(e)).spliterator(), false).toList();
+		return StreamSupport.stream(Mongo.find("Observed", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).toList();
 	}
 	
 	@MutationMapping

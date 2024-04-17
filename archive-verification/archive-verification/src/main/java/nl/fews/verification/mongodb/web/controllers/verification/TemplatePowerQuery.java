@@ -33,7 +33,7 @@ public class TemplatePowerQuery {
 
 	@QueryMapping
 	public List<Document> templatePowerQueryN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("template.PowerQuery", new Document(), Conversion.getProjection(e)).spliterator(), false).peek(r -> r.put("Template", String.join("\n", r.getList("Template", String.class)))).toList();
+		return StreamSupport.stream(Mongo.find("template.PowerQuery", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).peek(r -> r.put("Template", String.join("\n", r.getList("Template", String.class)))).toList();
 	}
 	
 	@MutationMapping

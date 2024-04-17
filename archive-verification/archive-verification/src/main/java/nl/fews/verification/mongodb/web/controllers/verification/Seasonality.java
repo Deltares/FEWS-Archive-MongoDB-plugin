@@ -28,7 +28,7 @@ public class Seasonality {
 
 	@QueryMapping
 	public List<Document> seasonalityN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("Seasonality", new Document(), Conversion.getProjection(e)).spliterator(), false).toList();
+		return StreamSupport.stream(Mongo.find("Seasonality", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).toList();
 	}
 	
 	@MutationMapping
