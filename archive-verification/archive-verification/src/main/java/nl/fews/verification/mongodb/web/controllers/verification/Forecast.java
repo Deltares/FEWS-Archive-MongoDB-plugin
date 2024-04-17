@@ -29,7 +29,7 @@ public class Forecast {
 
 	@QueryMapping
 	public List<Document> forecastN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("Forecast", new Document(), Conversion.getProjection(e)).spliterator(), false).collect(Collectors.toList());
+		return StreamSupport.stream(Mongo.find("Forecast", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).collect(Collectors.toList());
 	}
 	
 	@MutationMapping

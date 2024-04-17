@@ -34,17 +34,17 @@ public class OutputPowerQuery {
 
 	@QueryMapping
 	public List<Document> outputPowerQueryNByStudy(@Argument String study, DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("output.PowerQuery", new Document("Study", study), Conversion.getProjection(e)).spliterator(), false).peek(r -> r.put("Expression", String.join("\n", r.getList("Expression", String.class)))).collect(Collectors.toList());
+		return StreamSupport.stream(Mongo.find("output.PowerQuery", new Document("Study", study), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).peek(r -> r.put("Expression", String.join("\n", r.getList("Expression", String.class)))).collect(Collectors.toList());
 	}
 
 	@QueryMapping
 	public List<Document> outputPowerQueryNByStudyName(@Argument String study, @Argument String name, DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("output.PowerQuery", new Document("Study", study).append("Name", name), Conversion.getProjection(e)).spliterator(), false).peek(r -> r.put("Expression", String.join("\n", r.getList("Expression", String.class)))).collect(Collectors.toList());
+		return StreamSupport.stream(Mongo.find("output.PowerQuery", new Document("Study", study).append("Name", name), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).peek(r -> r.put("Expression", String.join("\n", r.getList("Expression", String.class)))).collect(Collectors.toList());
 	}
 
 	@QueryMapping
 	public List<Document> outputPowerQueryN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("output.PowerQuery", new Document(), Conversion.getProjection(e)).spliterator(), false).peek(r -> r.put("Expression", String.join("\n", r.getList("Expression", String.class)))).collect(Collectors.toList());
+		return StreamSupport.stream(Mongo.find("output.PowerQuery", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).peek(r -> r.put("Expression", String.join("\n", r.getList("Expression", String.class)))).collect(Collectors.toList());
 	}
 	
 	@MutationMapping

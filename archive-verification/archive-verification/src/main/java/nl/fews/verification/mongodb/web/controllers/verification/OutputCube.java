@@ -29,7 +29,7 @@ public class OutputCube {
 
 	@QueryMapping
 	public List<Document> outputCubeN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("output.Cube", new Document(), Conversion.getProjection(e)).spliterator(), false).collect(Collectors.toList());
+		return StreamSupport.stream(Mongo.find("output.Cube", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).collect(Collectors.toList());
 	}
 	
 	@MutationMapping

@@ -29,7 +29,7 @@ public class Study {
 
 	@QueryMapping
 	public List<Document> studyN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("Study", new Document(), Conversion.getProjection(e)).spliterator(), false).collect(Collectors.toList());
+		return StreamSupport.stream(Mongo.find("Study", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).collect(Collectors.toList());
 	}
 	
 	@MutationMapping

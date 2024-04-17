@@ -28,7 +28,7 @@ public class ConfigurationDescription {
 
 	@QueryMapping
 	public List<Document> configurationDescriptionN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("configuration.Description", new Document(), Conversion.getProjection(e)).spliterator(), false).collect(Collectors.toList());
+		return StreamSupport.stream(Mongo.find("configuration.Description", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).collect(Collectors.toList());
 	}
 
 	@MutationMapping
