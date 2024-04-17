@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Controller
@@ -28,7 +29,7 @@ public class Study {
 
 	@QueryMapping
 	public List<Document> studyN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("Study", new Document(), Conversion.getProjection(e)).spliterator(), false).toList();
+		return StreamSupport.stream(Mongo.find("Study", new Document(), Conversion.getProjection(e)).spliterator(), false).collect(Collectors.toList());
 	}
 	
 	@MutationMapping
