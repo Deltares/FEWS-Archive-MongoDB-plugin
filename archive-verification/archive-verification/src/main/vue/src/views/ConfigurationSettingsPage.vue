@@ -56,7 +56,7 @@ async function mutate(mutation){
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
   <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>ConfigurationSettings Editor</h3></div>
-  <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
+  <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="300px">
     <thead><tr><th><v-icon>mdi-pencil-outline</v-icon></th><th>environment</th><th class="w-100">Settings (JSON)</th></tr></thead>
     <tbody><tr v-for="s in sorted" :key="s._id" :title="s._id"><td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s}" v-model="selected._id" /></td><td><label :for="'r_'+s._id">{{s.environment}}</label></td><td><input type="text" class="w-100" readonly :value="JSON.stringify(s)"/></td></tr></tbody>
   </v-table>

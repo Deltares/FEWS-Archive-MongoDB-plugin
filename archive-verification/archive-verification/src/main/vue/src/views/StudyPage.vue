@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { ref, computed } from "vue";
 
-const study = useQuery(gql`query studyN {studyN {_id, Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube, Active}}`)
+const study = useQuery(gql`query studyN {studyN {_id, Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube, Active, ReprocessDays}}`)
 const observed = useQuery(gql`query observedN {observedN {_id, Name}}`)
 const forecast = useQuery(gql`query forecastN {forecastN {_id, Name}}`)
 const normal = useQuery(gql`query normalN {normalN {_id, Name}}`)
@@ -20,19 +20,19 @@ const loading = computed(() => study.loading.value || observed.loading.value || 
 const error = computed(() => study.error.value || observed.error.value || forecast.error.value || normal.error.value || seasonality.error.value || _class.error.value || locationAttributes.error.value || templateCube.error.value || mutateError.value)
 const studySorted = computed(() => study.result.value && study.result.value.studyN ? study.result.value.studyN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
 
-const createMutation = useMutation(gql`mutation createStudy($name: String!, $observed: String!, $forecasts: [String!]!, $seasonalities: [String!]!, $_class: String!, $locationAttributes: String!, $forecastStartMonth: String!, $forecastEndMonth: String!, $time: String!, $value: String!, $normal: String!, $cube: String!, $active: Boolean!) {createStudy(name: $name, observed: $observed, forecasts: $forecasts, seasonalities: $seasonalities, _class: $_class, locationAttributes: $locationAttributes, forecastStartMonth: $forecastStartMonth, forecastEndMonth: $forecastEndMonth, time: $time, value: $value, normal: $normal, cube: $cube, active: $active)}`)
-const updateMutation = useMutation(gql`mutation updateStudy($_id: ID!, $name: String!, $observed: String!, $forecasts: [String!]!, $seasonalities: [String!]!, $_class: String!, $locationAttributes: String!, $forecastStartMonth: String!, $forecastEndMonth: String!, $time: String!, $value: String!, $normal: String!, $cube: String!, $active: Boolean!) {updateStudy(_id: $_id, name: $name, observed: $observed, forecasts: $forecasts, seasonalities: $seasonalities, _class: $_class, locationAttributes: $locationAttributes, forecastStartMonth: $forecastStartMonth, forecastEndMonth: $forecastEndMonth, time: $time, value: $value, normal: $normal, cube: $cube, active: $active)}`)
+const createMutation = useMutation(gql`mutation createStudy($name: String!, $observed: String!, $forecasts: [String!]!, $seasonalities: [String!]!, $_class: String!, $locationAttributes: String!, $forecastStartMonth: String!, $forecastEndMonth: String!, $time: String!, $value: String!, $normal: String!, $cube: String!, $active: Boolean!, $reprocessDays: Int!) {createStudy(name: $name, observed: $observed, forecasts: $forecasts, seasonalities: $seasonalities, _class: $_class, locationAttributes: $locationAttributes, forecastStartMonth: $forecastStartMonth, forecastEndMonth: $forecastEndMonth, time: $time, value: $value, normal: $normal, cube: $cube, active: $active, reprocessDays: $reprocessDays)}`)
+const updateMutation = useMutation(gql`mutation updateStudy($_id: ID!, $name: String!, $observed: String!, $forecasts: [String!]!, $seasonalities: [String!]!, $_class: String!, $locationAttributes: String!, $forecastStartMonth: String!, $forecastEndMonth: String!, $time: String!, $value: String!, $normal: String!, $cube: String!, $active: Boolean!, $reprocessDays: Int!) {updateStudy(_id: $_id, name: $name, observed: $observed, forecasts: $forecasts, seasonalities: $seasonalities, _class: $_class, locationAttributes: $locationAttributes, forecastStartMonth: $forecastStartMonth, forecastEndMonth: $forecastEndMonth, time: $time, value: $value, normal: $normal, cube: $cube, active: $active, reprocessDays: $reprocessDays)}`)
 const deleteMutation = useMutation(gql`mutation deleteStudy($_id: ID!) {deleteStudy(_id: $_id)}`)
 
 async function create() {
-  const {Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube, Active} = selected.value
-  const result = await mutate(() => createMutation.mutate({ name: Name, observed: Observed, forecasts: Forecasts, seasonalities: Seasonalities, _class: Class, locationAttributes: LocationAttributes, forecastStartMonth: ForecastStartMonth, forecastEndMonth: ForecastEndMonth, time: Time, value: Value, normal: Normal, cube: Cube, active: Active }))
+  const {Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube, Active, ReprocessDays} = selected.value
+  const result = await mutate(() => createMutation.mutate({ name: Name, observed: Observed, forecasts: Forecasts, seasonalities: Seasonalities, _class: Class, locationAttributes: LocationAttributes, forecastStartMonth: ForecastStartMonth, forecastEndMonth: ForecastEndMonth, time: Time, value: Value, normal: Normal, cube: Cube, active: Active, reprocessDays: ReprocessDays }))
   selected.value._id = result?.data ? result.data.createStudy : selected.value._id
 }
 
 async function update() {
-  const {_id, Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube, Active} = selected.value
-  await mutate(() => updateMutation.mutate({ _id: _id, name: Name, observed: Observed, forecasts: Forecasts, seasonalities: Seasonalities, _class: Class, locationAttributes: LocationAttributes, forecastStartMonth: ForecastStartMonth, forecastEndMonth: ForecastEndMonth, time: Time, value: Value, normal: Normal, cube: Cube, active: Active }))
+  const {_id, Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube, Active, ReprocessDays} = selected.value
+  await mutate(() => updateMutation.mutate({ _id: _id, name: Name, observed: Observed, forecasts: Forecasts, seasonalities: Seasonalities, _class: Class, locationAttributes: LocationAttributes, forecastStartMonth: ForecastStartMonth, forecastEndMonth: ForecastEndMonth, time: Time, value: Value, normal: Normal, cube: Cube, active: Active, reprocessDays: ReprocessDays }))
 }
 
 async function remove() {
@@ -81,7 +81,7 @@ async function mutate(mutation){
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
   <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>Study Editor</h3></div>
-  <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="200px">
+  <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="300px">
     <thead><tr><th><v-icon>mdi-pencil-outline</v-icon></th><th>Name</th><th class="w-100">Study (JSON)</th></tr></thead>
     <tbody><tr v-for="s in studySorted" :key="s._id" :title="s._id"><td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s}" v-model="selected._id" /></td><td><label :for="'r_'+s._id">{{s.Name}}</label></td><td><input type="text" class="w-100" readonly :value="JSON.stringify(s)"/></td></tr></tbody>
   </v-table>
@@ -100,6 +100,7 @@ async function mutate(mutation){
     <div v-if="normal.result.value" class="d-flex w-100 mt-2"><label for="i-normal" class="border rounded-lg pa-2 input-label">Normal</label><select id="i-normal" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Normal"><option v-for="x in normal.result.value.normalN" :key="x.Name" :value="x.Name" :label="x.Name"/></select></div>
     <div v-if="templateCube.result.value" class="d-flex w-100 mt-2"><label for="i-cube" class="border rounded-lg pa-2 input-label">Cube</label><select id="i-cube" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Cube"><option v-for="x in templateCube.result.value.templateCubeN" :key="x.Name" :value="x.Name" :label="x.Name"/></select></div>
     <div class="d-flex w-100 mt-2"><label for="i-active" class="border rounded-lg pa-2 input-label">Active</label><div id="i-active" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data"><input type="checkbox" class="font-weight-bold" v-model="selected.Active"/></div></div>
+    <div class="d-flex w-100 mt-2"><label for="i-reprocessDays" class="border rounded-lg pa-2 input-label">ReprocessDays</label><input id="i-reprocessDays" type="number" min="1" max="999" step="1" pattern="\d+" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.reprocessDays"/></div>
   </div>
   <div class="mt-4">
     <v-btn @click="create">Create</v-btn>

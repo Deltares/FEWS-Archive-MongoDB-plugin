@@ -10,6 +10,8 @@ import org.bson.Document;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class Deploy {
 	private Deploy(){}
@@ -42,6 +44,7 @@ public class Deploy {
 		updateConfig();
 		restartService();
 
+		Settings.put("reprocessDays", StreamSupport.stream(Mongo.find("Study", new Document()).spliterator(), false).collect(Collectors.toMap(x -> String.format("Verification_%s", x.getString("Name")), x -> x.getInteger("ReprocessDays"))));
 		IO.writeString(Path.of(Settings.get("bimPath"), "Settings.json"), Settings.toJsonString(2));
 		Mongo.updateOne("configuration.Settings", new Document(), new Document("$set", new Document("reprocessCubes", "")));
 	}
