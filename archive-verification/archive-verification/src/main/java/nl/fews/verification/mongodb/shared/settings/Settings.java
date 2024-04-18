@@ -42,6 +42,7 @@ public final class Settings {
 		try {
 			String mongoVerificationDbConnection = getMongoVerificationDbConnection();
 			getSettings(mongoVerificationDbConnection, InetAddress.getLocalHost().getHostName().toUpperCase());
+			logger.info(String.format("***CONNECTED***: [%s]", mongoVerificationDbConnection.replaceAll("//(.+):(.+)@", "//$1:********@")));
 		}
 		catch (Exception ex){
 			logger.error(ex.getMessage(), ex);
@@ -80,7 +81,7 @@ public final class Settings {
 			}
 
 			if(settings == null) {
-				throw new RuntimeException(String.format("[%], [%], [Default] settings not found on [%s]", settingsType, hostName, mongoDbConnection.replaceAll("^.*@", "")));
+				throw new RuntimeException(String.format("[%s], [%s], [Default] settings not found on [%s]", settingsType, hostName, mongoDbConnection.replaceAll("^.*@", "")));
 			}
 
 			settings.forEach(Settings::put);
@@ -107,42 +108,42 @@ public final class Settings {
 			return validMongoVerificationDbConnection(dbConnection);
 		}
 		catch (Exception ex){
-			//TRY NEXT
+			logger.warn(ex.getMessage(), ex);
 		}
 
 		if (dbUsername != null && !dbUsername.isEmpty() && dbAesPassword != null && !dbAesPassword.isEmpty()){
 			try{
 				var m = Pattern.compile("^(.+://)(.+)$").matcher(dbConnection);
-				return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s:%s@$2", dbUsername, Crypto.decrypt(dbAesPassword))) : dbConnection);
+				return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s:%s@$2", dbUsername.replace("$", "\\$"), Crypto.decrypt(dbAesPassword).replace("$", "\\$"))) : dbConnection);
 			}
 			catch (Exception ex){
-				//TRY NEXT
+				logger.warn(ex.getMessage(), ex);
 			}
 		}
 
 		if (!dbConnection.contains("@")){
 			try{
 				var m = Pattern.compile("^(.+://)(.+)$").matcher(dbConnection);
-			 	return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s%%40%s@$2", System.getProperty("user.name"), userDnsDomain)) : dbConnection);
+			 	return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s%%40%s@$2", System.getProperty("user.name").replace("$", "\\$"), userDnsDomain.replace("$", "\\$"))) : dbConnection);
 			}
 			catch (Exception ex){
-				//TRY NEXT
+				logger.warn(ex.getMessage(), ex);
 			}
 		}
 
 		try {
 			var m = Pattern.compile("^(.+:.+:)(.+)(@.+)$").matcher(dbConnection);
-			return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s$3", Crypto.decrypt(m.group(2)))) : dbConnection);
+			return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s$3", Crypto.decrypt(m.group(2)).replace("$", "\\$"))) : dbConnection);
 		}
 		catch (Exception ex) {
-			//TRY NEXT
+			logger.warn(ex.getMessage(), ex);
 		}
 
 		try {
 			return validMongoVerificationDbConnection(Crypto.decrypt(dbConnection));
 		}
 		catch (Exception ex){
-			//TRY NEXT
+			logger.warn(ex.getMessage(), ex);
 		}
 
 		throw new RuntimeException(String.format("Connection string [%s] is invalid.", dbConnection));
