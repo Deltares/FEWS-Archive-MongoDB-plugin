@@ -53,9 +53,9 @@ public class Deploy {
 		var drdlYamlConfig = IO.readString(Path.of(Settings.get("drdlYamlConfigPath"), ""));
 		if(!drdlYamlConfig.contains(Settings.get("drdlYamlMongoDbUri"))) {
 			IO.writeString(Path.of(String.format("%s.bak", Settings.get("drdlYamlConfigPath", String.class)), ""), drdlYamlConfig);
-			drdlYamlConfig = drdlYamlConfig.replaceAll("mongodb://.+:\\d+", Settings.get("drdlYamlMongoDbUri"));
-			drdlYamlConfig = drdlYamlConfig.replaceAll("username:.+", String.format("username: %s", Settings.get("databaseConnectionUsername", String.class)));
-			drdlYamlConfig = drdlYamlConfig.replaceAll("password:.+", String.format("password: %s", Crypto.decrypt(Settings.get("databaseConnectionAesPassword", String.class))));
+			drdlYamlConfig = drdlYamlConfig.replaceAll("mongodb://.+:\\d+", Settings.get("drdlYamlMongoDbUri", String.class).replace("$", "\\$"));
+			drdlYamlConfig = drdlYamlConfig.replaceAll("username:.+", String.format("username: %s", Settings.get("databaseConnectionUsername", String.class).replace("$", "\\$")));
+			drdlYamlConfig = drdlYamlConfig.replaceAll("password:.+", String.format("password: %s", Crypto.decrypt(Settings.get("databaseConnectionAesPassword", String.class)).replace("$", "\\$")));
 			IO.writeString(Path.of(Settings.get("drdlYamlConfigPath"), ""), drdlYamlConfig);
 		}
 	}
