@@ -2,7 +2,10 @@ package nl.fews.verification.mongodb.generate.shared.conversion;
 
 import org.bson.Document;
 
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,6 +54,16 @@ public class Conversion {
 			default : return javaType;
 		}
 	}
+	
+	public static <T extends Comparable<T>> T max(T o1, T o2){
+		if(o1 == null || o2 == null) return null;
+		return o1.compareTo(o2) > 0 ? o1 : o2;
+	}
+
+	public static YearMonth getYearMonth(Date date){
+		return YearMonth.from(date.toInstant().atZone(ZoneId.of("UTC")).toLocalDate());
+	}
+
 
 	public static String getForecastTime(String time){
 		return time.equals("local") ? "localForecastTime" : "forecastTime";
@@ -74,14 +87,14 @@ public class Conversion {
 
 	public static String getSeasonalities(List<Document> seasonalities){
 		return seasonalities.stream().map(
-			s -> String.format("        \"%sSeason\": {\"$switch\": {\"branches\": [\n%s\n          ]}}", s.getString("Name"), s.getList("Breakpoint", Document.class).stream().map(
-				b -> String.format("          {\"case\": {\"$%s\": [\"$monthDay\", \"%s\"]}, \"then\": \"%s\"}", b.getString("Operator"), b.getString("Threshold"), b.getString("Name"))).collect(Collectors.joining(",\n")))).collect(Collectors.joining(",\n"));
+			s -> String.format("  \"%sSeason\": {\"$switch\": {\"branches\": [\n%s\n    ]}}", s.getString("Name"), s.getList("Breakpoint", Document.class).stream().map(
+				b -> String.format("    {\"case\": {\"$%s\": [\"$monthDay\", \"%s\"]}, \"then\": \"%s\"}", b.getString("Operator"), b.getString("Threshold"), b.getString("Name"))).collect(Collectors.joining(",\n")))).collect(Collectors.joining(",\n"));
 	}
 
 	public static String getLocationMap(Document locationMapping){
 		String cases = locationMapping.entrySet().stream().map(
-			m -> String.format("            {\"case\": {\"$eq\": [\"$locationId\", \"%s\"]}, \"then\": \"%s\"}", m.getKey().replace("\"", "\\\""), m.getValue().toString().replace("\"", "\\\""))).collect(Collectors.joining(",\n"));
-		return cases.isEmpty() ? "\"$locationId\"" : String.format("{\"$switch\":\n          {\"branches\": [\n%s\n          ],\n          \"default\": \"$locationId\"}}", cases);
+			m -> String.format("      {\"case\": {\"$eq\": [\"$locationId\", \"%s\"]}, \"then\": \"%s\"}", m.getKey().replace("\"", "\\\""), m.getValue().toString().replace("\"", "\\\""))).collect(Collectors.joining(",\n"));
+		return cases.isEmpty() ? "\"$locationId\"" : String.format("{\"$switch\":\n    {\"branches\": [\n%s\n    ],\n    \"default\": \"$locationId\"}}", cases);
 	}
 
 	public static String getSeasonalityColumns(List<String> seasonalities){

@@ -17,18 +17,11 @@ public final class Model implements IExecute, IPredecessor {
 		this.study = study;
 	}
 
-	/**
-	 * Executes the verification process for a given study.
-	 * Retrieves the study document from the database using the provided study name.
-	 * Retrieves the template document from the database using the cube name from the study document.
-	 * Appends the necessary fields to the template document for verification.
-	 * Generates the data sources, tables, and roles for the verification using the template document.
-	 * Inserts the study and the template document into the output.Cube collection.
-	 */
 	@Override
 	public void execute(){
-		Document studyDocument = Mongo.findOne("Study", new Document("Name", study));
-		Document template = Mongo.findOne("template.Cube", new Document("Name", studyDocument.getString("Cube"))).get("Template", Document.class);
+		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
+		var cube = studyDocument.getString("Cube");
+		var template = Mongo.findOne("template.Cube", new Document("Name", cube)).get("Template", Document.class);
 
 		template.append("id", String.format("Verification_%s", study));
 		template.append("name", String.format("Verification_%s", study));

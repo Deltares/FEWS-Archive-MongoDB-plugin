@@ -47,13 +47,13 @@ public class ConfigurationDescription {
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
 			@Argument String execute,
-			@Argument String archiveDb,
 			@Argument String taskInterval,
-			@Argument String databaseConnectionAesPassword,
-			@Argument String databaseConnectionUsername,
+			@Argument String fewsArchiveDbAesPassword,
+			@Argument String fewsArchiveDbUsername,
 			@Argument String parallelPartitions,
 			@Argument String drdlYamlConfigPath,
-			@Argument String drdlYamlMongoDbUri){
+			@Argument String fewsArchiveDbConnection,
+			@Argument String refreshViews){
 		return Mongo.insertOne("configuration.Description",
 				new Document("Name", name)
 				.append("toEmailAddresses", toEmailAddresses)
@@ -69,13 +69,13 @@ public class ConfigurationDescription {
 				.append("tabularConnectionString", tabularConnectionString)
 				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
 				.append("execute", execute)
-				.append("archiveDb", archiveDb)
 				.append("taskInterval", taskInterval)
-				.append("databaseConnectionAesPassword", databaseConnectionAesPassword)
-				.append("databaseConnectionUsername", databaseConnectionUsername)
+				.append("fewsArchiveDbAesPassword", fewsArchiveDbAesPassword)
+				.append("fewsArchiveDbUsername", fewsArchiveDbUsername)
 				.append("parallelPartitions", parallelPartitions)
 				.append("drdlYamlConfigPath", drdlYamlConfigPath)
-				.append("drdlYamlMongoDbUri", drdlYamlMongoDbUri)
+				.append("fewsArchiveDbConnection", fewsArchiveDbConnection)
+				.append("refreshViews", refreshViews)
 		).getInsertedId().asObjectId().getValue().toString();
 	}
 
@@ -96,13 +96,13 @@ public class ConfigurationDescription {
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
 			@Argument String execute,
-			@Argument String archiveDb,
 			@Argument String taskInterval,
-			@Argument String databaseConnectionAesPassword,
-			@Argument String databaseConnectionUsername,
+			@Argument String fewsArchiveDbAesPassword,
+			@Argument String fewsArchiveDbUsername,
 			@Argument String parallelPartitions,
 			@Argument String drdlYamlConfigPath,
-			@Argument String drdlYamlMongoDbUri){
+			@Argument String fewsArchiveDbConnection,
+			@Argument String refreshViews){
 		return Mongo.updateOne("configuration.Description", new Document("_id", new ObjectId(_id)), new Document("$set",
 				new Document("Name", name)
 				.append("toEmailAddresses", toEmailAddresses)
@@ -118,13 +118,13 @@ public class ConfigurationDescription {
 				.append("tabularConnectionString", tabularConnectionString)
 				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
 				.append("execute", execute)
-				.append("archiveDb", archiveDb)
 				.append("taskInterval", taskInterval)
-				.append("databaseConnectionAesPassword", databaseConnectionAesPassword)
-				.append("databaseConnectionUsername", databaseConnectionUsername)
+				.append("fewsArchiveDbAesPassword", fewsArchiveDbAesPassword)
+				.append("fewsArchiveDbUsername", fewsArchiveDbUsername)
 				.append("parallelPartitions", parallelPartitions)
 				.append("drdlYamlConfigPath", drdlYamlConfigPath)
-				.append("drdlYamlMongoDbUri", drdlYamlMongoDbUri)
+				.append("fewsArchiveDbConnection", fewsArchiveDbConnection)
+				.append("refreshViews", refreshViews)
 			)).getModifiedCount();
 	}
 
