@@ -77,13 +77,13 @@ class ConversionTest {
 	@Test
 	void getSeasonalities() {
 		List<Document> seasonalities = List.of(new Document("Name", "Season").append("Breakpoint", List.of(new Document("Operator", "gte").append("Threshold", "06-01").append("Name", "summer"))));
-        assertEquals("        \"SeasonSeason\": {\"$switch\": {\"branches\": [\n          {\"case\": {\"$gte\": [\"$monthDay\", \"06-01\"]}, \"then\": \"summer\"}\n          ]}}", Conversion.getSeasonalities(seasonalities));
+        assertEquals("  \"SeasonSeason\": {\"$switch\": {\"branches\": [\n    {\"case\": {\"$gte\": [\"$monthDay\", \"06-01\"]}, \"then\": \"summer\"}\n    ]}}", Conversion.getSeasonalities(seasonalities));
 	}
 
 	@Test
 	void getLocationMap() {
 		assertEquals("\"$locationId\"", Conversion.getLocationMap(new Document()));
-		assertEquals("{\"$switch\":\n          {\"branches\": [\n            {\"case\": {\"$eq\": [\"$locationId\", \"loc1\"]}, \"then\": \"MappedLoc1\"},\n            {\"case\": {\"$eq\": [\"$locationId\", \"loc2\"]}, \"then\": \"MappedLoc2\"}\n          ],\n          \"default\": \"$locationId\"}}", Conversion.getLocationMap(new Document("loc1", "MappedLoc1").append("loc2", "MappedLoc2")));
+		assertEquals("{\"$switch\":\n    {\"branches\": [\n      {\"case\": {\"$eq\": [\"$locationId\", \"loc1\"]}, \"then\": \"MappedLoc1\"},\n      {\"case\": {\"$eq\": [\"$locationId\", \"loc2\"]}, \"then\": \"MappedLoc2\"}\n    ],\n    \"default\": \"$locationId\"}}", Conversion.getLocationMap(new Document("loc1", "MappedLoc1").append("loc2", "MappedLoc2")));
 	}
 
 	@Test
