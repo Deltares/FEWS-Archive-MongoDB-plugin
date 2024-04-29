@@ -3,6 +3,7 @@ package nl.fews.verification.mongodb.shared.io;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class IO {
@@ -49,6 +50,15 @@ public class IO {
 	public static String readString(Path path){
 		try{
 			return Files.readString(path);
+		}
+		catch (Exception ex){
+			throw new RuntimeException(ex);
+		}
+	}
+
+	public static List<Path> listFiles(Path path){
+		try (Stream<Path> list = Files.list(path)){
+			return list.toList();
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);

@@ -11,7 +11,6 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Controller
@@ -28,7 +27,7 @@ public class ConfigurationDescription {
 
 	@QueryMapping
 	public List<Document> configurationDescriptionN(DataFetchingEnvironment e){
-		return StreamSupport.stream(Mongo.find("configuration.Description", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).collect(Collectors.toList());
+		return StreamSupport.stream(Mongo.find("configuration.Description", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).toList();
 	}
 
 	@MutationMapping
@@ -47,13 +46,13 @@ public class ConfigurationDescription {
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
 			@Argument String execute,
-			@Argument String archiveDb,
 			@Argument String taskInterval,
-			@Argument String databaseConnectionAesPassword,
-			@Argument String databaseConnectionUsername,
+			@Argument String fewsArchiveDbAesPassword,
+			@Argument String fewsArchiveDbUsername,
 			@Argument String parallelPartitions,
 			@Argument String drdlYamlConfigPath,
-			@Argument String drdlYamlMongoDbUri){
+			@Argument String fewsArchiveDbConnection,
+			@Argument String refreshViews){
 		return Mongo.insertOne("configuration.Description",
 				new Document("Name", name)
 				.append("toEmailAddresses", toEmailAddresses)
@@ -69,13 +68,13 @@ public class ConfigurationDescription {
 				.append("tabularConnectionString", tabularConnectionString)
 				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
 				.append("execute", execute)
-				.append("archiveDb", archiveDb)
 				.append("taskInterval", taskInterval)
-				.append("databaseConnectionAesPassword", databaseConnectionAesPassword)
-				.append("databaseConnectionUsername", databaseConnectionUsername)
+				.append("fewsArchiveDbAesPassword", fewsArchiveDbAesPassword)
+				.append("fewsArchiveDbUsername", fewsArchiveDbUsername)
 				.append("parallelPartitions", parallelPartitions)
 				.append("drdlYamlConfigPath", drdlYamlConfigPath)
-				.append("drdlYamlMongoDbUri", drdlYamlMongoDbUri)
+				.append("fewsArchiveDbConnection", fewsArchiveDbConnection)
+				.append("refreshViews", refreshViews)
 		).getInsertedId().asObjectId().getValue().toString();
 	}
 
@@ -96,13 +95,13 @@ public class ConfigurationDescription {
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
 			@Argument String execute,
-			@Argument String archiveDb,
 			@Argument String taskInterval,
-			@Argument String databaseConnectionAesPassword,
-			@Argument String databaseConnectionUsername,
+			@Argument String fewsArchiveDbAesPassword,
+			@Argument String fewsArchiveDbUsername,
 			@Argument String parallelPartitions,
 			@Argument String drdlYamlConfigPath,
-			@Argument String drdlYamlMongoDbUri){
+			@Argument String fewsArchiveDbConnection,
+			@Argument String refreshViews){
 		return Mongo.updateOne("configuration.Description", new Document("_id", new ObjectId(_id)), new Document("$set",
 				new Document("Name", name)
 				.append("toEmailAddresses", toEmailAddresses)
@@ -118,13 +117,13 @@ public class ConfigurationDescription {
 				.append("tabularConnectionString", tabularConnectionString)
 				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
 				.append("execute", execute)
-				.append("archiveDb", archiveDb)
 				.append("taskInterval", taskInterval)
-				.append("databaseConnectionAesPassword", databaseConnectionAesPassword)
-				.append("databaseConnectionUsername", databaseConnectionUsername)
+				.append("fewsArchiveDbAesPassword", fewsArchiveDbAesPassword)
+				.append("fewsArchiveDbUsername", fewsArchiveDbUsername)
 				.append("parallelPartitions", parallelPartitions)
 				.append("drdlYamlConfigPath", drdlYamlConfigPath)
-				.append("drdlYamlMongoDbUri", drdlYamlMongoDbUri)
+				.append("fewsArchiveDbConnection", fewsArchiveDbConnection)
+				.append("refreshViews", refreshViews)
 			)).getModifiedCount();
 	}
 
