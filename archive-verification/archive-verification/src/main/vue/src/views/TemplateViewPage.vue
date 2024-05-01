@@ -3,20 +3,20 @@ import { useQuery, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { ref, computed } from "vue";
 
-const { result, loading, error, refetch } = useQuery(gql`query templateDrdlYamlN {templateDrdlYamlN {_id, Type, Name, Template}}`)
+const { result, loading, error, refetch } = useQuery(gql`query templateViewN {templateViewN {_id, Type, Name, Template}}`)
 const selected = ref({})
 const success = ref(null)
-const sorted = computed(() => result?.value?.templateDrdlYamlN ? result.value.templateDrdlYamlN.slice().sort((a, b) => `${a.Type}_${a.Name}`.localeCompare(`${b.Type}_${b.Name}`)) : [])
+const sorted = computed(() => result?.value?.templateViewN ? result.value.templateViewN.slice().sort((a, b) => `${a.Type}_${a.Name}`.localeCompare(`${b.Type}_${b.Name}`)) : [])
 
-const createMutation = useMutation(gql`mutation createTemplateDrdlYaml($type: String!, $name: String!, $template: String!) {createTemplateDrdlYaml(type: $type, name: $name, template: $template)}`)
-const updateMutation = useMutation(gql`mutation updateTemplateDrdlYaml($_id: ID!, $type: String!, $name: String!, $template: String!) {updateTemplateDrdlYaml(_id: $_id, type: $type, name: $name, template: $template)}`)
-const deleteMutation = useMutation(gql`mutation deleteTemplateDrdlYaml($_id: ID!) {deleteTemplateDrdlYaml(_id: $_id)}`)
+const createMutation = useMutation(gql`mutation createTemplateView($type: String!, $name: String!, $template: String!) {createTemplateView(type: $type, name: $name, template: $template)}`)
+const updateMutation = useMutation(gql`mutation updateTemplateView($_id: ID!, $type: String!, $name: String!, $template: String!) {updateTemplateView(_id: $_id, type: $type, name: $name, template: $template)}`)
+const deleteMutation = useMutation(gql`mutation deleteTemplateView($_id: ID!) {deleteTemplateView(_id: $_id)}`)
 
 async function create() {
   const {Type, Name, Template} = selected.value
   let name = Name || ""
   const result = await mutate(() => createMutation.mutate({ type: Type, name: name, template: Template }))
-  selected.value._id = result?.data ? result.data.createTemplateDrdlYaml : selected.value._id
+  selected.value._id = result?.data ? result.data.createTemplateView : selected.value._id
 }
 
 async function update() {
@@ -57,7 +57,7 @@ async function mutate(mutation){
 <v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
 <v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>TemplateDrdlYaml Editor</h3></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>TemplateView Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="300px">
     <thead><tr>
       <th><v-icon>mdi-pencil-outline</v-icon></th>

@@ -36,12 +36,22 @@
           <ul class="ml-4 mb-4">
             <li><router-link to="/outputCube"><span class="mdi mdi-link"/>Cube</router-link></li>
             <li><router-link to="/outputPowerQuery"><span class="mdi mdi-link"/>PowerQuery</router-link></li>
+            <li><router-link to="/outputPowerQuerySql"><span class="mdi mdi-link"/>PowerQuerySql</router-link></li>
+            <li><router-link to="/outputSql"><span class="mdi mdi-link"/>Sql</router-link></li>
+            <li><router-link to="/outputView"><span class="mdi mdi-link"/>View</router-link></li>
           </ul>
           <div><span class="mdi mdi-artboard mr-2"/>Template</div>
           <ul class="ml-4 mb-4">
             <li><router-link to="/templateCube"><span class="mdi mdi-link"/>Cube</router-link></li>
             <li><router-link to="/templateDrdlYaml"><span class="mdi mdi-link"/>DrdlYaml</router-link></li>
             <li><router-link to="/templatePowerQuery"><span class="mdi mdi-link"/>PowerQuery</router-link></li>
+            <li><router-link to="/templateView"><span class="mdi mdi-link"/>View</router-link></li>
+          </ul>
+          <div><span class="mdi axis-arrow mr-2"/>Dimension</div>
+          <ul class="ml-4 mb-4">
+            <li><router-link to="/dimensionIsOriginalForecast"><span class="mdi mdi-link"/>IsOriginalForecast</router-link></li>
+            <li><router-link to="/dimensionIsOriginalObserved"><span class="mdi mdi-link"/>IsOriginalObserved</router-link></li>
+            <li><router-link to="/dimensionMeasure"><span class="mdi mdi-link"/>Measure</router-link></li>
           </ul>
         </div>
       </v-card>

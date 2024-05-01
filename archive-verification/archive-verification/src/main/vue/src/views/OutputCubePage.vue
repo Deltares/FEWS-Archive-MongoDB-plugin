@@ -59,7 +59,11 @@ async function mutate(mutation){
   <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>OutputCube Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="300px">
     <thead><tr><th><v-icon>mdi-pencil-outline</v-icon></th><th>Name</th><th class="w-100">Bim (JSON)</th></tr></thead>
-    <tbody><tr v-for="s in sorted" :key="s._id" :title="s._id"><td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s, Bim: JSON.stringify(s.Bim, null, 2)}" v-model="selected._id" /></td><td><label :for="'r_'+s._id">{{s.Name}}</label></td><td><input type="text" class="w-100" readonly :value="JSON.stringify(s.Bim)"/></td></tr></tbody>
+    <tbody>
+      <tr v-for="s in sorted" :key="s._id" :title="s._id">
+        <td><input :id="'r_'+s._id" type="radio" :value="s._id" @change="selected = {...s, Bim: JSON.stringify(s.Bim, null, 2)}" v-model="selected._id" /></td>
+        <td><label :for="'r_'+s._id">{{s.Name}}</label></td>
+        <td><input type="text" class="w-100" readonly :value="JSON.stringify(s.Bim)"/></td></tr></tbody>
   </v-table>
   <div class="bg-grey-darken-2 text-center mt-6 border rounded-lg"><h4>Editing: {{selected.Name}}</h4></div>
   <div class="input">

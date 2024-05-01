@@ -72,6 +72,9 @@ function updateClock() {
             <v-list density="compact">
               <v-list-item to="/outputCube">Cube</v-list-item>
               <v-list-item to="/outputPowerQuery">PowerQuery</v-list-item>
+              <v-list-item to="/outputPowerQuerySql">PowerQuerySql</v-list-item>
+              <v-list-item to="/outputSql">Sql</v-list-item>
+              <v-list-item to="/outputView">View</v-list-item>
             </v-list>
           </v-menu>
         </v-list-item>
@@ -81,6 +84,16 @@ function updateClock() {
               <v-list-item to="/templateCube">Cube</v-list-item>
               <v-list-item to="/templateDrdlYaml">DrdlYaml</v-list-item>
               <v-list-item to="/templatePowerQuery">PowerQuery</v-list-item>
+              <v-list-item to="/templateView">View</v-list-item>
+            </v-list>
+          </v-menu>
+        </v-list-item>
+        <v-list-item prepend-icon="mdi-axis-arrow" :title.attr="'Dimension'">
+          <v-menu activator="parent" location="left" open-on-hover>
+            <v-list density="compact">
+              <v-list-item to="/dimensionIsOriginalForecast">IsOriginalForecast</v-list-item>
+              <v-list-item to="/dimensionIsOriginalObserved">IsOriginalObserved</v-list-item>
+              <v-list-item to="/dimensionMeasure">Measure</v-list-item>
             </v-list>
           </v-menu>
         </v-list-item>

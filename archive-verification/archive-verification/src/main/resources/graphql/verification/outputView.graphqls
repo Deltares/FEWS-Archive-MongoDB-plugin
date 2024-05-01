@@ -1,0 +1,23 @@
+type OutputView {
+	_id: ID!
+	Database: String!
+	State: String!
+	View: String!
+	Collection: String!
+	Name: String!
+	Environment: String!
+	Study: String!
+	Value: JSON!
+}
+extend type Query {
+	outputViewById(_id: ID!): OutputView
+	outputViewByDatabaseStateView(database: String!, state: String!, view: String!): OutputView
+	outputViewNByStateEnvironment(state: String!, environment: String!): [OutputView]
+	outputViewNByStateEnvironmentStudy(state: String!, environment: String!, study: String!): [OutputView]
+	outputViewN: [OutputView]
+}
+extend type Mutation {
+	createOutputView(database: String!, state: String!, view: String!, collection: String!, name: String!, environment: String!, study: String!, value: JSON!): ID
+	updateOutputView(_id: ID!, database: String!, state: String!, view: String!, collection: String!, name: String!, environment: String!, study: String!, value: JSON!): Int
+	deleteOutputView(_id: ID!): Int
+}
