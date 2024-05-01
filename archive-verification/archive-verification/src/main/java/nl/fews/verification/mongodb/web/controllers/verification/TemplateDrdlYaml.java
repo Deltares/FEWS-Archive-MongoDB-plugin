@@ -12,7 +12,6 @@ import org.springframework.stereotype.Controller;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -26,8 +25,8 @@ public class TemplateDrdlYaml {
 	}
 
 	@QueryMapping
-	public Document templateDrdlYamlByDatabaseTypeName(@Argument String database, @Argument String type, @Argument String name, DataFetchingEnvironment e){
-		var r = Mongo.findOne("template.DrdlYaml", new Document("Database", database).append("Type", type).append("Name", name), Conversion.getProjection(e));
+	public Document templateDrdlYamlByTypeName(@Argument String type, @Argument String name, DataFetchingEnvironment e){
+		var r = Mongo.findOne("template.DrdlYaml", new Document("Type", type).append("Name", name), Conversion.getProjection(e));
 		r.put("Template", String.join("\n", r.getList("Template", String.class)));
 		return r;
 	}
@@ -38,13 +37,13 @@ public class TemplateDrdlYaml {
 	}
 	
 	@MutationMapping
-	public String createTemplateDrdlYaml(@Argument String database, @Argument String type, @Argument String name, @Argument String template){
-		return Mongo.insertOne("template.DrdlYaml", new Document("Database", database).append("Type", type).append("Name", name).append("Template", Arrays.stream(template.split("\n")).collect(Collectors.toList()))).getInsertedId().asObjectId().getValue().toString();
+	public String createTemplateDrdlYaml(@Argument String type, @Argument String name, @Argument String template){
+		return Mongo.insertOne("template.DrdlYaml", new Document("Type", type).append("Name", name).append("Template", Arrays.stream(template.split("\n")).collect(Collectors.toList()))).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateTemplateDrdlYaml(@Argument String _id, @Argument String database, @Argument String type, @Argument String name, @Argument String template){
-		return Mongo.updateOne("template.DrdlYaml", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Database", database).append("Type", type).append("Name", name).append("Template", Arrays.stream(template.split("\n")).collect(Collectors.toList())))).getModifiedCount();
+	public Long updateTemplateDrdlYaml(@Argument String _id, @Argument String type, @Argument String name, @Argument String template){
+		return Mongo.updateOne("template.DrdlYaml", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Type", type).append("Name", name).append("Template", Arrays.stream(template.split("\n")).collect(Collectors.toList())))).getModifiedCount();
 	}
 
 	@MutationMapping

@@ -1,0 +1,16 @@
+type TemplateView {
+	_id: ID!
+	Type: String!
+	Name: String!
+	Template: String!
+}
+extend type Query {
+	templateViewById(_id: ID!): TemplateView
+	templateViewByTypeName(type: String!, name: String!): TemplateView
+	templateViewN: [TemplateView]
+}
+extend type Mutation {
+	createTemplateView(type: String!, name: String!, template: String!): ID
+	updateTemplateView(_id: ID!, type: String!, name: String!, template: String!): Int
+	deleteTemplateView(_id: ID!): Int
+}

@@ -1,0 +1,16 @@
+type DimensionMeasure {
+	_id: ID!
+	measureId: String!
+	measure: String!
+	perfectScore: Int!
+}
+extend type Query {
+	dimensionMeasureById(_id: ID!): DimensionMeasure
+	dimensionMeasureByMeasureId(measureId: String!): DimensionMeasure
+	dimensionMeasureN: [DimensionMeasure]
+}
+extend type Mutation {
+	createDimensionMeasure(measureId: String!, measure: String!, perfectScore: Int!): ID
+	updateDimensionMeasure(_id: ID!, measureId: String!, measure: String!, perfectScore: Int!): Int
+	deleteDimensionMeasure(_id: ID!): Int
+}

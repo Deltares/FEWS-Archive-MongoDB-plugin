@@ -1,0 +1,13 @@
+type DimensionIsOriginalForecast {
+	_id: ID!
+	isOriginalForecast: Boolean!
+}
+extend type Query {
+	dimensionIsOriginalForecastById(_id: ID!): DimensionIsOriginalForecast
+	dimensionIsOriginalForecastN: [DimensionIsOriginalForecast]
+}
+extend type Mutation {
+	createDimensionIsOriginalForecast(isOriginalForecast: Boolean!): ID
+	updateDimensionIsOriginalForecast(_id: ID!, isOriginalForecast: Boolean!): Int
+	deleteDimensionIsOriginalForecast(_id: ID!): Int
+}
