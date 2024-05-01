@@ -47,7 +47,7 @@
             <li><router-link to="/templatePowerQuery"><span class="mdi mdi-link"/>PowerQuery</router-link></li>
             <li><router-link to="/templateView"><span class="mdi mdi-link"/>View</router-link></li>
           </ul>
-          <div><span class="mdi axis-arrow mr-2"/>Dimension</div>
+          <div><span class="mdi mdi-axis-arrow mr-2"/>Dimension</div>
           <ul class="ml-4 mb-4">
             <li><router-link to="/dimensionIsOriginalForecast"><span class="mdi mdi-link"/>IsOriginalForecast</router-link></li>
             <li><router-link to="/dimensionIsOriginalObserved"><span class="mdi mdi-link"/>IsOriginalObserved</router-link></li>
