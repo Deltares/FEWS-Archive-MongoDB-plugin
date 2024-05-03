@@ -64,6 +64,13 @@ public class Conversion {
 		return YearMonth.from(date.toInstant().atZone(ZoneId.of("UTC")).toLocalDate());
 	}
 
+	public static Date getYearMonthDate(YearMonth yearMonth){
+		return Date.from(yearMonth.atDay(1).atStartOfDay(ZoneId.of("UTC")).toInstant());
+	}
+
+	public static Date getYearMonthDate(String yearMonth){
+		return getYearMonthDate(YearMonth.parse(yearMonth));
+	}
 
 	public static String getForecastTime(String time){
 		return time.equals("local") ? "localForecastTime" : "forecastTime";

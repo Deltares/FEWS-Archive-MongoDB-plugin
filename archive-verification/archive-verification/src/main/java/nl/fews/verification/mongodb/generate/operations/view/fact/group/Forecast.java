@@ -27,6 +27,9 @@ public final class Forecast implements IExecute, IPredecessor {
 	@Override
 	public void execute(){
 		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
+		var forecastStartMonth = studyDocument.getString("ForecastStartMonth");
+		var forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
+		var timeMatch = new Document(forecastTime, new Document("$gte", new Document("$date", Conversion.getYearMonthDate(forecastStartMonth))));
 		var environment = Settings.get("environment", String.class);
 		var database = Settings.get("archiveDb", String.class);
 		var name = this.getClass().getSimpleName();
@@ -37,12 +40,13 @@ public final class Forecast implements IExecute, IPredecessor {
 
 		var forecastDocuments = StreamSupport.stream(Mongo.find("Forecast", new Document("Name", new Document("$in", studyDocument.getList("Forecasts", String.class)))).spliterator(), true).collect(Collectors.toList());
 		var min = forecastDocuments.parallelStream().flatMap(f -> f.getList("Filters", Document.class).parallelStream().map(l -> {
-			Document m = Mongo.aggregate(database, f.getString("Collection"), List.of(new Document("$match", l.get("Filter", Document.class)), new Document("$group", new Document("_id", null).append("min", new Document("$min", String.format("$%s", "forecastTime")))))).first();
+			var filter = l.get("Filter", Document.class);
+			Document m = Mongo.aggregate(database, f.getString("Collection"), List.of(new Document("$match", filter), new Document("$match", timeMatch), new Document("$group", new Document("_id", null).append("min", new Document("$min", String.format("$%s", forecastTime)))))).first();
 			return m == null ? new Date(Long.MAX_VALUE) : m.getDate("min");
 		})).min(Date::compareTo).orElse(new Date(Long.MAX_VALUE));
 
 		if(!min.equals(new Date(Long.MAX_VALUE))){
-			var startMonth = Conversion.max(YearMonth.parse(studyDocument.getString("ForecastStartMonth")), Conversion.getYearMonth(min));
+			var startMonth = Conversion.max(YearMonth.parse(forecastStartMonth), Conversion.getYearMonth(min));
 			var endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().plusDays(1).format(format) : studyDocument.getString("ForecastEndMonth"), format);
 			var template = String.join("\n", Mongo.findOne("template.View", new Document("Type", "FactGroup").append("Name", name)).getList("Template", String.class));
 
