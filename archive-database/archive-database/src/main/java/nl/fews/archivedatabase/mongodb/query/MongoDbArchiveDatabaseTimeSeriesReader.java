@@ -471,7 +471,9 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			throw new IllegalArgumentException("End of period must fall on or after start of period");
 
 		try{
-			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, archiveDatabaseResultSearchParameters.getTimeSeriesType());
+			TimeSeriesType timeSeriesType = !nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL.equals(archiveDatabaseResultSearchParameters.getTimeSeriesType()) ?
+				TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, archiveDatabaseResultSearchParameters.getTimeSeriesType()) :
+				TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED;
 			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 
 			Map<String, List<Object>> query = new HashMap<>();
@@ -511,7 +513,9 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 			throw new IllegalArgumentException("End of period must fall on or after start of period");
 
 		try{
-			TimeSeriesType timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, archiveDatabaseResultSearchParameters.getTimeSeriesType());
+			TimeSeriesType timeSeriesType = !nl.wldelft.fews.system.data.timeseries.TimeSeriesType.SIMULATED_HISTORICAL.equals(archiveDatabaseResultSearchParameters.getTimeSeriesType()) ?
+				TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, archiveDatabaseResultSearchParameters.getTimeSeriesType()) :
+				TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED;
 			String collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 
 			Map<String, List<Object>> query = new HashMap<>();
