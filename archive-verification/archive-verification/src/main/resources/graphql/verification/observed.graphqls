@@ -8,6 +8,7 @@ extend type Query {
 	observedById(_id: ID!): Observed
 	observedByName(name: String!): Observed
 	observedN: [Observed]
+	observedTest(forecastStartMonth: String!, forecastEndMonth: String!, collection: String!, filters: JSON!): Boolean
 }
 extend type Mutation {
 	createObserved(name: String!, collection: String!, filters: JSON!): ID

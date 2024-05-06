@@ -9,6 +9,7 @@ extend type Query {
 	forecastById(_id: ID!): Forecast
 	forecastByName(name: String!): Forecast
 	forecastN: [Forecast]
+	forecastTest(forecastStartMonth: String!, forecastEndMonth: String!, collection: String!, filters: JSON!): Boolean
 }
 extend type Mutation {
 	createForecast(name: String!, forecastName: String!, collection: String!, filters: JSON!): ID

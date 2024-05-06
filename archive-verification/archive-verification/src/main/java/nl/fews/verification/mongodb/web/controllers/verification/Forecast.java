@@ -2,6 +2,7 @@ package nl.fews.verification.mongodb.web.controllers.verification;
 
 import graphql.schema.DataFetchingEnvironment;
 import nl.fews.verification.mongodb.shared.database.Mongo;
+import nl.fews.verification.mongodb.shared.settings.Settings;
 import nl.fews.verification.mongodb.web.shared.conversion.Conversion;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -29,6 +30,14 @@ public class Forecast {
 	@QueryMapping
 	public List<Document> forecastN(DataFetchingEnvironment e){
 		return StreamSupport.stream(Mongo.find("Forecast", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).toList();
+	}
+
+	public Boolean forecastTest(@Argument String forecastStartMonth, @Argument String forecastEndMonth, @Argument String collection, @Argument List<Map<String, Object>> filters, DataFetchingEnvironment e){
+		var database = Settings.get("archiveDb", String.class);
+		var timeMatch = new Document("forecastTime", new Document("$gte", forecastStartMonth).append("$lt", forecastEndMonth));
+
+		//Mongo.aggregate(database, collection, List.of(new Document("$match", filter), new Document("$match", timeMatch), new Document("$group", new Document("_id", null).append("min", new Document("$min", String.format("$%s", nl.fews.verification.mongodb.generate.shared.conversion.Conversion.getStartTime(studyDocument.getString("Time")))))))).first();
+		return false;
 	}
 	
 	@MutationMapping

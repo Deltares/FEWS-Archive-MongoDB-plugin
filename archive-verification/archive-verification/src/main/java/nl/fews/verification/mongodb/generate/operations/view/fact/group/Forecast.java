@@ -27,27 +27,26 @@ public final class Forecast implements IExecute, IPredecessor {
 	@Override
 	public void execute(){
 		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
+		var format = Conversion.getMonthDateTimeFormatter();
 		var forecastStartMonth = studyDocument.getString("ForecastStartMonth");
 		var forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
-		var timeMatch = new Document(forecastTime, new Document("$gte", new Document("$date", Conversion.getYearMonthDate(forecastStartMonth))));
+		var endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().plusDays(1).format(format) : studyDocument.getString("ForecastEndMonth"), format);
+		var timeMatch = new Document("forecastTime", new Document("$gte", Conversion.getYearMonthDate(forecastStartMonth)).append("$lt", Conversion.getYearMonthDate(endMonth.plusMonths(1))));
 		var environment = Settings.get("environment", String.class);
 		var database = Settings.get("archiveDb", String.class);
 		var name = this.getClass().getSimpleName();
 		var existingCurrent = StreamSupport.stream(Mongo.find("output.View", new Document("State", "current").append("Name", name).append("Environment", environment).append("Study", study)).spliterator(), false).collect(Collectors.toMap(f -> f.getString("View"), f -> f));
 		var existing = StreamSupport.stream(Mongo.listCollections(Settings.get("archiveDb")).filter(new Document("type", "view").append("name", new Document("$regex", String.format("^view\\.verification\\.%s\\.%s\\|%s\\|\\d{4}-\\d{2}$", environment, study, name)))).spliterator(), false).map(s -> s.getString("name")).collect(Collectors.toSet());
 
-		var format = Conversion.getMonthDateTimeFormatter();
-
 		var forecastDocuments = StreamSupport.stream(Mongo.find("Forecast", new Document("Name", new Document("$in", studyDocument.getList("Forecasts", String.class)))).spliterator(), true).toList();
 		var min = forecastDocuments.parallelStream().flatMap(f -> f.getList("Filters", Document.class).parallelStream().map(l -> {
 			var filter = l.get("Filter", Document.class);
-			Document m = Mongo.aggregate(database, f.getString("Collection"), List.of(new Document("$match", filter), new Document("$match", timeMatch), new Document("$group", new Document("_id", null).append("min", new Document("$min", String.format("$%s", forecastTime)))))).first();
+			Document m = Mongo.aggregate(database, f.getString("Collection"), List.of(new Document("$match", filter), new Document("$match", timeMatch), new Document("$group", new Document("_id", String.format("$%s", "forecastTime"))), new Document("$group", new Document("_id", null).append("min", new Document("$min", "$_id"))))).first();
 			return m == null ? new Date(Long.MAX_VALUE) : m.getDate("min");
 		})).min(Date::compareTo).orElse(new Date(Long.MAX_VALUE));
 
 		if(!min.equals(new Date(Long.MAX_VALUE))){
 			var startMonth = Conversion.max(YearMonth.parse(forecastStartMonth), Conversion.getYearMonth(min));
-			var endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().plusDays(1).format(format) : studyDocument.getString("ForecastEndMonth"), format);
 			var template = String.join("\n", Mongo.findOne("template.View", new Document("Type", "FactGroup").append("Name", name)).getList("Template", String.class));
 
 			var months = new ArrayList<YearMonth>();

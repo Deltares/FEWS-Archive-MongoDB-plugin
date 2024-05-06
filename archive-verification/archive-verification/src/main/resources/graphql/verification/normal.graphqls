@@ -8,6 +8,7 @@ extend type Query {
 	normalById(_id: ID!): Normal
 	normalByName(name: String!): Normal
 	normalN: [Normal]
+	normalTest(forecastStartMonth: String!, forecastEndMonth: String!, collection: String!, filters: JSON!): Boolean
 }
 extend type Mutation {
 	createNormal(name: String!, collection: String!, filters: JSON!): ID

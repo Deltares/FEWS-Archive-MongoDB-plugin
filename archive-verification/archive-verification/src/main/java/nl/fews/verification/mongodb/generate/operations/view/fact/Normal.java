@@ -38,21 +38,21 @@ public final class Normal implements IExecute, IPredecessor {
 
 		var created = normalDocument.getList("Filters", Document.class).parallelStream().flatMap(f -> {
 			var filter = f.get("Filter", Document.class);
+			var format = Conversion.getMonthDateTimeFormatter();
 			var startTime = Conversion.getStartTime(studyDocument.getString("Time"));
 			var endTime = Conversion.getEndTime(studyDocument.getString("Time"));
 			var forecastStartMonth = studyDocument.getString("ForecastStartMonth");
-			var timeMatch = new Document(endTime, new Document("$gte", new Document("$date", Conversion.getYearMonthDate(forecastStartMonth))));
+			var endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().plusDays(1).format(format) : studyDocument.getString("ForecastEndMonth"), format);
+			var timeMatch = new Document(endTime, new Document("$gte", Conversion.getYearMonthDate(forecastStartMonth)).append("$lt", Conversion.getYearMonthDate(endMonth.plusMonths(1))));
 			var filterName = f.getString("FilterName");
 			var eventTime = Conversion.getEventTime(studyDocument.getString("Time"));
 			var eventValue = Conversion.getEventValue(studyDocument.getString("Value"));
 			var locationMap = Conversion.getLocationMap(f.get("LocationMap", Document.class));
 			var forecastClass = Conversion.getForecastClass(studyDocument.getString("Class").isEmpty() ? null : Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))));
 
-			var format = Conversion.getMonthDateTimeFormatter();
 			var min = Mongo.aggregate(database, collection, List.of(new Document("$match", filter), new Document("$match", timeMatch), new Document("$group", new Document("_id", null).append("min", new Document("$min", String.format("$%s", startTime)))))).first();
 			if(min != null) {
 				var startMonth = Conversion.max(YearMonth.parse(forecastStartMonth), Conversion.getYearMonth(min.getDate("min")));
-				var endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().plusDays(1).format(format) : studyDocument.getString("ForecastEndMonth"), format);
 
 				var months = new ArrayList<YearMonth>();
 				for (var m = startMonth; m.compareTo(endMonth) <= 0; m = m.plusMonths(1))

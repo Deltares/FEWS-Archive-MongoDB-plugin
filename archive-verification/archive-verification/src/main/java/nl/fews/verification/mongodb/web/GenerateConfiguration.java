@@ -6,6 +6,8 @@ import nl.fews.verification.mongodb.shared.mail.Mail;
 import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.json.JSONObject;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.Executors;
@@ -41,7 +43,9 @@ public class GenerateConfiguration implements SchedulingConfigurer {
 			}
 			catch (Exception ex) {
 				logger.warn(ex.getMessage(), ex);
-				Mail.send("ERROR - Verification GenerateTimer", ex.toString());
+				StringWriter sw = new StringWriter();
+				ex.printStackTrace(new PrintWriter(sw));
+				Mail.send("ERROR - Verification GenerateTimer", sw.toString());
 			}
 		}
 	}
