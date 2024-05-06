@@ -12,37 +12,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- *
- */
 @SuppressWarnings({"unchecked", "unused"})
 public final class Settings {
 
-	/**
-	 *
-	 */
 	private static final Logger logger = LoggerFactory.getLogger(Settings.class);
 
-	/**
-	 * settings collection
-	 */
 	private static final Map<String, Object> map = new HashMap<>();
 
-	/**
-	 * static class
-	 */
 	private Settings(){}
 
 	static{
 		try {
-			String mongoVerificationDbConnection = getMongoVerificationDbConnection();
+			String mongoVerificationDbConnection = getMongoDbConnection(System.getenv("FEWS_VERIFICATION_DB_CONNECTION"), System.getenv("FEWS_VERIFICATION_DB_USERNAME"), System.getenv("FEWS_VERIFICATION_DB_AES_PASSWORD"));
+			Settings.put("mongoVerificationDbConnection", mongoVerificationDbConnection);
+			Settings.put("verificationDb", new ConnectionString(mongoVerificationDbConnection).getDatabase());
 			getSettings(mongoVerificationDbConnection, InetAddress.getLocalHost().getHostName().toUpperCase());
-			logger.info(String.format("***CONNECTED***: [%s]", mongoVerificationDbConnection.replaceAll("//(.+):(.+)@", "//$1:********@")));
+			logger.info(String.format("***VERIFICATION DB CONNECTED***: [%s]", mongoVerificationDbConnection.replaceAll("//(.+):(.+)@", "//$1:********@")));
+
+			String mongoArchiveDbConnection = getMongoDbConnection(Settings.get("fewsArchiveDbConnection"), Settings.get("fewsArchiveDbUsername"), Settings.get("fewsArchiveDbAesPassword"));
+			Settings.put("mongoArchiveDbConnection", mongoArchiveDbConnection);
+			Settings.put("archiveDb", new ConnectionString(mongoArchiveDbConnection).getDatabase());
+			logger.info(String.format("***ARCHIVE DB CONNECTED***: [%s]", mongoArchiveDbConnection.replaceAll("//(.+):(.+)@", "//$1:********@")));
 		}
 		catch (Exception ex){
 			logger.error(ex.getMessage(), ex);
@@ -50,18 +46,9 @@ public final class Settings {
 		}
 	}
 
-	/**
-	 * Retrieves and sets the settings for the given mongoVerificationDbConnection and hostName.
-	 * If the settings for the given hostName are not found in the database, it will fall back
-	 * to the "Default" settings.
-	 *
-	 * @param mongoDbConnection the connection string for the MongoDB database
-	 * @param hostName the name of the host environment
-	 */
 	private static void getSettings(String mongoDbConnection, String hostName){
 		String settingsType = System.getenv("FEWS_VERIFICATION_SETTINGS_TYPE");
-		Settings.put("mongoVerificationDbConnection", mongoDbConnection);
-		Settings.put("verificationDb", new ConnectionString(mongoDbConnection).getDatabase());
+
 		try (MongoClient db = MongoClients.create(mongoDbConnection)) {
 
 			Document settings = db.getDatabase(Settings.get("verificationDb")).getCollection("configuration.Settings").find(new Document("environment", settingsType)).limit(1).projection(new Document("_id", 0)).first();
@@ -88,118 +75,82 @@ public final class Settings {
 		}
 	}
 
-	/**
-	 * Retrieves the MongoDB database connection string.
-	 *
-	 * @return The MongoDB database connection string.
-	 * @throws RuntimeException If the [FEWS_VERIFICATION_DB_CONNECTION] environment variable is not found or the connection string is invalid.
-	 */
-	private static String getMongoVerificationDbConnection(){
-		String dbConnection = System.getenv("FEWS_VERIFICATION_DB_CONNECTION");
-		String dbUsername = System.getenv("FEWS_VERIFICATION_DB_USERNAME");
-		String dbAesPassword = System.getenv("FEWS_VERIFICATION_DB_AES_PASSWORD");
+	private static String getMongoDbConnection(String dbConnection, String dbUsername, String dbAesPassword){
 		String userDnsDomain = System.getenv("USERDNSDOMAIN");
+		var exceptions = new ArrayList<Exception>();
 
 		if (dbConnection == null || dbConnection.isEmpty()) {
-			throw new RuntimeException("[FEWS_VERIFICATION_DB_CONNECTION] environment variable not found.");
+			throw new RuntimeException("[DB_CONNECTION] environment variable not found.");
 		}
 
 		try {
-			return validMongoVerificationDbConnection(dbConnection);
+			return validMongoDbConnection(dbConnection);
 		}
 		catch (Exception ex){
-			logger.warn(ex.getMessage(), ex);
+			exceptions.add(ex);
 		}
 
 		if (dbUsername != null && !dbUsername.isEmpty() && dbAesPassword != null && !dbAesPassword.isEmpty()){
 			try{
 				var m = Pattern.compile("^(.+://)(.+)$").matcher(dbConnection);
-				return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s:%s@$2", dbUsername.replace("$", "\\$"), Crypto.decrypt(dbAesPassword).replace("$", "\\$"))) : dbConnection);
+				return validMongoDbConnection(m.find() ? m.replaceFirst(String.format("$1%s:%s@$2", dbUsername.replace("$", "\\$"), Crypto.decrypt(dbAesPassword).replace("$", "\\$"))) : dbConnection);
 			}
 			catch (Exception ex){
-				logger.warn(ex.getMessage(), ex);
+			exceptions.add(ex);
 			}
 		}
 
 		if (!dbConnection.contains("@")){
 			try{
 				var m = Pattern.compile("^(.+://)(.+)$").matcher(dbConnection);
-			 	return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s%%40%s@$2", System.getProperty("user.name").replace("$", "\\$"), userDnsDomain.replace("$", "\\$"))) : dbConnection);
+			 	return validMongoDbConnection(m.find() ? m.replaceFirst(String.format("$1%s%%40%s@$2", System.getProperty("user.name").replace("$", "\\$"), userDnsDomain.replace("$", "\\$"))) : dbConnection);
 			}
 			catch (Exception ex){
-				logger.warn(ex.getMessage(), ex);
+			exceptions.add(ex);
 			}
 		}
 
 		try {
 			var m = Pattern.compile("^(.+:.+:)(.+)(@.+)$").matcher(dbConnection);
-			return validMongoVerificationDbConnection(m.find() ? m.replaceFirst(String.format("$1%s$3", Crypto.decrypt(m.group(2)).replace("$", "\\$"))) : dbConnection);
+			return validMongoDbConnection(m.find() ? m.replaceFirst(String.format("$1%s$3", Crypto.decrypt(m.group(2)).replace("$", "\\$"))) : dbConnection);
 		}
 		catch (Exception ex) {
-			logger.warn(ex.getMessage(), ex);
+			exceptions.add(ex);
 		}
 
 		try {
-			return validMongoVerificationDbConnection(Crypto.decrypt(dbConnection));
+			return validMongoDbConnection(Crypto.decrypt(dbConnection));
 		}
 		catch (Exception ex){
-			logger.warn(ex.getMessage(), ex);
+			exceptions.add(ex);
 		}
-
-		throw new RuntimeException(String.format("Connection string [%s] is invalid.", dbConnection));
+		logger.error(String.format("Connection string [%s] is invalid.", dbConnection), exceptions);
+		throw new RuntimeException(String.format("Connection string [%s] is invalid.\n\n%s", dbConnection, exceptions.stream().map(Throwable::toString).collect(Collectors.joining("\n\n"))));
 	}
 
-	/**
-	 * Validates the given MongoDB database connection string.
-	 *
-	 * @param mongoVerificationDbConnection the connection string for the MongoDB database
-	 * @return the validated connection string if it is valid
-	 * @throws RuntimeException if the connection string is invalid
-	 */
-	private static String validMongoVerificationDbConnection(String mongoVerificationDbConnection){
-		if(new ConnectionString(mongoVerificationDbConnection).getHosts().isEmpty()){
-			throw new RuntimeException(String.format("Connection string [%s] is invalid.", mongoVerificationDbConnection));
+	private static String validMongoDbConnection(String mongoDbConnection){
+		if(new ConnectionString(mongoDbConnection).getHosts().isEmpty()){
+			throw new RuntimeException(String.format("Connection string [%s] is invalid.", mongoDbConnection));
 		}
-
-		try(var x = MongoClients.create(mongoVerificationDbConnection)){
+		try(var x = MongoClients.create(mongoDbConnection)){
 			x.listDatabaseNames().first();
 		}
-		return mongoVerificationDbConnection;
+		return mongoDbConnection;
 	}
 
-	/**
-	 *
-	 * @param key key
-	 * @param value object value
-	 */
 	public static <T> void put(String key, T value) {
 		map.put(key, value);
 	}
 
-	/**
-	 *
-	 * @param key key
-	 * @param t type based on t.class
-	 * @return typed value based on t
-	 */
 	@SuppressWarnings("unusedParameter")
 	public static <T> T get(String key, Class<T> t) {
 		return (T)map.get(key);
 	}
 
-	/**
-	 *
-	 * @param key key
-	 * @return typed value
-	 */
 	public static <T> T get(String key) {
 		return (T)map.get(key);
 	}
 
-	/**
-	 * @param indentFactor indentFactor
-	 * @return String
-	 */
 	public static String toJsonString(int indentFactor){
 		return new JSONObject(map.entrySet().stream().filter(s -> !s.getKey().toLowerCase().contains("password")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))).toString(indentFactor);
 	}
