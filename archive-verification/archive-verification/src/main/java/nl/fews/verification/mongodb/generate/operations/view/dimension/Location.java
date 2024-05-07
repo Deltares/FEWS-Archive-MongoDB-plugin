@@ -25,7 +25,7 @@ public final class Location implements IExecute, IPredecessor {
 		var collection = "fews.Locations";
 		var name = this.getClass().getSimpleName();
 		var existingCurrent = StreamSupport.stream(Mongo.find("output.View", new Document("State", "current").append("Name", name).append("Environment", environment).append("Study", study)).spliterator(), false).collect(Collectors.toMap(f -> f.getString("View"), f -> f));
-		var existing = StreamSupport.stream(Mongo.listCollections(database).filter(new Document("type", "view").append("name", new Document("$regex", String.format("^view\\.verification\\.%s\\.%s|%s$", environment, study, name)))).spliterator(), false).collect(Collectors.toMap(s -> s.getString("name"), s -> s));
+		var existing = StreamSupport.stream(Mongo.listCollections(database).filter(new Document("type", "view").append("name", new Document("$regex", String.format("^view\\.verification\\.%s\\.%s\\|%s$", environment, study, name)))).spliterator(), false).collect(Collectors.toMap(s -> s.getString("name"), s -> s));
 
 		var view = String.format("view.verification.%s.%s|%s", environment, study, name);
 		var template = String.join("\n", Mongo.findOne("template.View", new Document("Type", "Dimension").append("Name", name)).getList("Template", String.class));

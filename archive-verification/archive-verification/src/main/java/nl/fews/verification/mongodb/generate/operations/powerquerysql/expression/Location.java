@@ -25,7 +25,7 @@ public final class Location implements IExecute, IPredecessor {
 		var sql = String.format("SELECT s.location, l.* FROM %s.`%s` s INNER JOIN %s.`%s` l ON l.locationId=s.locationId ORDER BY location", Settings.get("archiveDb"), table, Settings.get("verificationDb"), table);
 
 		var template = String.format("let\n    Source = \"%s\",\n    %s = Odbc.Query(Source, \"%s\")\nin\n    %s", database, name, sql, name);
-		Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", "Location").append("Month", "").append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).toList()));
+		Mongo.insertOne("output.PowerQuerySql", new Document("Study", study).append("Name", "Location").append("Month", "").append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).toList()));
 	}
 
 	@Override

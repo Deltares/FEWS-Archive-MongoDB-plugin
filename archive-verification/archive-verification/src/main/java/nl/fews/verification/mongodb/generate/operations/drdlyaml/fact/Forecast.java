@@ -25,7 +25,7 @@ public final class Forecast implements IExecute, IPredecessor {
 		var database = Settings.get("archiveDb", String.class);
 		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Fact").append("Name", name)).getList("Template", String.class));
 
-		Mongo.listCollections(database).filter(new Document("type", "view").append("name", new Document("$regex", String.format("^view\\.verification\\.%s\\.%s|%s|", environment, study, name)))).forEach(m -> {
+		Mongo.listCollections(database).filter(new Document("type", "view").append("name", new Document("$regex", String.format("^view\\.verification\\.%s\\.%s\\|%s\\|", environment, study, name)))).forEach(m -> {
 			var month = m.getString("name").substring(m.getString("name").lastIndexOf('|')+1);
 			var t = template.replace("{database}", database);
 			t = t.replace("{environment}",  environment);

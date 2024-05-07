@@ -26,7 +26,7 @@ public final class ForecastDate implements IExecute, IPredecessor {
 		var sql = String.format("SELECT * FROM %s.`%s`", db, table);
 
 		var template = String.format("let\n    Source = \"%s\",\n    %s = Odbc.Query(Source, \"%s\")\nin\n    %s", database, name, sql, name);
-		Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", "ForecastDate").append("Month", "").append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).toList()));
+		Mongo.insertOne("output.PowerQuerySql", new Document("Study", study).append("Name", "ForecastDate").append("Month", "").append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).toList()));
 	}
 
 	@Override
