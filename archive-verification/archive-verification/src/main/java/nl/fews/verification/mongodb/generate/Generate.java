@@ -5,6 +5,7 @@ import nl.fews.verification.mongodb.generate.operations.cube.Cube;
 import nl.fews.verification.mongodb.generate.operations.deploy.Deploy;
 import nl.fews.verification.mongodb.generate.operations.missing.Missing;
 import nl.fews.verification.mongodb.generate.operations.powerquery.PowerQuery;
+import nl.fews.verification.mongodb.generate.operations.powerquerysql.PowerQuerySql;
 import nl.fews.verification.mongodb.generate.operations.sql.Sql;
 import nl.fews.verification.mongodb.generate.operations.drdlyaml.DrdlYaml;
 import nl.fews.verification.mongodb.generate.operations.view.View;
@@ -25,6 +26,7 @@ public class Generate {
 			View.execute();
 			DrdlYaml.execute();
 			PowerQuery.execute();
+			PowerQuerySql.execute();
 			Sql.execute();
 			Cube.execute();
 			Deploy.execute();

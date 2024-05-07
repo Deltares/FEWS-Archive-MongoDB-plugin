@@ -23,11 +23,11 @@ public final class LeadTime implements IExecute, IPredecessor {
 		var name = this.getClass().getSimpleName();
 		var database = Settings.get("databaseConnectionString", String.class);
 		var table = String.format("%s_%s", study, name);
-		var db = Settings.get("verificationDb", String.class);
+		var db = Settings.get("archiveDb", String.class);
 		var sql = String.format("SELECT * FROM %s.`%s`", db, table);
 
 		var template = String.format("let\n    Source = \"%s\",\n    %s = Odbc.Query(Source, \"%s\")\nin\n    %s", database, name, sql, name);
-		Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", "LeadTime").append("Month", "").append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).collect(Collectors.toList())));
+		Mongo.insertOne("output.PowerQuerySql", new Document("Study", study).append("Name", "LeadTime").append("Month", "").append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).collect(Collectors.toList())));
 	}
 
 	@Override

@@ -29,7 +29,7 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 		IO.listFiles(Path.of(Settings.get("drdlYamlPath"), "")).stream().map(s -> s.getFileName().toString()).filter(s -> s.matches(String.format("^%s_\\d{4}-\\d{2}\\.drdl\\.yml$", study))).map(s -> s.replace(".drdl.yml", "")).forEach(table -> {
 			var sql = String.format("SELECT * FROM %s.`%s`", db, table);
 			var template = String.format("let\n    Source = \"%s\",\n    %s = Odbc.Query(Source, \"%s\")\nin\n    %s", database, name, sql, name);
-			Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", "ForecastObserved").append("Month", table.replace(String.format("%s_", study), "")).append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).collect(Collectors.toList())));
+			Mongo.insertOne("output.PowerQuerySql", new Document("Study", study).append("Name", "ForecastObserved").append("Month", table.replace(String.format("%s_", study), "")).append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).collect(Collectors.toList())));
 		});
 	}
 
