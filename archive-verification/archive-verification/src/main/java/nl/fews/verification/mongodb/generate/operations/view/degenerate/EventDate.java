@@ -29,27 +29,29 @@ public final class EventDate implements IExecute, IPredecessor {
 		var name = this.getClass().getSimpleName();
 		var existingCurrent = StreamSupport.stream(Mongo.find("output.View", new Document("State", "current").append("Name", name).append("Environment", environment).append("Study", study)).spliterator(), false).collect(Collectors.toMap(f -> f.getString("View"), f -> f));
 		var existing = StreamSupport.stream(Mongo.listCollections(database).filter(new Document("type", "view").append("name", new Document("$regex", String.format("^view\\.verification\\.%s\\.%s\\|.+\\|%s\\|.+$", environment, study, name)))).spliterator(), false).collect(Collectors.toMap(f -> f.getString("name"), f -> f));
-		String template = String.join("\n", Mongo.findOne("template.View", new Document("Type", "Degenerate").append("Name", name)).getList("Template", String.class));
+		var template = String.join("\n", Mongo.findOne("template.View", new Document("Type", "Degenerate").append("Name", name)).getList("Template", String.class));
+		var forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
+		var format = Conversion.getMonthDateTimeFormatter();
+		var forecastStartMonth = studyDocument.getString("ForecastStartMonth");
+		var forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
+		var seasonalities = Conversion.getSeasonalities(StreamSupport.stream(Mongo.find("Seasonality", new Document("Name", new Document("$in", studyDocument.getList("Seasonalities", String.class)))).spliterator(), false).toList());
 
 		studyDocument.getList("Forecasts", String.class).parallelStream().forEach(s -> {
 			var forecastDocument = Mongo.findOne("Forecast", new Document("Name", s));
 			var collection = forecastDocument.getString("Collection");
-			var format = Conversion.getMonthDateTimeFormatter();
 			var forecast = forecastDocument.getString("ForecastName");
+			var sort = collection.equals("ExternalForecastingScalarTimeSeries") ? "" : String.format("{\"$sort\": {\"%s\": 1}},", forecastTime);
 
 			forecastDocument.getList("Filters", Document.class).forEach(f -> {
 				var filter = f.get("Filter", Document.class).toJson();
 				var filterName = f.getString("FilterName");
-				var forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
-				var forecastStartMonth = studyDocument.getString("ForecastStartMonth");
-				var forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
-				var seasonalities = Conversion.getSeasonalities(StreamSupport.stream(Mongo.find("Seasonality", new Document("Name", new Document("$in", studyDocument.getList("Seasonalities", String.class)))).spliterator(), false).toList());
 
 				var view = String.format("view.verification.%s.%s|%s|%s|%s", environment, study, forecast, name, filterName);
 				var t = template.replace("{filter}", filter);
 				t = t.replace("{forecastTime}", forecastTime);
 				t = t.replace("{forecastStartMonth}", forecastStartMonth);
 				t = t.replace("{forecastEndMonth}", forecastEndMonth);
+				t = t.replace("{sort}", sort);
 				t = t.replace("{seasonalities}", seasonalities);
 				var document = Document.parse(String.format("{\"document\":[%s]}", t));
 				if(!existing.containsKey(view)) {

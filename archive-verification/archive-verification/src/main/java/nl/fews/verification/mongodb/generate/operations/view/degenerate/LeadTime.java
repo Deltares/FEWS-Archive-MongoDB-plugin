@@ -30,20 +30,20 @@ public final class LeadTime implements IExecute, IPredecessor {
 		var existingCurrent = StreamSupport.stream(Mongo.find("output.View", new Document("State", "current").append("Name", name).append("Environment", environment).append("Study", study)).spliterator(), false).collect(Collectors.toMap(f -> f.getString("View"), f -> f));
 		var existing = StreamSupport.stream(Mongo.listCollections(database).filter(new Document("type", "view").append("name", new Document("$regex", String.format("^view\\.verification\\.%s\\.%s\\|.+\\|%s\\|.+$", environment, study, name)))).spliterator(), false).collect(Collectors.toMap(f -> f.getString("name"), f -> f));
 		var template = String.join("\n", Mongo.findOne("template.View", new Document("Type", "Degenerate").append("Name", name)).getList("Template", String.class));
+		var forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
+		var eventTime = Conversion.getEventTime(studyDocument.getString("Time"));
+		var format = Conversion.getMonthDateTimeFormatter();
+		var forecastStartMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(-1).format(format);
+		var forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
 
 		studyDocument.getList("Forecasts", String.class).parallelStream().forEach(s -> {
 			var forecastDocument = Mongo.findOne("Forecast", new Document("Name", s));
 			var collection = forecastDocument.getString("Collection");
-			var format = Conversion.getMonthDateTimeFormatter();
 			var forecast = forecastDocument.getString("ForecastName");
 
 			forecastDocument.getList("Filters", Document.class).forEach(f -> {
 				var filter = f.get("Filter", Document.class).toJson();
 				var filterName = f.getString("FilterName");
-				var forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
-				var eventTime = Conversion.getEventTime(studyDocument.getString("Time"));
-				var forecastStartMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(-1).format(format);
-				var forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
 
 				var view = String.format("view.verification.%s.%s|%s|%s|%s", environment, study, forecast, name, filterName);
 				var t = template.replace("{filter}", filter);
