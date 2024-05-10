@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import java.net.InetAddress;
 
 public final class Mail{
 	private Mail(){}
@@ -16,7 +17,7 @@ public final class Mail{
 			var sender = new JavaMailSenderImpl();
 			sender.setHost(Settings.get("smtpServer"));
 			var mail = new SimpleMailMessage();
-			mail.setSubject(subject);
+			mail.setSubject(String.format("%s %s", InetAddress.getLocalHost().getHostName().toUpperCase(), subject));
         	mail.setText(message);
         	mail.setTo(Settings.get("toEmailAddresses", String.class).split(","));
         	mail.setFrom(Settings.get("fromEmailAddress"));
