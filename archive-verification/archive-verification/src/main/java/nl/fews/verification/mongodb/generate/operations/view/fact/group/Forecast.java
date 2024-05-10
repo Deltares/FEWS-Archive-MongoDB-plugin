@@ -30,7 +30,6 @@ public final class Forecast implements IExecute, IPredecessor {
 		var format = Conversion.getMonthDateTimeFormatter();
 		var forecastStartMonth = studyDocument.getString("ForecastStartMonth");
 		var endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().plusDays(1).format(format) : studyDocument.getString("ForecastEndMonth"), format);
-		var timeMatch = new Document("forecastTime", new Document("$gte", Conversion.getYearMonthDate(forecastStartMonth)).append("$lt", Conversion.getYearMonthDate(endMonth.plusMonths(1))));
 		var environment = Settings.get("environment", String.class);
 		var database = Settings.get("archiveDb", String.class);
 		var name = this.getClass().getSimpleName();
@@ -40,7 +39,7 @@ public final class Forecast implements IExecute, IPredecessor {
 		var forecastDocuments = StreamSupport.stream(Mongo.find("Forecast", new Document("Name", new Document("$in", studyDocument.getList("Forecasts", String.class)))).spliterator(), true).collect(Collectors.toList());
 		var min = forecastDocuments.parallelStream().flatMap(f -> f.getList("Filters", Document.class).parallelStream().map(l -> {
 			var filter = l.get("Filter", Document.class);
-			Document m = Mongo.aggregate(database, f.getString("Collection"), List.of(new Document("$match", filter), new Document("$match", timeMatch), new Document("$group", new Document("_id", String.format("$%s", "forecastTime"))), new Document("$group", new Document("_id", null).append("min", new Document("$min", "$_id"))))).first();
+			Document m = Mongo.aggregate(database, f.getString("Collection"), List.of(new Document("$match", filter), new Document("$group", new Document("_id", null).append("min", new Document("$min", "$forecastTime"))))).first();
 			return m == null ? new Date(Long.MAX_VALUE) : m.getDate("min");
 		})).min(Date::compareTo).orElse(new Date(Long.MAX_VALUE));
 

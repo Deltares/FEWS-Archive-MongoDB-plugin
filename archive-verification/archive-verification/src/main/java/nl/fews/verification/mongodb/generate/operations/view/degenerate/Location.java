@@ -39,7 +39,6 @@ public final class Location implements IExecute, IPredecessor {
 			var forecastDocument = Mongo.findOne("Forecast", new Document("Name", s));
 			var collection = forecastDocument.getString("Collection");
 			var forecast = forecastDocument.getString("ForecastName");
-			var sort = collection.equals("ExternalForecastingScalarTimeSeries") ? "" : "{\"$sort\": {\"locationId\": 1}},";
 
 			forecastDocument.getList("Filters", Document.class).forEach(f -> {
 				var filter = f.get("Filter", Document.class).toJson();
@@ -52,7 +51,6 @@ public final class Location implements IExecute, IPredecessor {
 				t = t.replace("{locationMap}", locationMap);
 				t = t.replace("{forecastStartMonth}", forecastStartMonth);
 				t = t.replace("{forecastEndMonth}", forecastEndMonth);
-				t = t.replace("{sort}", sort);
 				var document = Document.parse(String.format("{\"document\":[%s]}", t));
 				if(!existing.containsKey(view)) {
 					Mongo.createView(database, view, collection, document.getList("document", Document.class));

@@ -45,7 +45,6 @@ public final class Forecast implements IExecute, IPredecessor {
 				var forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
 				var forecastStartMonth = studyDocument.getString("ForecastStartMonth");
 				var endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().plusDays(1).format(format) : studyDocument.getString("ForecastEndMonth"), format);
-				var timeMatch = new Document("forecastTime", new Document("$gte", Conversion.getYearMonthDate(forecastStartMonth)).append("$lt", Conversion.getYearMonthDate(endMonth.plusMonths(1))));
 				var filterName = f.getString("FilterName");
 				var eventTime = Conversion.getEventTime(studyDocument.getString("Time"));
 				var eventValue = Conversion.getEventValue(studyDocument.getString("Value"));
@@ -60,7 +59,7 @@ public final class Forecast implements IExecute, IPredecessor {
 					List.of(
 						"{\"$project\": {\"_id\": 0, \"forecastName\": 1, \"forecastId\": 1, \"location\": 1, \"ensemble\": 1, \"ensembleMember\": 1, \"forecastTime\": 1, \"forecastDate\": 1, \"forecastMinute\": 1, \"metaData.timeStepMinutes\": 1, \"timeseries.{eventTime}\": 1, \"timeseries.{eventValue}\": 1}},".replace("{eventTime}", eventTime).replace("{eventValue}", eventValue))));
 
-				var min = Mongo.aggregate(database, collection, List.of(new Document("$match", filter), new Document("$match", timeMatch), new Document("$group", new Document("_id", String.format("$%s", "forecastTime"))), new Document("$group", new Document("_id", null).append("min", new Document("$min", "$_id"))))).first();
+				var min = Mongo.aggregate(database, collection, List.of(new Document("$match", filter), new Document("$group", new Document("_id", null).append("min", new Document("$min", "$forecastTime"))))).first();
 				if(min != null){
 					var startMonth = Conversion.max(YearMonth.parse(forecastStartMonth), Conversion.getYearMonth(min.getDate("min")));
 
