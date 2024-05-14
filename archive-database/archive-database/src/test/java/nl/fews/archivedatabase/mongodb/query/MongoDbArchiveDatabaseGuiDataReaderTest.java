@@ -44,10 +44,10 @@ class MongoDbArchiveDatabaseGuiDataReaderTest {
 	@Test
 	void read() throws Exception{
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setHeaderProvider(new TestUtil.HeaderProviderTestImplementation());
 		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 
 		MongoDbArchiveDatabaseGuiDataReader mongoDbArchiveDatabaseGuiDataReader = (MongoDbArchiveDatabaseGuiDataReader)mongoDbArchiveDatabase.getArchiveDatabaseGuiDataReader();
-		mongoDbArchiveDatabaseGuiDataReader.setHeaderProvider(new TestUtil.HeaderProviderTestImplementation());
 
 		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("observed") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		Insert.insertMetaDatas(entries, Map.of());
@@ -73,10 +73,10 @@ class MongoDbArchiveDatabaseGuiDataReaderTest {
 	@Test
 	void read2() throws Exception{
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setHeaderProvider(new TestUtil.HeaderProviderTestImplementation());
 		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 
 		MongoDbArchiveDatabaseGuiDataReader mongoDbArchiveDatabaseGuiDataReader = (MongoDbArchiveDatabaseGuiDataReader)mongoDbArchiveDatabase.getArchiveDatabaseGuiDataReader();
-		mongoDbArchiveDatabaseGuiDataReader.setHeaderProvider(new TestUtil.HeaderProviderTestImplementation());
 
 		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		Insert.insertMetaDatas(entries, Map.of());

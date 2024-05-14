@@ -57,15 +57,6 @@ public class MongoDbArchiveDatabaseGuiDataReader implements ArchiveDatabaseGuiDa
 
 	/**
 	 *
-	 * @param fewsTimeSeriesHeaderProvider fewsTimeSeriesHeaderProvider
-	 */
-	@Override
-	public void setHeaderProvider(@NonNull FewsTimeSeriesHeaderProvider fewsTimeSeriesHeaderProvider) {
-		Settings.put("headerProvider", fewsTimeSeriesHeaderProvider);
-	}
-
-	/**
-	 *
 	 * @param archiveDatabaseResultSearchParameters archiveDatabaseResultSearchParameters
 	 * @return ArchiveDatabaseReadResult
 	 */

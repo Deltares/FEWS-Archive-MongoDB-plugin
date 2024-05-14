@@ -87,17 +87,17 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 		timeSeriesHeader.setEnsembleMemberId("ensembleMemberId");
 		timeSeriesHeader.setForecastTime(new SimpleDateFormat("yyyy-MM-dd").parse("2000-01-01").getTime());
 
-//		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesArrays = mongoDbArchiveDatabaseTimeSeriesReader.importExternalForecasting(Set.of(new ArchiveDatabaseForecastImportRequest(List.of(timeSeriesHeader), List.of(""))));
-//		assertEquals(0, timeSeriesArrays.size());
+		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesArrays = mongoDbArchiveDatabaseTimeSeriesReader.importExternalForecasting(Set.of(new ArchiveDatabaseForecastImportRequest(List.of(timeSeriesHeader), List.of(""))));
+		assertEquals(0, timeSeriesArrays.size());
 	}
 
 	@Test
 	void getTimeSeriesForTaskRun() throws Exception{
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setHeaderProvider(new TestUtil.HeaderProviderTestImplementation());
 		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 
 		MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = (MongoDbArchiveDatabaseTimeSeriesReader)mongoDbArchiveDatabase.getArchiveDataBaseTimeSeriesReader();
-		mongoDbArchiveDatabaseTimeSeriesReader.setHeaderProvider(new TestUtil.HeaderProviderTestImplementation());
 
 		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		Insert.insertMetaDatas(entries, Map.of());
@@ -165,10 +165,10 @@ class MongoDbArchiveDatabaseTimeSeriesReaderTest {
 	@Test
 	void getAvailableYears() throws Exception {
 		MongoDbArchiveDatabase mongoDbArchiveDatabase = MongoDbArchiveDatabase.create();
+		mongoDbArchiveDatabase.setHeaderProvider(new TestUtil.HeaderProviderTestImplementation());
 		mongoDbArchiveDatabase.setArchiveDatabaseUrl(String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 
 		MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = (MongoDbArchiveDatabaseTimeSeriesReader)mongoDbArchiveDatabase.getArchiveDataBaseTimeSeriesReader();
-		mongoDbArchiveDatabaseTimeSeriesReader.setHeaderProvider(new TestUtil.HeaderProviderTestImplementation());
 
 		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("observed") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		Insert.insertMetaDatas(entries, Map.of());

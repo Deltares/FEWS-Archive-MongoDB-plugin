@@ -69,15 +69,6 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	}
 
 	/**
-	 *
-	 * @param fewsTimeSeriesHeaderProvider fewsTimeSeriesHeaderProvider
-	 */
-	@Override
-	public void setHeaderProvider(@NonNull FewsTimeSeriesHeaderProvider fewsTimeSeriesHeaderProvider) {
-		Settings.put("headerProvider", fewsTimeSeriesHeaderProvider);
-	}
-
-	/**
 	 * @param period period
 	 * @param timeSeriesArrays timeSeriesArrays
 	 * @return TimeSeriesArrays<TimeSeriesHeader>
