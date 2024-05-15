@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Delft_FEWS_Common">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/Delft_FEWS_Common.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

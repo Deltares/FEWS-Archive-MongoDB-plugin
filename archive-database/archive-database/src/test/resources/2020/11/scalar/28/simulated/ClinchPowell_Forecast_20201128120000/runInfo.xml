@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<runInfo xmlns="http://www.wldelft.nl/fews/archive">
+    <time0 date="2020-11-28" time="12:00:00"/>
+    <taskRunId>USTETVPMC00:011539462</taskRunId>
+    <timeSeriesSource>
+        <taskRunId>USTETVPMC00:011539462</taskRunId>
+        <workflowId>ClinchPowell_Forecast</workflowId>
+        <timeZero date="2020-11-28" time="12:00:00"/>
+    </timeSeriesSource>
+    <fewsVersion>2018.02</fewsVersion>
+    <buildNumber>96408</buildNumber>
+    <dispatchTime date="2020-11-28" time="13:29:54"/>
+    <workflowId>ClinchPowell_Forecast</workflowId>
+    <userId>Heath, Benjamin Thomas</userId>
+    <mcId>USTETVPMC00</mcId>
+    <configRevisionId>USTETVPMC00;1442</configRevisionId>
+</runInfo>

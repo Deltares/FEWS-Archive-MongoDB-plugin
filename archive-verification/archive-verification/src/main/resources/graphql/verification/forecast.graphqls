@@ -1,0 +1,17 @@
+type Forecast {
+	_id: ID!
+	Name: String!
+	ForecastName: String!
+	Collection: String!
+	Filters: [JSON]!
+}
+extend type Query {
+	forecastById(_id: ID!): Forecast
+	forecastByName(name: String!): Forecast
+	forecastN: [Forecast]
+}
+extend type Mutation {
+	createForecast(name: String!, forecastName: String!, collection: String!, filters: JSON!): ID
+	updateForecast(_id: ID!, name: String!, forecastName: String!, collection: String!, filters: JSON!): Int
+	deleteForecast(_id: ID!): Int
+}

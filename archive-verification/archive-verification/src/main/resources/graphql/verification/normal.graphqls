@@ -1,0 +1,16 @@
+type Normal {
+	_id: ID!
+	Name: String!
+	Collection: String!
+	Filters: [JSON]!
+}
+extend type Query {
+	normalById(_id: ID!): Normal
+	normalByName(name: String!): Normal
+	normalN: [Normal]
+}
+extend type Mutation {
+	createNormal(name: String!, collection: String!, filters: JSON!): ID
+	updateNormal(_id: ID!, name: String!, collection: String!, filters: JSON!): Int
+	deleteNormal(_id: ID!): Int
+}

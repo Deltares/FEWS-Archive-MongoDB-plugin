@@ -1,0 +1,13 @@
+type DimensionIsOriginalObserved {
+	_id: ID!
+	isOriginalObserved: Boolean!
+}
+extend type Query {
+	dimensionIsOriginalObservedById(_id: ID!): DimensionIsOriginalObserved
+	dimensionIsOriginalObservedN: [DimensionIsOriginalObserved]
+}
+extend type Mutation {
+	createDimensionIsOriginalObserved(isOriginalObserved: Boolean!): ID
+	updateDimensionIsOriginalObserved(_id: ID!, isOriginalObserved: Boolean!): Int
+	deleteDimensionIsOriginalObserved(_id: ID!): Int
+}

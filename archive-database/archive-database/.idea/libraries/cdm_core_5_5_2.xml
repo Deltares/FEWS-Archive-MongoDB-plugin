@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="cdm-core-5.5.2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/cdm-core-5.5.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

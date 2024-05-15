@@ -1,0 +1,1430 @@
+schema:
+- db: FEWS_ARCHIVE
+  tables:
+  - table: ExternalForecastingScalarTimeSeriesHeader
+    collection: ExternalForecastingScalarTimeSeries
+    columns:
+    - Name: _id
+      MongoType: bson.ObjectId
+      SqlName: ID
+      SqlType: varchar
+    - Name: committed
+      MongoType: bool
+      SqlName: Committed
+      SqlType: boolean
+    - Name: encodedTimeStepId
+      MongoType: string
+      SqlName: EncodedTimeStepId
+      SqlType: varchar
+    - Name: endTime
+      MongoType: date
+      SqlName: EndTime
+      SqlType: timestamp
+    - Name: ensembleId
+      MongoType: string
+      SqlName: EnsembleId
+      SqlType: varchar
+    - Name: ensembleMemberId
+      MongoType: string
+      SqlName: EnsembleMemberId
+      SqlType: varchar
+    - Name: forecastTime
+      MongoType: date
+      SqlName: ForecastTime
+      SqlType: timestamp
+    - Name: localEndTime
+      MongoType: date
+      SqlName: LocalEndTime
+      SqlType: timestamp
+    - Name: localForecastTime
+      MongoType: date
+      SqlName: LocalForecastTime
+      SqlType: timestamp
+    - Name: localStartTime
+      MongoType: date
+      SqlName: LocalStartTime
+      SqlType: timestamp
+    - Name: locationId
+      MongoType: string
+      SqlName: LocationId
+      SqlType: varchar
+    - Name: metaData.archiveTime
+      MongoType: date
+      SqlName: MetaDataArchiveTime
+      SqlType: timestamp
+    - Name: metaData.areaId
+      MongoType: string
+      SqlName: MetaDataAreaId
+      SqlType: varchar
+    - Name: metaData.displayUnit
+      MongoType: string
+      SqlName: MetaDataDisplayUnit
+      SqlType: varchar
+    - Name: metaData.ensembleMemberIndex
+      MongoType: int
+      SqlName: MetaDataEnsembleMemberIndex
+      SqlType: int
+    - Name: metaData.localTimeZone
+      MongoType: string
+      SqlName: MetaDataLocalTimeZone
+      SqlType: varchar
+    - Name: metaData.locationName
+      MongoType: string
+      SqlName: MetaDataLocationName
+      SqlType: varchar
+    - Name: metaData.modifiedTime
+      MongoType: date
+      SqlName: MetaDataModifiedTime
+      SqlType: timestamp
+    - Name: metaData.parameterName
+      MongoType: string
+      SqlName: MetaDataParameterName
+      SqlType: varchar
+    - Name: metaData.parameterType
+      MongoType: string
+      SqlName: MetaDataParameterType
+      SqlType: varchar
+    - Name: metaData.sourceId
+      MongoType: string
+      SqlName: MetaDataSourceId
+      SqlType: varchar
+    - Name: metaData.timeStepLabel
+      MongoType: string
+      SqlName: MetaDataTimeStepLabel
+      SqlType: varchar
+    - Name: metaData.timeStepMinutes
+      MongoType: int
+      SqlName: MetaDataTimeStepMinutes
+      SqlType: int
+    - Name: metaData.unit
+      MongoType: string
+      SqlName: MetaDataUnit
+      SqlType: varchar
+    - Name: moduleInstanceId
+      MongoType: string
+      SqlName: ModuleInstanceId
+      SqlType: varchar
+    - Name: parameterId
+      MongoType: string
+      SqlName: ParameterId
+      SqlType: varchar
+    - Name: qualifierId
+      MongoType: string
+      SqlName: QualifierId
+      SqlType: varchar
+    - Name: startTime
+      MongoType: date
+      SqlName: StartTime
+      SqlType: timestamp
+    - Name: timeSeriesType
+      MongoType: string
+      SqlName: TimeSeriesType
+      SqlType: varchar
+  - table: ExternalForecastingScalarTimeSeries
+    collection: ExternalForecastingScalarTimeSeries
+    pipeline: [{$unwind: "$timeseries"}]
+    columns:
+    - Name: _id
+      MongoType: bson.ObjectId
+      SqlName: ID
+      SqlType: varchar
+    - Name: committed
+      MongoType: bool
+      SqlName: Committed
+      SqlType: boolean
+    - Name: encodedTimeStepId
+      MongoType: string
+      SqlName: EncodedTimeStepId
+      SqlType: varchar
+    - Name: endTime
+      MongoType: date
+      SqlName: EndTime
+      SqlType: timestamp
+    - Name: ensembleId
+      MongoType: string
+      SqlName: EnsembleId
+      SqlType: varchar
+    - Name: ensembleMemberId
+      MongoType: string
+      SqlName: EnsembleMemberId
+      SqlType: varchar
+    - Name: forecastTime
+      MongoType: date
+      SqlName: ForecastTime
+      SqlType: timestamp
+    - Name: localEndTime
+      MongoType: date
+      SqlName: LocalEndTime
+      SqlType: timestamp
+    - Name: localForecastTime
+      MongoType: date
+      SqlName: LocalForecastTime
+      SqlType: timestamp
+    - Name: localStartTime
+      MongoType: date
+      SqlName: LocalStartTime
+      SqlType: timestamp
+    - Name: locationId
+      MongoType: string
+      SqlName: LocationId
+      SqlType: varchar
+    - Name: metaData.archiveTime
+      MongoType: date
+      SqlName: MetaDataArchiveTime
+      SqlType: timestamp
+    - Name: metaData.areaId
+      MongoType: string
+      SqlName: MetaDataAreaId
+      SqlType: varchar
+    - Name: metaData.displayUnit
+      MongoType: string
+      SqlName: MetaDataDisplayUnit
+      SqlType: varchar
+    - Name: metaData.ensembleMemberIndex
+      MongoType: int
+      SqlName: MetaDataEnsembleMemberIndex
+      SqlType: int
+    - Name: metaData.localTimeZone
+      MongoType: string
+      SqlName: MetaDataLocalTimeZone
+      SqlType: varchar
+    - Name: metaData.locationName
+      MongoType: string
+      SqlName: MetaDataLocationName
+      SqlType: varchar
+    - Name: metaData.modifiedTime
+      MongoType: date
+      SqlName: MetaDataModifiedTime
+      SqlType: timestamp
+    - Name: metaData.parameterName
+      MongoType: string
+      SqlName: MetaDataParameterName
+      SqlType: varchar
+    - Name: metaData.parameterType
+      MongoType: string
+      SqlName: MetaDataParameterType
+      SqlType: varchar
+    - Name: metaData.sourceId
+      MongoType: string
+      SqlName: MetaDataSourceId
+      SqlType: varchar
+    - Name: metaData.timeStepLabel
+      MongoType: string
+      SqlName: MetaDataTimeStepLabel
+      SqlType: varchar
+    - Name: metaData.timeStepMinutes
+      MongoType: int
+      SqlName: MetaDataTimeStepMinutes
+      SqlType: int
+    - Name: metaData.unit
+      MongoType: string
+      SqlName: MetaDataUnit
+      SqlType: varchar
+    - Name: moduleInstanceId
+      MongoType: string
+      SqlName: ModuleInstanceId
+      SqlType: varchar
+    - Name: parameterId
+      MongoType: string
+      SqlName: ParameterId
+      SqlType: varchar
+    - Name: qualifierId
+      MongoType: string
+      SqlName: QualifierId
+      SqlType: varchar
+    - Name: startTime
+      MongoType: date
+      SqlName: StartTime
+      SqlType: timestamp
+    - Name: timeSeriesType
+      MongoType: string
+      SqlName: TimeSeriesType
+      SqlType: varchar
+    - Name: timeseries.c
+      MongoType: string
+      SqlName: Comment
+      SqlType: varchar
+    - Name: timeseries.dv
+      MongoType: float64
+      SqlName: DisplayValue
+      SqlType: float
+    - Name: timeseries.f
+      MongoType: int
+      SqlName: Flag
+      SqlType: int
+    - Name: timeseries.lt
+      MongoType: date
+      SqlName: LocalTime
+      SqlType: timestamp
+    - Name: timeseries.t
+      MongoType: date
+      SqlName: Time
+      SqlType: timestamp
+    - Name: timeseries.v
+      MongoType: float64
+      SqlName: Value
+      SqlType: float
+  - table: ExternalHistoricalScalarTimeSeriesHeader
+    collection: ExternalHistoricalScalarTimeSeries
+    columns:
+    - Name: _id
+      MongoType: bson.ObjectId
+      SqlName: ID
+      SqlType: varchar
+    - Name: bucket
+      MongoType: int64
+      SqlName: Bucket
+      SqlType: int
+    - Name: bucketSize
+      MongoType: string
+      SqlName: BucketSize
+      SqlType: varchar
+    - Name: committed
+      MongoType: bool
+      SqlName: Committed
+      SqlType: boolean
+    - Name: encodedTimeStepId
+      MongoType: string
+      SqlName: EncodedTimeStepId
+      SqlType: varchar
+    - Name: endTime
+      MongoType: date
+      SqlName: EndTime
+      SqlType: timestamp
+    - Name: localEndTime
+      MongoType: date
+      SqlName: LocalEndTime
+      SqlType: timestamp
+    - Name: localStartTime
+      MongoType: date
+      SqlName: LocalStartTime
+      SqlType: timestamp
+    - Name: locationId
+      MongoType: string
+      SqlName: LocationId
+      SqlType: varchar
+    - Name: metaData.archiveTime
+      MongoType: date
+      SqlName: MetaDataArchiveTime
+      SqlType: timestamp
+    - Name: metaData.areaId
+      MongoType: string
+      SqlName: MetaDataAreaId
+      SqlType: varchar
+    - Name: metaData.displayUnit
+      MongoType: string
+      SqlName: MetaDataDisplayUnit
+      SqlType: varchar
+    - Name: metaData.localTimeZone
+      MongoType: string
+      SqlName: MetaDataLocalTimeZone
+      SqlType: varchar
+    - Name: metaData.locationName
+      MongoType: string
+      SqlName: MetaDataLocationName
+      SqlType: varchar
+    - Name: metaData.modifiedTime
+      MongoType: date
+      SqlName: MetaDataModifiedTime
+      SqlType: timestamp
+    - Name: metaData.parameterName
+      MongoType: string
+      SqlName: MetaDataParameterName
+      SqlType: varchar
+    - Name: metaData.parameterType
+      MongoType: string
+      SqlName: MetaDataParameterType
+      SqlType: varchar
+    - Name: metaData.sourceId
+      MongoType: string
+      SqlName: MetaDataSourceId
+      SqlType: varchar
+    - Name: metaData.timeStepLabel
+      MongoType: string
+      SqlName: MetaDataTimeStepLabel
+      SqlType: varchar
+    - Name: metaData.timeStepMinutes
+      MongoType: int
+      SqlName: MetaDataTimeStepMinutes
+      SqlType: int
+    - Name: metaData.unit
+      MongoType: string
+      SqlName: MetaDataUnit
+      SqlType: varchar
+    - Name: moduleInstanceId
+      MongoType: string
+      SqlName: ModuleInstanceId
+      SqlType: varchar
+    - Name: parameterId
+      MongoType: string
+      SqlName: ParameterId
+      SqlType: varchar
+    - Name: qualifierId
+      MongoType: string
+      SqlName: QualifierId
+      SqlType: varchar
+    - Name: startTime
+      MongoType: date
+      SqlName: StartTime
+      SqlType: timestamp
+    - Name: timeSeriesType
+      MongoType: string
+      SqlName: TimeSeriesType
+      SqlType: varchar
+  - table: ExternalHistoricalScalarTimeSeries
+    collection: ExternalHistoricalScalarTimeSeries
+    pipeline: [{$unwind: "$timeseries"}]
+    columns:
+    - Name: _id
+      MongoType: bson.ObjectId
+      SqlName: ID
+      SqlType: varchar
+    - Name: bucket
+      MongoType: int64
+      SqlName: Bucket
+      SqlType: int
+    - Name: bucketSize
+      MongoType: string
+      SqlName: BucketSize
+      SqlType: varchar
+    - Name: committed
+      MongoType: bool
+      SqlName: Committed
+      SqlType: boolean
+    - Name: encodedTimeStepId
+      MongoType: string
+      SqlName: EncodedTimeStepId
+      SqlType: varchar
+    - Name: endTime
+      MongoType: date
+      SqlName: EndTime
+      SqlType: timestamp
+    - Name: localEndTime
+      MongoType: date
+      SqlName: LocalEndTime
+      SqlType: timestamp
+    - Name: localStartTime
+      MongoType: date
+      SqlName: LocalStartTime
+      SqlType: timestamp
+    - Name: locationId
+      MongoType: string
+      SqlName: LocationId
+      SqlType: varchar
+    - Name: metaData.archiveTime
+      MongoType: date
+      SqlName: MetaDataArchiveTime
+      SqlType: timestamp
+    - Name: metaData.areaId
+      MongoType: string
+      SqlName: MetaDataAreaId
+      SqlType: varchar
+    - Name: metaData.displayUnit
+      MongoType: string
+      SqlName: MetaDataDisplayUnit
+      SqlType: varchar
+    - Name: metaData.localTimeZone
+      MongoType: string
+      SqlName: MetaDataLocalTimeZone
+      SqlType: varchar
+    - Name: metaData.locationName
+      MongoType: string
+      SqlName: MetaDataLocationName
+      SqlType: varchar
+    - Name: metaData.modifiedTime
+      MongoType: date
+      SqlName: MetaDataModifiedTime
+      SqlType: timestamp
+    - Name: metaData.parameterName
+      MongoType: string
+      SqlName: MetaDataParameterName
+      SqlType: varchar
+    - Name: metaData.parameterType
+      MongoType: string
+      SqlName: MetaDataParameterType
+      SqlType: varchar
+    - Name: metaData.sourceId
+      MongoType: string
+      SqlName: MetaDataSourceId
+      SqlType: varchar
+    - Name: metaData.timeStepLabel
+      MongoType: string
+      SqlName: MetaDataTimeStepLabel
+      SqlType: varchar
+    - Name: metaData.timeStepMinutes
+      MongoType: int
+      SqlName: MetaDataTimeStepMinutes
+      SqlType: int
+    - Name: metaData.unit
+      MongoType: string
+      SqlName: MetaDataUnit
+      SqlType: varchar
+    - Name: moduleInstanceId
+      MongoType: string
+      SqlName: ModuleInstanceId
+      SqlType: varchar
+    - Name: parameterId
+      MongoType: string
+      SqlName: ParameterId
+      SqlType: varchar
+    - Name: qualifierId
+      MongoType: string
+      SqlName: QualifierId
+      SqlType: varchar
+    - Name: startTime
+      MongoType: date
+      SqlName: StartTime
+      SqlType: timestamp
+    - Name: timeSeriesType
+      MongoType: string
+      SqlName: TimeSeriesType
+      SqlType: varchar
+    - Name: timeseries.c
+      MongoType: string
+      SqlName: Comment
+      SqlType: varchar
+    - Name: timeseries.dv
+      MongoType: float64
+      SqlName: DisplayValue
+      SqlType: float
+    - Name: timeseries.f
+      MongoType: int
+      SqlName: Flag
+      SqlType: int
+    - Name: timeseries.lt
+      MongoType: date
+      SqlName: LocalTime
+      SqlType: timestamp
+    - Name: timeseries.t
+      MongoType: date
+      SqlName: Time
+      SqlType: timestamp
+    - Name: timeseries.v
+      MongoType: float64
+      SqlName: Value
+      SqlType: float
+  - table: SimulatedForecastingScalarTimeSeriesHeader
+    collection: SimulatedForecastingScalarTimeSeries
+    columns:
+    - Name: _id
+      MongoType: bson.ObjectId
+      SqlName: ID
+      SqlType: varchar
+    - Name: committed
+      MongoType: bool
+      SqlName: Committed
+      SqlType: boolean
+    - Name: encodedTimeStepId
+      MongoType: string
+      SqlName: EncodedTimeStepId
+      SqlType: varchar
+    - Name: endTime
+      MongoType: date
+      SqlName: EndTime
+      SqlType: timestamp
+    - Name: ensembleId
+      MongoType: string
+      SqlName: EnsembleId
+      SqlType: varchar
+    - Name: ensembleMemberId
+      MongoType: string
+      SqlName: EnsembleMemberId
+      SqlType: varchar
+    - Name: forecastTime
+      MongoType: date
+      SqlName: ForecastTime
+      SqlType: timestamp
+    - Name: localEndTime
+      MongoType: date
+      SqlName: LocalEndTime
+      SqlType: timestamp
+    - Name: localForecastTime
+      MongoType: date
+      SqlName: LocalForecastTime
+      SqlType: timestamp
+    - Name: localStartTime
+      MongoType: date
+      SqlName: LocalStartTime
+      SqlType: timestamp
+    - Name: locationId
+      MongoType: string
+      SqlName: LocationId
+      SqlType: varchar
+    - Name: metaData.approvedTime
+      MongoType: date
+      SqlName: MetaDataApprovedTime
+      SqlType: timestamp
+    - Name: metaData.archiveTime
+      MongoType: date
+      SqlName: MetaDataArchiveTime
+      SqlType: timestamp
+    - Name: metaData.areaId
+      MongoType: string
+      SqlName: MetaDataAreaId
+      SqlType: varchar
+    - Name: metaData.displayUnit
+      MongoType: string
+      SqlName: MetaDataDisplayUnit
+      SqlType: varchar
+    - Name: metaData.ensembleMemberIndex
+      MongoType: int
+      SqlName: MetaDataEnsembleMemberIndex
+      SqlType: int
+    - Name: metaData.localTimeZone
+      MongoType: string
+      SqlName: MetaDataLocalTimeZone
+      SqlType: varchar
+    - Name: metaData.locationName
+      MongoType: string
+      SqlName: MetaDataLocationName
+      SqlType: varchar
+    - Name: metaData.modifiedTime
+      MongoType: date
+      SqlName: MetaDataModifiedTime
+      SqlType: timestamp
+    - Name: metaData.parameterName
+      MongoType: string
+      SqlName: MetaDataParameterName
+      SqlType: varchar
+    - Name: metaData.parameterType
+      MongoType: string
+      SqlName: MetaDataParameterType
+      SqlType: varchar
+    - Name: metaData.sourceId
+      MongoType: string
+      SqlName: MetaDataSourceId
+      SqlType: varchar
+    - Name: metaData.timeStepLabel
+      MongoType: string
+      SqlName: MetaDataTimeStepLabel
+      SqlType: varchar
+    - Name: metaData.timeStepMinutes
+      MongoType: int
+      SqlName: MetaDataTimeStepMinutes
+      SqlType: int
+    - Name: metaData.unit
+      MongoType: string
+      SqlName: MetaDataUnit
+      SqlType: varchar
+    - Name: moduleInstanceId
+      MongoType: string
+      SqlName: ModuleInstanceId
+      SqlType: varchar
+    - Name: parameterId
+      MongoType: string
+      SqlName: ParameterId
+      SqlType: varchar
+    - Name: qualifierId
+      MongoType: string
+      SqlName: QualifierId
+      SqlType: varchar
+    - Name: runInfo.configRevisionNumber
+      MongoType: string
+      SqlName: RunInfoConfigRevisionNumber
+      SqlType: varchar
+    - Name: runInfo.dispatchTime
+      MongoType: date
+      SqlName: RunInfoDispatchTime
+      SqlType: timestamp
+    - Name: runInfo.mcId
+      MongoType: string
+      SqlName: RunInfoMcId
+      SqlType: varchar
+    - Name: runInfo.taskRunId
+      MongoType: string
+      SqlName: RunInfoTaskRunId
+      SqlType: varchar
+    - Name: runInfo.time0
+      MongoType: date
+      SqlName: RunInfoTime0
+      SqlType: timestamp
+    - Name: runInfo.userId
+      MongoType: string
+      SqlName: RunInfoUserId
+      SqlType: varchar
+    - Name: runInfo.workflowId
+      MongoType: string
+      SqlName: RunInfo.workflowId
+      SqlType: varchar
+    - Name: startTime
+      MongoType: date
+      SqlName: StartTime
+      SqlType: timestamp
+    - Name: taskRunId
+      MongoType: string
+      SqlName: TaskRunId
+      SqlType: varchar
+    - Name: timeSeriesType
+      MongoType: string
+      SqlName: TimeSeriesType
+      SqlType: varchar
+  - table: SimulatedForecastingScalarTimeSeries
+    collection: SimulatedForecastingScalarTimeSeries
+    pipeline: [{$unwind: "$timeseries"}]
+    columns:
+    - Name: _id
+      MongoType: bson.ObjectId
+      SqlName: ID
+      SqlType: varchar
+    - Name: committed
+      MongoType: bool
+      SqlName: Committed
+      SqlType: boolean
+    - Name: encodedTimeStepId
+      MongoType: string
+      SqlName: EncodedTimeStepId
+      SqlType: varchar
+    - Name: endTime
+      MongoType: date
+      SqlName: EndTime
+      SqlType: timestamp
+    - Name: ensembleId
+      MongoType: string
+      SqlName: EnsembleId
+      SqlType: varchar
+    - Name: ensembleMemberId
+      MongoType: string
+      SqlName: EnsembleMemberId
+      SqlType: varchar
+    - Name: forecastTime
+      MongoType: date
+      SqlName: ForecastTime
+      SqlType: timestamp
+    - Name: localEndTime
+      MongoType: date
+      SqlName: LocalEndTime
+      SqlType: timestamp
+    - Name: localForecastTime
+      MongoType: date
+      SqlName: LocalForecastTime
+      SqlType: timestamp
+    - Name: localStartTime
+      MongoType: date
+      SqlName: LocalStartTime
+      SqlType: timestamp
+    - Name: locationId
+      MongoType: string
+      SqlName: LocationId
+      SqlType: varchar
+    - Name: metaData.approvedTime
+      MongoType: date
+      SqlName: MetaDataApprovedTime
+      SqlType: timestamp
+    - Name: metaData.archiveTime
+      MongoType: date
+      SqlName: MetaDataArchiveTime
+      SqlType: timestamp
+    - Name: metaData.areaId
+      MongoType: string
+      SqlName: MetaDataAreaId
+      SqlType: varchar
+    - Name: metaData.displayUnit
+      MongoType: string
+      SqlName: MetaDataDisplayUnit
+      SqlType: varchar
+    - Name: metaData.ensembleMemberIndex
+      MongoType: int
+      SqlName: MetaDataEnsembleMemberIndex
+      SqlType: int
+    - Name: metaData.localTimeZone
+      MongoType: string
+      SqlName: MetaDataLocalTimeZone
+      SqlType: varchar
+    - Name: metaData.locationName
+      MongoType: string
+      SqlName: MetaDataLocationName
+      SqlType: varchar
+    - Name: metaData.modifiedTime
+      MongoType: date
+      SqlName: MetaDataModifiedTime
+      SqlType: timestamp
+    - Name: metaData.parameterName
+      MongoType: string
+      SqlName: MetaDataParameterName
+      SqlType: varchar
+    - Name: metaData.parameterType
+      MongoType: string
+      SqlName: MetaDataParameterType
+      SqlType: varchar
+    - Name: metaData.sourceId
+      MongoType: string
+      SqlName: MetaDataSourceId
+      SqlType: varchar
+    - Name: metaData.timeStepLabel
+      MongoType: string
+      SqlName: MetaDataTimeStepLabel
+      SqlType: varchar
+    - Name: metaData.timeStepMinutes
+      MongoType: int
+      SqlName: MetaDataTimeStepMinutes
+      SqlType: int
+    - Name: metaData.unit
+      MongoType: string
+      SqlName: MetaDataUnit
+      SqlType: varchar
+    - Name: moduleInstanceId
+      MongoType: string
+      SqlName: ModuleInstanceId
+      SqlType: varchar
+    - Name: parameterId
+      MongoType: string
+      SqlName: ParameterId
+      SqlType: varchar
+    - Name: qualifierId
+      MongoType: string
+      SqlName: QualifierId
+      SqlType: varchar
+    - Name: runInfo.configRevisionNumber
+      MongoType: string
+      SqlName: RunInfoConfigRevisionNumber
+      SqlType: varchar
+    - Name: runInfo.dispatchTime
+      MongoType: date
+      SqlName: RunInfoDispatchTime
+      SqlType: timestamp
+    - Name: runInfo.mcId
+      MongoType: string
+      SqlName: RunInfoMcId
+      SqlType: varchar
+    - Name: runInfo.taskRunId
+      MongoType: string
+      SqlName: RunInfoTaskRunId
+      SqlType: varchar
+    - Name: runInfo.time0
+      MongoType: date
+      SqlName: RunInfoTime0
+      SqlType: timestamp
+    - Name: runInfo.userId
+      MongoType: string
+      SqlName: RunInfoUserId
+      SqlType: varchar
+    - Name: runInfo.workflowId
+      MongoType: string
+      SqlName: RunInfo.workflowId
+      SqlType: varchar
+    - Name: startTime
+      MongoType: date
+      SqlName: StartTime
+      SqlType: timestamp
+    - Name: taskRunId
+      MongoType: string
+      SqlName: TaskRunId
+      SqlType: varchar
+    - Name: timeSeriesType
+      MongoType: string
+      SqlName: TimeSeriesType
+      SqlType: varchar
+    - Name: timeseries.c
+      MongoType: string
+      SqlName: Comment
+      SqlType: varchar
+    - Name: timeseries.dv
+      MongoType: float64
+      SqlName: DisplayValue
+      SqlType: float
+    - Name: timeseries.f
+      MongoType: int
+      SqlName: Flag
+      SqlType: int
+    - Name: timeseries.lt
+      MongoType: date
+      SqlName: LocalTime
+      SqlType: timestamp
+    - Name: timeseries.t
+      MongoType: date
+      SqlName: Time
+      SqlType: timestamp
+    - Name: timeseries.v
+      MongoType: float64
+      SqlName: Value
+      SqlType: float
+  - table: SimulatedHistoricalScalarTimeSeriesHeader
+    collection: SimulatedHistoricalScalarTimeSeries
+    columns:
+    - Name: _id
+      MongoType: bson.ObjectId
+      SqlName: ID
+      SqlType: varchar
+    - Name: committed
+      MongoType: bool
+      SqlName: Committed
+      SqlType: boolean
+    - Name: encodedTimeStepId
+      MongoType: string
+      SqlName: EncodedTimeStepId
+      SqlType: varchar
+    - Name: endTime
+      MongoType: date
+      SqlName: EndTime
+      SqlType: timestamp
+    - Name: ensembleId
+      MongoType: string
+      SqlName: EnsembleId
+      SqlType: varchar
+    - Name: ensembleMemberId
+      MongoType: string
+      SqlName: EnsembleMemberId
+      SqlType: varchar
+    - Name: forecastTime
+      MongoType: date
+      SqlName: ForecastTime
+      SqlType: timestamp
+    - Name: localEndTime
+      MongoType: date
+      SqlName: LocalEndTime
+      SqlType: timestamp
+    - Name: localForecastTime
+      MongoType: date
+      SqlName: LocalForecastTime
+      SqlType: timestamp
+    - Name: localStartTime
+      MongoType: date
+      SqlName: LocalStartTime
+      SqlType: timestamp
+    - Name: locationId
+      MongoType: string
+      SqlName: LocationId
+      SqlType: varchar
+    - Name: metaData.approvedTime
+      MongoType: date
+      SqlName: MetaDataApprovedTime
+      SqlType: timestamp
+    - Name: metaData.archiveTime
+      MongoType: date
+      SqlName: MetaDataArchiveTime
+      SqlType: timestamp
+    - Name: metaData.areaId
+      MongoType: string
+      SqlName: MetaDataAreaId
+      SqlType: varchar
+    - Name: metaData.displayUnit
+      MongoType: string
+      SqlName: MetaDataDisplayUnit
+      SqlType: varchar
+    - Name: metaData.ensembleMemberIndex
+      MongoType: int
+      SqlName: MetaDataEnsembleMemberIndex
+      SqlType: int
+    - Name: metaData.localTimeZone
+      MongoType: string
+      SqlName: MetaDataLocalTimeZone
+      SqlType: varchar
+    - Name: metaData.locationName
+      MongoType: string
+      SqlName: MetaDataLocationName
+      SqlType: varchar
+    - Name: metaData.modifiedTime
+      MongoType: date
+      SqlName: MetaDataModifiedTime
+      SqlType: timestamp
+    - Name: metaData.parameterName
+      MongoType: string
+      SqlName: MetaDataParameterName
+      SqlType: varchar
+    - Name: metaData.parameterType
+      MongoType: string
+      SqlName: MetaDataParameterType
+      SqlType: varchar
+    - Name: metaData.sourceId
+      MongoType: string
+      SqlName: MetaDataSourceId
+      SqlType: varchar
+    - Name: metaData.timeStepLabel
+      MongoType: string
+      SqlName: MetaDataTimeStepLabel
+      SqlType: varchar
+    - Name: metaData.timeStepMinutes
+      MongoType: int
+      SqlName: MetaDataTimeStepMinutes
+      SqlType: int
+    - Name: metaData.unit
+      MongoType: string
+      SqlName: MetaDataUnit
+      SqlType: varchar
+    - Name: moduleInstanceId
+      MongoType: string
+      SqlName: ModuleInstanceId
+      SqlType: varchar
+    - Name: parameterId
+      MongoType: string
+      SqlName: ParameterId
+      SqlType: varchar
+    - Name: qualifierId
+      MongoType: string
+      SqlName: QualifierId
+      SqlType: varchar
+    - Name: runInfo.configRevisionNumber
+      MongoType: string
+      SqlName: RunInfoConfigRevisionNumber
+      SqlType: varchar
+    - Name: runInfo.dispatchTime
+      MongoType: date
+      SqlName: RunInfoDispatchTime
+      SqlType: timestamp
+    - Name: runInfo.mcId
+      MongoType: string
+      SqlName: RunInfoMcId
+      SqlType: varchar
+    - Name: runInfo.taskRunId
+      MongoType: string
+      SqlName: RunInfoTaskRunId
+      SqlType: varchar
+    - Name: runInfo.time0
+      MongoType: date
+      SqlName: RunInfoTime0
+      SqlType: timestamp
+    - Name: runInfo.userId
+      MongoType: string
+      SqlName: RunInfoUserId
+      SqlType: varchar
+    - Name: runInfo.workflowId
+      MongoType: string
+      SqlName: RunInfo.workflowId
+      SqlType: varchar
+    - Name: startTime
+      MongoType: date
+      SqlName: StartTime
+      SqlType: timestamp
+    - Name: taskRunId
+      MongoType: string
+      SqlName: TaskRunId
+      SqlType: varchar
+    - Name: timeSeriesType
+      MongoType: string
+      SqlName: TimeSeriesType
+      SqlType: varchar
+  - table: SimulatedHistoricalScalarTimeSeries
+    collection: SimulatedHistoricalScalarTimeSeries
+    pipeline: [{$unwind: "$timeseries"}]
+    columns:
+    - Name: _id
+      MongoType: bson.ObjectId
+      SqlName: ID
+      SqlType: varchar
+    - Name: committed
+      MongoType: bool
+      SqlName: Committed
+      SqlType: boolean
+    - Name: encodedTimeStepId
+      MongoType: string
+      SqlName: EncodedTimeStepId
+      SqlType: varchar
+    - Name: endTime
+      MongoType: date
+      SqlName: EndTime
+      SqlType: timestamp
+    - Name: ensembleId
+      MongoType: string
+      SqlName: EnsembleId
+      SqlType: varchar
+    - Name: ensembleMemberId
+      MongoType: string
+      SqlName: EnsembleMemberId
+      SqlType: varchar
+    - Name: forecastTime
+      MongoType: date
+      SqlName: ForecastTime
+      SqlType: timestamp
+    - Name: localEndTime
+      MongoType: date
+      SqlName: LocalEndTime
+      SqlType: timestamp
+    - Name: localForecastTime
+      MongoType: date
+      SqlName: LocalForecastTime
+      SqlType: timestamp
+    - Name: localStartTime
+      MongoType: date
+      SqlName: LocalStartTime
+      SqlType: timestamp
+    - Name: locationId
+      MongoType: string
+      SqlName: LocationId
+      SqlType: varchar
+    - Name: metaData.approvedTime
+      MongoType: date
+      SqlName: MetaDataApprovedTime
+      SqlType: timestamp
+    - Name: metaData.archiveTime
+      MongoType: date
+      SqlName: MetaDataArchiveTime
+      SqlType: timestamp
+    - Name: metaData.areaId
+      MongoType: string
+      SqlName: MetaDataAreaId
+      SqlType: varchar
+    - Name: metaData.displayUnit
+      MongoType: string
+      SqlName: MetaDataDisplayUnit
+      SqlType: varchar
+    - Name: metaData.ensembleMemberIndex
+      MongoType: int
+      SqlName: MetaDataEnsembleMemberIndex
+      SqlType: int
+    - Name: metaData.localTimeZone
+      MongoType: string
+      SqlName: MetaDataLocalTimeZone
+      SqlType: varchar
+    - Name: metaData.locationName
+      MongoType: string
+      SqlName: MetaDataLocationName
+      SqlType: varchar
+    - Name: metaData.modifiedTime
+      MongoType: date
+      SqlName: MetaDataModifiedTime
+      SqlType: timestamp
+    - Name: metaData.parameterName
+      MongoType: string
+      SqlName: MetaDataParameterName
+      SqlType: varchar
+    - Name: metaData.parameterType
+      MongoType: string
+      SqlName: MetaDataParameterType
+      SqlType: varchar
+    - Name: metaData.sourceId
+      MongoType: string
+      SqlName: MetaDataSourceId
+      SqlType: varchar
+    - Name: metaData.timeStepLabel
+      MongoType: string
+      SqlName: MetaDataTimeStepLabel
+      SqlType: varchar
+    - Name: metaData.timeStepMinutes
+      MongoType: int
+      SqlName: MetaDataTimeStepMinutes
+      SqlType: int
+    - Name: metaData.unit
+      MongoType: string
+      SqlName: MetaDataUnit
+      SqlType: varchar
+    - Name: moduleInstanceId
+      MongoType: string
+      SqlName: ModuleInstanceId
+      SqlType: varchar
+    - Name: parameterId
+      MongoType: string
+      SqlName: ParameterId
+      SqlType: varchar
+    - Name: qualifierId
+      MongoType: string
+      SqlName: QualifierId
+      SqlType: varchar
+    - Name: runInfo.configRevisionNumber
+      MongoType: string
+      SqlName: RunInfoConfigRevisionNumber
+      SqlType: varchar
+    - Name: runInfo.dispatchTime
+      MongoType: date
+      SqlName: RunInfoDispatchTime
+      SqlType: timestamp
+    - Name: runInfo.mcId
+      MongoType: string
+      SqlName: RunInfoMcId
+      SqlType: varchar
+    - Name: runInfo.taskRunId
+      MongoType: string
+      SqlName: RunInfoTaskRunId
+      SqlType: varchar
+    - Name: runInfo.time0
+      MongoType: date
+      SqlName: RunInfoTime0
+      SqlType: timestamp
+    - Name: runInfo.userId
+      MongoType: string
+      SqlName: RunInfoUserId
+      SqlType: varchar
+    - Name: runInfo.workflowId
+      MongoType: string
+      SqlName: RunInfo.workflowId
+      SqlType: varchar
+    - Name: startTime
+      MongoType: date
+      SqlName: StartTime
+      SqlType: timestamp
+    - Name: taskRunId
+      MongoType: string
+      SqlName: TaskRunId
+      SqlType: varchar
+    - Name: timeSeriesType
+      MongoType: string
+      SqlName: TimeSeriesType
+      SqlType: varchar
+    - Name: timeseries.c
+      MongoType: string
+      SqlName: Comment
+      SqlType: varchar
+    - Name: timeseries.dv
+      MongoType: float64
+      SqlName: DisplayValue
+      SqlType: float
+    - Name: timeseries.f
+      MongoType: int
+      SqlName: Flag
+      SqlType: int
+    - Name: timeseries.lt
+      MongoType: date
+      SqlName: LocalTime
+      SqlType: timestamp
+    - Name: timeseries.t
+      MongoType: date
+      SqlName: Time
+      SqlType: timestamp
+    - Name: timeseries.v
+      MongoType: float64
+      SqlName: Value
+      SqlType: float
+  - table: SimulatedHistoricalScalarTimeSeriesStitchedHeader
+    collection: SimulatedHistoricalScalarTimeSeriesStitched
+    columns:
+    - Name: _id
+      MongoType: bson.ObjectId
+      SqlName: ID
+      SqlType: varchar
+    - Name: bucket
+      MongoType: int64
+      SqlName: Bucket
+      SqlType: int
+    - Name: bucketSize
+      MongoType: string
+      SqlName: BucketSize
+      SqlType: varchar
+    - Name: committed
+      MongoType: bool
+      SqlName: Committed
+      SqlType: boolean
+    - Name: encodedTimeStepId
+      MongoType: string
+      SqlName: EncodedTimeStepId
+      SqlType: varchar
+    - Name: endTime
+      MongoType: date
+      SqlName: EndTime
+      SqlType: timestamp
+    - Name: ensembleId
+      MongoType: string
+      SqlName: EnsembleId
+      SqlType: varchar
+    - Name: ensembleMemberId
+      MongoType: string
+      SqlName: EnsembleMemberId
+      SqlType: varchar
+    - Name: locationId
+      MongoType: string
+      SqlName: LocationId
+      SqlType: varchar
+    - Name: metaData.approvedTime
+      MongoType: date
+      SqlName: MetaDataApprovedTime
+      SqlType: timestamp
+    - Name: metaData.archiveTime
+      MongoType: date
+      SqlName: MetaDataArchiveTime
+      SqlType: timestamp
+    - Name: metaData.areaId
+      MongoType: string
+      SqlName: MetaDataAreaId
+      SqlType: varchar
+    - Name: metaData.displayUnit
+      MongoType: string
+      SqlName: MetaDataDisplayUnit
+      SqlType: varchar
+    - Name: metaData.ensembleMemberIndex
+      MongoType: int
+      SqlName: MetaDataEnsembleMemberIndex
+      SqlType: int
+    - Name: metaData.localTimeZone
+      MongoType: string
+      SqlName: MetaDataLocalTimeZone
+      SqlType: varchar
+    - Name: metaData.locationName
+      MongoType: string
+      SqlName: MetaDataLocationName
+      SqlType: varchar
+    - Name: metaData.modifiedTime
+      MongoType: date
+      SqlName: MetaDataModifiedTime
+      SqlType: timestamp
+    - Name: metaData.parameterName
+      MongoType: string
+      SqlName: MetaDataParameterName
+      SqlType: varchar
+    - Name: metaData.parameterType
+      MongoType: string
+      SqlName: MetaDataParameterType
+      SqlType: varchar
+    - Name: metaData.sourceId
+      MongoType: string
+      SqlName: MetaDataSourceId
+      SqlType: varchar
+    - Name: metaData.timeStepLabel
+      MongoType: string
+      SqlName: MetaDataTimeStepLabel
+      SqlType: varchar
+    - Name: metaData.timeStepMinutes
+      MongoType: int
+      SqlName: MetaDataTimeStepMinutes
+      SqlType: int
+    - Name: metaData.unit
+      MongoType: string
+      SqlName: MetaDataUnit
+      SqlType: varchar
+    - Name: moduleInstanceId
+      MongoType: string
+      SqlName: ModuleInstanceId
+      SqlType: varchar
+    - Name: parameterId
+      MongoType: string
+      SqlName: ParameterId
+      SqlType: varchar
+    - Name: qualifierId
+      MongoType: string
+      SqlName: QualifierId
+      SqlType: varchar
+    - Name: startTime
+      MongoType: date
+      SqlName: StartTime
+      SqlType: timestamp
+    - Name: timeSeriesType
+      MongoType: string
+      SqlName: TimeSeriesType
+      SqlType: varchar
+  - table: SimulatedHistoricalScalarTimeSeriesStitched
+    collection: SimulatedHistoricalScalarTimeSeriesStitched
+    pipeline: [{$unwind: "$timeseries"}]
+    columns:
+    - Name: _id
+      MongoType: bson.ObjectId
+      SqlName: ID
+      SqlType: varchar
+    - Name: bucket
+      MongoType: int64
+      SqlName: Bucket
+      SqlType: int
+    - Name: bucketSize
+      MongoType: string
+      SqlName: BucketSize
+      SqlType: varchar
+    - Name: committed
+      MongoType: bool
+      SqlName: Committed
+      SqlType: boolean
+    - Name: encodedTimeStepId
+      MongoType: string
+      SqlName: EncodedTimeStepId
+      SqlType: varchar
+    - Name: endTime
+      MongoType: date
+      SqlName: EndTime
+      SqlType: timestamp
+    - Name: ensembleId
+      MongoType: string
+      SqlName: EnsembleId
+      SqlType: varchar
+    - Name: ensembleMemberId
+      MongoType: string
+      SqlName: EnsembleMemberId
+      SqlType: varchar
+    - Name: locationId
+      MongoType: string
+      SqlName: LocationId
+      SqlType: varchar
+    - Name: metaData.approvedTime
+      MongoType: date
+      SqlName: MetaDataApprovedTime
+      SqlType: timestamp
+    - Name: metaData.archiveTime
+      MongoType: date
+      SqlName: MetaDataArchiveTime
+      SqlType: timestamp
+    - Name: metaData.areaId
+      MongoType: string
+      SqlName: MetaDataAreaId
+      SqlType: varchar
+    - Name: metaData.displayUnit
+      MongoType: string
+      SqlName: MetaDataDisplayUnit
+      SqlType: varchar
+    - Name: metaData.ensembleMemberIndex
+      MongoType: int
+      SqlName: MetaDataEnsembleMemberIndex
+      SqlType: int
+    - Name: metaData.localTimeZone
+      MongoType: string
+      SqlName: MetaDataLocalTimeZone
+      SqlType: varchar
+    - Name: metaData.locationName
+      MongoType: string
+      SqlName: MetaDataLocationName
+      SqlType: varchar
+    - Name: metaData.modifiedTime
+      MongoType: date
+      SqlName: MetaDataModifiedTime
+      SqlType: timestamp
+    - Name: metaData.parameterName
+      MongoType: string
+      SqlName: MetaDataParameterName
+      SqlType: varchar
+    - Name: metaData.parameterType
+      MongoType: string
+      SqlName: MetaDataParameterType
+      SqlType: varchar
+    - Name: metaData.sourceId
+      MongoType: string
+      SqlName: MetaDataSourceId
+      SqlType: varchar
+    - Name: metaData.timeStepLabel
+      MongoType: string
+      SqlName: MetaDataTimeStepLabel
+      SqlType: varchar
+    - Name: metaData.timeStepMinutes
+      MongoType: int
+      SqlName: MetaDataTimeStepMinutes
+      SqlType: int
+    - Name: metaData.unit
+      MongoType: string
+      SqlName: MetaDataUnit
+      SqlType: varchar
+    - Name: moduleInstanceId
+      MongoType: string
+      SqlName: ModuleInstanceId
+      SqlType: varchar
+    - Name: parameterId
+      MongoType: string
+      SqlName: ParameterId
+      SqlType: varchar
+    - Name: qualifierId
+      MongoType: string
+      SqlName: QualifierId
+      SqlType: varchar
+    - Name: startTime
+      MongoType: date
+      SqlName: StartTime
+      SqlType: timestamp
+    - Name: timeSeriesType
+      MongoType: string
+      SqlName: TimeSeriesType
+      SqlType: varchar
+    - Name: timeseries.c
+      MongoType: string
+      SqlName: Comment
+      SqlType: varchar
+    - Name: timeseries.dv
+      MongoType: float64
+      SqlName: DisplayValue
+      SqlType: float
+    - Name: timeseries.f
+      MongoType: int
+      SqlName: Flag
+      SqlType: int
+    - Name: timeseries.lt
+      MongoType: date
+      SqlName: LocalTime
+      SqlType: timestamp
+    - Name: timeseries.t
+      MongoType: date
+      SqlName: Time
+      SqlType: timestamp
+    - Name: timeseries.v
+      MongoType: float64
+      SqlName: Value
+      SqlType: float

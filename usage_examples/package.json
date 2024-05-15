@@ -1,7 +1,0 @@
-{
-  "name": "usage_examples",
-  "version": "1.0.0",
-  "dependencies": {
-    "mongodb": "^4.10.0"
-  }
-}

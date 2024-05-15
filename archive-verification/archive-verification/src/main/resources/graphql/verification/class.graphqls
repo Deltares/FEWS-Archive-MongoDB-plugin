@@ -1,0 +1,15 @@
+type Class {
+	_id: ID!
+	Name: String!
+	Locations: [JSON]
+}
+type Query {
+	classById(_id: ID!): Class
+	classByName(name: String!): Class
+	classN: [Class]
+}
+type Mutation {
+	createClass(name: String!, locations: JSON!): ID
+	updateClass(_id: ID!, name: String!, locations: JSON!): Int
+	deleteClass(_id: ID!): Int
+}

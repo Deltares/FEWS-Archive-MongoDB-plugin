@@ -1,0 +1,25 @@
+name: archive-verification
+on:
+  push:
+    branches: [ FEWS-202202NA ]
+    paths:
+      - 'archive-verification/archive-verification/**'
+  pull_request:
+    branches: [ FEWS-202202NA ]
+    paths:
+      - 'archive-verification/archive-verification/**'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
+      with:
+        java-version: 11    
+        distribution: corretto
+    - run: mvn -B package --file archive-verification/archive-verification/pom.xml
+    - uses: actions/upload-artifact@v4
+      with:
+        name: archive-verification
+        path: ./archive-verification/archive-verification/target/verification.war

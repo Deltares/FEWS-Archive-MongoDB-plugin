@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Delft_FEWS_castor">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/Delft_FEWS_castor.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

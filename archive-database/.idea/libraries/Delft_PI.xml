@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Delft_PI">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/Delft_PI.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

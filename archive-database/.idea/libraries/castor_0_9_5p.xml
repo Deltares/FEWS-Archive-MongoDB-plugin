@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="castor-0.9.5p">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/castor-0.9.5p.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

@@ -1,0 +1,9 @@
+type FewsParameters {
+	_id: ID!
+	parameters: JSON!
+	lastUpdated: DateTime!
+}
+extend type Query {
+	fewsParametersById(_id: ID!): FewsParameters
+	fewsParametersN: [FewsParameters]
+}

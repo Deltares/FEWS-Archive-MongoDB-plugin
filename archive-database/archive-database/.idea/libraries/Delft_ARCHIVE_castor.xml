@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Delft_ARCHIVE_castor">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/Delft_ARCHIVE_castor.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

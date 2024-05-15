@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<externalForecastMetaData
+    xsi:schemaLocation="http://www.wldelft.nl/fews/archive http://fews.wldelft.nl/schemas//version1.0/archive-schemas/externalForecastMetaData.xsd"
+    xmlns="http://www.wldelft.nl/fews/archive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <version>2015.01</version>
+    <netcdf>
+        <relativeFilePath>externalforecasting_HG_ImportLMRFCForecast_6hour.nc</relativeFilePath>
+        <valueType>scalar</valueType>
+        <timeSeriesType>externalForecast</timeSeriesType>
+        <areaId>scalar</areaId>
+        <sourceId>ImportLMRFCForecast</sourceId>
+        <creationTime date="2020-12-01" time="05:00:11"/>
+        <startTime date="2020-11-28" time="18:00:00"/>
+        <endTime date="2020-12-08" time="12:00:00"/>
+        <externalForecastTime date="2020-11-28" time="12:00:00"/>
+        <header>
+            <parameterId>HG_ML</parameterId>
+            <locationId>CIRI2</locationId>
+            <locationId>PAHK2</locationId>
+            <locationId>SMLI2</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalforecasting_QR_ImportLMRFCForecast_6hour.nc</relativeFilePath>
+        <valueType>scalar</valueType>
+        <timeSeriesType>externalForecast</timeSeriesType>
+        <areaId>scalar</areaId>
+        <sourceId>ImportLMRFCForecast</sourceId>
+        <creationTime date="2020-12-01" time="05:00:12"/>
+        <startTime date="2020-11-28" time="18:00:00"/>
+        <endTime date="2020-12-08" time="12:00:00"/>
+        <externalForecastTime date="2020-11-28" time="12:00:00"/>
+        <header>
+            <parameterId>QR_ML</parameterId>
+            <locationId>TWNT1</locationId>
+            <locationId>NJNT1</locationId>
+            <locationId>BNAA1</locationId>
+            <locationId>SPTT1</locationId>
+            <locationId>CEPN7</locationId>
+            <locationId>EMBT1</locationId>
+            <locationId>CHAT1</locationId>
+            <locationId>MPHN7</locationId>
+            <locationId>SHVT1</locationId>
+            <locationId>BIRN7</locationId>
+            <locationId>HSPN7</locationId>
+            <locationId>SEVT1</locationId>
+            <locationId>WDVA1</locationId>
+            <locationId>DOET1</locationId>
+            <locationId>TAZT1</locationId>
+            <locationId>SAVT1</locationId>
+            <locationId>KGTT1</locationId>
+            <locationId>BRVG1</locationId>
+            <locationId>AVLN7</locationId>
+            <locationId>HMLT1</locationId>
+            <locationId>OAKT1</locationId>
+            <locationId>SCRA1</locationId>
+            <locationId>TKSN7</locationId>
+            <locationId>BSBA1</locationId>
+            <locationId>WHTT1</locationId>
+            <locationId>DECA1</locationId>
+            <locationId>DILN7</locationId>
+            <locationId>SFYV2</locationId>
+            <locationId>CHKT1</locationId>
+            <locationId>LBVT1</locationId>
+            <locationId>BLTN7</locationId>
+            <locationId>PRTN7</locationId>
+            <locationId>NWPT1</locationId>
+            <locationId>NOLT1</locationId>
+            <locationId>EZBT1</locationId>
+            <locationId>IRCT1</locationId>
+            <locationId>MARN7</locationId>
+            <locationId>CLVV2</locationId>
+            <locationId>CTPN7</locationId>
+            <locationId>WHIA1</locationId>
+            <locationId>PSPT1</locationId>
+            <locationId>HRFT1</locationId>
+            <locationId>MCST1</locationId>
+            <locationId>HEPN7</locationId>
+            <locationId>CHSA1</locationId>
+            <locationId>CPHT1</locationId>
+            <locationId>GERA1</locationId>
+            <locationId>GATV2</locationId>
+            <locationId>MLTT1</locationId>
+            <locationId>HORT1</locationId>
+            <locationId>RLRV2</locationId>
+            <locationId>RTRN7</locationId>
+            <locationId>FLTT1</locationId>
+            <locationId>IVYN7</locationId>
+            <locationId>ARTT1</locationId>
+            <locationId>FLCN7</locationId>
+            <locationId>JNSV2</locationId>
+            <locationId>SGWN7</locationId>
+            <locationId>WCKG1</locationId>
+            <locationId>MYVT1</locationId>
+            <locationId>ALCT1</locationId>
+            <locationId>SEET1</locationId>
+            <locationId>BLAN7</locationId>
+            <locationId>PLKT1</locationId>
+            <locationId>TKRN7</locationId>
+            <locationId>COLT1</locationId>
+            <locationId>SALV2</locationId>
+            <locationId>KNOT1</locationId>
+            <locationId>VSTV2</locationId>
+            <locationId>LLDT1</locationId>
+            <locationId>TLRT1</locationId>
+            <locationId>CHLT1</locationId>
+            <locationId>ROSN7</locationId>
+            <locationId>ENGG1</locationId>
+            <locationId>BIGT1</locationId>
+            <locationId>FYTT1</locationId>
+            <locationId>NEEN7</locationId>
+            <locationId>PRVT1</locationId>
+            <locationId>NEPT1</locationId>
+            <locationId>SMFV2</locationId>
+            <locationId>HWEG1</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+</externalForecastMetaData>

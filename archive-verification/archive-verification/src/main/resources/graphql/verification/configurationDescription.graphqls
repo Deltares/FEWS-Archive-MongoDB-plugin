@@ -1,0 +1,34 @@
+ type ConfigurationDescription {
+	_id: ID!
+	Name: String!
+	toEmailAddresses: String!
+	fromEmailAddress: String!
+	drdlYamlPath: String!
+	environment: String!
+	threads: String!
+	cubeAdmins: String!
+	cubeUsers: String!
+	bimPath: String!
+	databaseConnectionString: String!
+	smtpServer: String!
+	tabularConnectionString: String!
+	drdlYamlServiceRestart: String!
+	execute: String!
+	taskInterval: String!
+	fewsArchiveDbAesPassword: String!
+	fewsArchiveDbUsername: String!
+	parallelPartitions: String!
+	drdlYamlConfigPath: String!
+	fewsArchiveDbConnection: String!
+	refreshViews: String!
+}
+extend type Query {
+	configurationDescriptionById(_id: ID!): ConfigurationDescription
+	configurationDescriptionByName(name: String!): ConfigurationDescription
+	configurationDescriptionN: [ConfigurationDescription]
+}
+extend type Mutation {
+	createConfigurationDescription(name: String!, toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, environment: String!, threads: String!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: String!, taskInterval: String!, fewsArchiveDbAesPassword: String!, fewsArchiveDbUsername: String!, parallelPartitions: String!, drdlYamlConfigPath: String!, fewsArchiveDbConnection: String!, refreshViews: String!): ID
+	updateConfigurationDescription(_id: ID!, name: String!, toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, environment: String!, threads: String!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: String!, taskInterval: String!, fewsArchiveDbAesPassword: String!, fewsArchiveDbUsername: String!, parallelPartitions: String!, drdlYamlConfigPath: String!, fewsArchiveDbConnection: String!, refreshViews: String!): Int
+	deleteConfigurationDescription(_id: ID!): Int
+}

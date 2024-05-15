@@ -1,0 +1,15 @@
+type OutputCube {
+	_id: ID!
+	Name: String!
+	Bim: JSON!
+}
+extend type Query {
+	outputCubeById(_id: ID!): OutputCube
+	outputCubeByName(name: String!): OutputCube
+	outputCubeN: [OutputCube]
+}
+extend type Mutation {
+	createOutputCube(name: String!, bim: JSON!): ID
+	updateOutputCube(_id: ID!, name: String!, bim: JSON!): Int
+	deleteOutputCube(_id: ID!): Int
+}

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Delft_TestSupport">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/Delft_TestSupport.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

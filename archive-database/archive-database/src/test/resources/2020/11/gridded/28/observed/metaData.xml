@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<netcdfMetaData
+    xsi:schemaLocation="http://www.wldelft.nl/fews/archive http://fews.wldelft.nl/schemas//version1.0/archive-schemas/netcdfMetaData.xsd"
+    xmlns="http://www.wldelft.nl/fews/archive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <netcdf>
+        <relativeFilePath>External_Historical_QuantitativePrecipitationEstimate_QPE_GaugeCorr_Hourly_ImportQPE.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>ImportQPE</sourceId>
+        <creationTime date="2020-12-01" time="17:03:18"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="23:00:00"/>
+        <header>
+            <parameterId>QPE_GaugeCorr</parameterId>
+            <locationId>MRMS</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_TA_ImportNDFD_3hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_TA</sourceId>
+        <creationTime date="2020-12-01" time="17:03:19"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="21:00:00"/>
+        <header>
+            <parameterId>TA_FCST</parameterId>
+            <locationId>NDFD</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_TAmax_ImportNDFD_24hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_TA</sourceId>
+        <creationTime date="2020-12-01" time="17:03:19"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="00:00:00"/>
+        <header>
+            <parameterId>TAmax_FCST</parameterId>
+            <locationId>NDFD</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_TAmin_ImportNDFD_24hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_TA</sourceId>
+        <creationTime date="2020-12-01" time="17:03:19"/>
+        <startTime date="2020-11-28" time="12:00:00"/>
+        <endTime date="2020-11-28" time="12:00:00"/>
+        <header>
+            <parameterId>TAmin_FCST</parameterId>
+            <locationId>NDFD</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_TD_ImportNDFD_3hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_TD</sourceId>
+        <creationTime date="2020-12-01" time="17:03:19"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="21:00:00"/>
+        <header>
+            <parameterId>TD_FCST</parameterId>
+            <locationId>NDFD</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_XR_ImportNDFD_3hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_XR</sourceId>
+        <creationTime date="2020-12-01" time="17:03:19"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="21:00:00"/>
+        <header>
+            <parameterId>XR_FCST</parameterId>
+            <locationId>NDFD</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_US_ImportNDFD_3hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_US</sourceId>
+        <creationTime date="2020-12-01" time="17:03:20"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="21:00:00"/>
+        <header>
+            <parameterId>US_FCST</parameterId>
+            <locationId>NDFD</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_UD_ImportNDFD_3hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_UD</sourceId>
+        <creationTime date="2020-12-01" time="17:03:20"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="21:00:00"/>
+        <header>
+            <parameterId>UD_FCST</parameterId>
+            <locationId>NDFD</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_XC_ImportNDFD_3hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_XC</sourceId>
+        <creationTime date="2020-12-01" time="17:03:20"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="21:00:00"/>
+        <header>
+            <parameterId>XC_FCST</parameterId>
+            <locationId>NDFD</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_XC_PreprocessXC_3hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_XC</sourceId>
+        <creationTime date="2020-12-01" time="17:03:21"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="21:00:00"/>
+        <header>
+            <parameterId>XC</parameterId>
+            <locationId>NDFD</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_QPE_PP_to_QPE_1hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_QPE</sourceId>
+        <creationTime date="2020-12-01" time="17:03:21"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="23:00:00"/>
+        <header>
+            <parameterId>QPE</parameterId>
+            <locationId>Interpolated</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_QPE_ImportQPE_1hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>ImportQPE</sourceId>
+        <creationTime date="2020-12-01" time="17:03:21"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="23:00:00"/>
+        <header>
+            <parameterId>QPE</parameterId>
+            <locationId>LMRFC_QPE</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_PA_ImportRTMA_1hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_PA</sourceId>
+        <creationTime date="2020-12-01" time="17:03:22"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="23:00:00"/>
+        <header>
+            <parameterId>PA</parameterId>
+            <locationId>RTMA_V2</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_TA_ImportRTMA_1hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_TA</sourceId>
+        <creationTime date="2020-12-01" time="17:03:22"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="23:00:00"/>
+        <header>
+            <parameterId>TA</parameterId>
+            <locationId>RTMA_V2</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_TD_ImportRTMA_1hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_TD</sourceId>
+        <creationTime date="2020-12-01" time="17:03:22"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="23:00:00"/>
+        <header>
+            <parameterId>TD</parameterId>
+            <locationId>RTMA_V2</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_US_ImportRTMA_1hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_US</sourceId>
+        <creationTime date="2020-12-01" time="17:03:23"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="23:00:00"/>
+        <header>
+            <parameterId>US</parameterId>
+            <locationId>RTMA_V2</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_UD_ImportRTMA_1hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_UD</sourceId>
+        <creationTime date="2020-12-01" time="17:03:23"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="23:00:00"/>
+        <header>
+            <parameterId>UD</parameterId>
+            <locationId>RTMA_V2</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_XS_ImportRTMA_1hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_XS</sourceId>
+        <creationTime date="2020-12-01" time="17:03:23"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="23:00:00"/>
+        <header>
+            <parameterId>XS</parameterId>
+            <locationId>RTMA_V2</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+    <netcdf>
+        <relativeFilePath>externalhistorical_RW_ImportNAMNest_3hour.nc</relativeFilePath>
+        <valueType>grid</valueType>
+        <timeSeriesType>observed</timeSeriesType>
+        <areaId>gridded</areaId>
+        <sourceId>gridded_externalhistorical_RW</sourceId>
+        <creationTime date="2020-12-01" time="17:03:24"/>
+        <startTime date="2020-11-28" time="00:00:00"/>
+        <endTime date="2020-11-28" time="21:00:00"/>
+        <header>
+            <parameterId>RW</parameterId>
+            <locationId>NAMNest</locationId>
+            <ensembleId>main</ensembleId>
+        </header>
+        <statistics/>
+    </netcdf>
+</netcdfMetaData>

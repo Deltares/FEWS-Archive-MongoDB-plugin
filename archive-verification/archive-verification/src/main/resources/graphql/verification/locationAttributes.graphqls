@@ -1,0 +1,15 @@
+type LocationAttributes {
+	_id: ID!
+	Name: String!
+	Attributes: [String]!
+}
+extend type Query {
+	locationAttributesById(_id: ID!): LocationAttributes
+	locationAttributesByName(name: String!): LocationAttributes
+	locationAttributesN: [LocationAttributes]
+}
+extend type Mutation {
+	createLocationAttributes(name: String!, attributes: JSON!): ID
+	updateLocationAttributes(_id: ID!, name: String!, attributes: JSON!): Int
+	deleteLocationAttributes(_id: ID!): Int
+}

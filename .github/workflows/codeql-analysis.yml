@@ -1,38 +1,23 @@
-name: "CodeQL"
-
+name: codeql-analysis
 on:
   push:
-    branches: [ "master" ]
+    branches: [ FEWS-202202NA ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ FEWS-202202NA ]
   schedule:
     - cron: '0 0 * * *'
-
 jobs:
   analyze:
-    name: Analyze
     runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'java' ]
-    
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+    - uses: actions/checkout@v4
+    - uses: github/codeql-action/init@v3
       with:
-        languages: ${{ matrix.language }}
-        
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+        languages: java, javascript
+    - uses: actions/setup-java@v4
+      with:
+        java-version: 11
+        distribution: corretto
+    - run: mvn -B package --file archive-verification/archive-verification/pom.xml -DskipTests
+    - run: mvn -B package --file archive-database/archive-database/pom.xml -DskipTests
+    - uses: github/codeql-action/analyze@v3
