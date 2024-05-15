@@ -2,12 +2,10 @@ package nl.fews.archivedatabase.mongodb;
 
 import nl.fews.archivedatabase.mongodb.export.MongoDbArchiveDatabaseTimeSeriesExporter;
 import nl.fews.archivedatabase.mongodb.migrate.MongoDbOpenArchiveToArchiveDatabaseMigrator;
+import nl.fews.archivedatabase.mongodb.query.MongoDbArchiveDatabaseGuiDataReader;
 import nl.fews.archivedatabase.mongodb.query.MongoDbArchiveDatabaseTimeSeriesReader;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
-import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabase;
-import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeSeriesExporter;
-import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.OpenArchiveToArchiveDatabaseMigrator;
-import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDatabaseTimeSeriesReader;
+import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,6 +36,11 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 	 *
 	 */
 	private static MongoDbArchiveDatabaseTimeSeriesReader mongoDbArchiveDatabaseTimeSeriesReader = null;
+
+	/**
+	 *
+	 */
+	private static MongoDbArchiveDatabaseGuiDataReader mongoDbArchiveDatabaseGuiDataReader = null;
 
 	/**
 	 *
@@ -110,6 +113,18 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 		return mongoDbArchiveDatabaseTimeSeriesReader;
 	}
 
+	@Override
+	public ArchiveDatabaseGuiDataReader getArchiveDatabaseGuiDataReader() {
+		String connectionString = Settings.get("archiveDatabaseUserName")==null || Settings.get("archiveDatabaseUserName").equals("") || Settings.get("archiveDatabasePassword")==null || Settings.get("archiveDatabasePassword").equals("") || Settings.get("archiveDatabaseUrl", String.class).contains("@") ?
+				Settings.get("archiveDatabaseUrl") :
+				Settings.get("archiveDatabaseUrl", String.class).replace("mongodb://", String.format("mongodb://%s:%s@", Settings.get("archiveDatabaseUserName"), Settings.get("archiveDatabasePassword")));
+		Settings.put("connectionString", connectionString);
+
+		if(mongoDbArchiveDatabaseGuiDataReader == null)
+			mongoDbArchiveDatabaseGuiDataReader = MongoDbArchiveDatabaseGuiDataReader.create();
+		return mongoDbArchiveDatabaseGuiDataReader;
+	}
+
 	/**
 	 * The base url format string template for connecting to a mongo db instance
 	 * @param archiveDatabaseUrl mongodb://%s:%s@mongo.infisys.net:27018/admin?tls=true => mongodb://username:password@[server|dns|ip]:port/authDB?connectionSettings
@@ -132,5 +147,14 @@ public class MongoDbArchiveDatabase implements ArchiveDatabase<TimeSeriesHeader>
 	public void setUserNamePassword(String archiveDatabaseUserName, String archiveDatabasePassword) {
 		Settings.put("archiveDatabaseUserName", archiveDatabaseUserName);
 		Settings.put("archiveDatabasePassword", archiveDatabasePassword);
+	}
+
+	/**
+	 *
+	 * @param  fewsTimeSeriesHeaderProvider fewsTimeSeriesHeaderProvider
+	 */
+	@Override
+	public void setHeaderProvider(FewsTimeSeriesHeaderProvider fewsTimeSeriesHeaderProvider) {
+		Settings.put("headerProvider", fewsTimeSeriesHeaderProvider);
 	}
 }
