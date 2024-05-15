@@ -8,7 +8,6 @@ import nl.fews.archivedatabase.mongodb.query.operations.Filter;
 import nl.fews.archivedatabase.mongodb.shared.database.Collection;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
-import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;

@@ -8,7 +8,6 @@ import nl.fews.archivedatabase.mongodb.query.operations.ReadSingletons;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesArrayUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
-import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.DateUtil;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 
