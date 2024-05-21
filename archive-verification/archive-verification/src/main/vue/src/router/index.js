@@ -16,15 +16,11 @@ import NormalPage from '../views/NormalPage.vue';
 import ObservedPage from '../views/ObservedPage.vue';
 import OutputCubePage from '../views/OutputCubePage.vue';
 import OutputPowerQueryPage from '../views/OutputPowerQueryPage.vue';
-import OutputPowerQuerySqlPage from '../views/OutputPowerQuerySqlPage.vue';
-import OutputSqlPage from '../views/OutputSqlPage.vue';
-import OutputViewPage from '../views/OutputViewPage.vue';
 import SeasonalityPage from '../views/SeasonalityPage.vue';
 import StudyPage from '../views/StudyPage.vue';
 import TemplateCubePage from '../views/TemplateCubePage.vue';
 import TemplateDrdlYamlPage from '../views/TemplateDrdlYamlPage.vue';
 import TemplatePowerQueryPage from '../views/TemplatePowerQueryPage.vue';
-import TemplateViewPage from '../views/TemplateViewPage.vue';
 
 export default createRouter({
     history: createWebHashHistory(),
@@ -45,14 +41,10 @@ export default createRouter({
         {path: '/observed', name: "Observed", component: ObservedPage},
         {path: '/outputCube', name: "OutputCube", component: OutputCubePage},
         {path: '/outputPowerQuery', name: "OutputPowerQuery", component: OutputPowerQueryPage},
-        {path: '/outputPowerQuerySql', name: "OutputPowerQuerySql", component: OutputPowerQuerySqlPage},
-        {path: '/outputSql', name: "OutputSql", component: OutputSqlPage},
-        {path: '/outputView', name: "OutputView", component: OutputViewPage},
         {path: '/seasonality', name: "Seasonality", component: SeasonalityPage},
         {path: '/study', name: "Study", component: StudyPage},
         {path: '/templateCube', name: "TemplateCube", component: TemplateCubePage},
         {path: '/templateDrdlYaml', name: "TemplateDrdlYaml", component: TemplateDrdlYamlPage},
-        {path: '/templatePowerQuery', name: "TemplatePowerQuery", component: TemplatePowerQueryPage},
-        {path: '/templateView', name: "TemplateView", component: TemplateViewPage}
+        {path: '/templatePowerQuery', name: "TemplatePowerQuery", component: TemplatePowerQueryPage}
     ]
 });

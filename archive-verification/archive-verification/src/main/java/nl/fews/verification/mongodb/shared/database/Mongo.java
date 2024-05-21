@@ -2,6 +2,7 @@ package nl.fews.verification.mongodb.shared.database;
 
 import com.mongodb.*;
 import com.mongodb.client.*;
+import com.mongodb.client.model.DropCollectionOptions;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.DeleteResult;
@@ -10,7 +11,6 @@ import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -87,7 +87,7 @@ public final class Mongo {
 	public static void dropCollection(String database, String collection){
 		for (int i = 1; i <= NUM_RETRIES; i++) {
 			try{
-				create(Settings.get("archiveDb")).getDatabase(database).getCollection(collection).drop();
+				create(Settings.get("archiveDb")).getDatabase(database).getCollection(collection).drop(new DropCollectionOptions());
 				return;
 			}
 			catch (Exception ex){
