@@ -30,7 +30,7 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
     public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:6.0"));
 
 	static{
-		LogUtils.initConsole();
+		//LogUtils.initConsole();
 	}
 
 	@BeforeEach

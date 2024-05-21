@@ -15,7 +15,7 @@ import java.util.List;
 public class TestSettings {
 
 	static {
-		LogUtils.initConsole();
+		//LogUtils.initConsole();
 	}
 
 	private TestSettings(){}

@@ -24,7 +24,7 @@ class MongoDbAppenderTest {
 
 	@Test
 	void append() {
-		LogUtils.initConsole();
+		//LogUtils.initConsole();
 		LogUtils.addAppender(MongoDbAppender.createAppender("databaseLogAppender", Settings.get("connectionString"), null));
 		LoggerFactory.getLogger(MongoDbAppenderTest.class).warn("Test");
 	}
