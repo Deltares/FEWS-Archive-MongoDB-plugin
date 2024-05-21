@@ -7,6 +7,7 @@ import nl.fews.verification.mongodb.generate.shared.graph.Graph;
 import nl.fews.verification.mongodb.shared.io.IO;
 import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
+import org.json.JSONArray;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,8 +57,9 @@ public class Deploy {
 
 	private static void restartService(){
 		var result = (String)IO.execute(Settings.get("drdlYamlServiceRestart"))[1];
-
-		if (!result.contains("2  START_PENDING") || !result.contains("4  RUNNING"))
-			throw new RuntimeException(result);
+		new JSONArray(Settings.get("drdlYamlServiceRestartSuccess", String.class)).forEach(c -> {
+			if (!result.contains(c.toString()))
+				throw new RuntimeException(result);
+		});
 	}
 }

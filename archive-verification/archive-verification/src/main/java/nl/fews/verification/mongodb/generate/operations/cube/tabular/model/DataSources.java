@@ -17,21 +17,19 @@ public final class DataSources implements IModel {
 
 	@Override
 	public void generate() {
-		if(String.format("%s", template.get("model", Document.class).getList("dataSources", Document.class).get(0).getString("type")).equals("structured")) {
-			var database = Settings.get("databaseConnectionString", String.class);
-			var username = Settings.get("fewsArchiveDbUsername", String.class);
-			var password = Settings.get("fewsArchiveDbAesPassword", String.class);
-			var db = Arrays.stream(database.split(";")).filter(s -> s.contains("=")).map(s -> s.split("=")).collect(Collectors.toMap(s -> s[0], s -> s[1]));
+		var database = Settings.get("databaseConnectionString", String.class);
+		var username = Settings.get("fewsArchiveDbUsername", String.class);
+		var password = Settings.get("fewsArchiveDbAesPassword", String.class);
+		var db = Arrays.stream(database.split(";")).filter(s -> s.contains("=")).map(s -> s.split("=")).collect(Collectors.toMap(s -> s[0], s -> s[1]));
 
-			var options = template.get("model", Document.class).getList("dataSources", Document.class).get(0).get("connectionDetails", Document.class).get("address", Document.class).get("options", Document.class);
-			options.append("driver", db.get("driver").replace("{", "").replace("}", ""));
-			options.append("server", db.get("server"));
-			options.append("port", db.get("port"));
+		var options = template.get("model", Document.class).getList("dataSources", Document.class).get(0).get("connectionDetails", Document.class).get("address", Document.class).get("options", Document.class);
+		options.append("driver", db.get("driver").replace("{", "").replace("}", ""));
+		options.append("server", db.get("server"));
+		options.append("port", db.get("port"));
 
-			var credential = template.get("model", Document.class).getList("dataSources", Document.class).get(0).get("credential", Document.class);
-			credential.append("path", database);
-			credential.append("Username", username);
-			credential.append("Password", Crypto.decrypt(password));
-		}
+		var credential = template.get("model", Document.class).getList("dataSources", Document.class).get(0).get("credential", Document.class);
+		credential.append("path", database);
+		credential.append("Username", username);
+		credential.append("Password", Crypto.decrypt(password));
 	}
 }

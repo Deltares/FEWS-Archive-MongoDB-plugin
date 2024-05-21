@@ -1,4 +1,4 @@
-package nl.fews.verification.mongodb.generate.operations.drdlyaml.degenerate;
+package nl.fews.verification.mongodb.generate.operations.drdlyaml.fact;
 
 import nl.fews.verification.mongodb.generate.interfaces.IExecute;
 import nl.fews.verification.mongodb.generate.interfaces.IPredecessor;
@@ -10,14 +10,13 @@ import org.bson.Document;
 
 import java.nio.file.Path;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
-public final class EventDate implements IExecute, IPredecessor {
+public final class Forecasts implements IExecute, IPredecessor {
 
 	private final String[] predecessors = new String[]{};
 	private final String study;
 
-	public EventDate(String study){
+	public Forecasts(String study){
 		this.study = study;
 	}
 
@@ -26,18 +25,31 @@ public final class EventDate implements IExecute, IPredecessor {
 		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
 		var database = Settings.get("archiveDb", String.class);
 		var name = this.getClass().getSimpleName();
-		var seasonalityColumns = Conversion.getSeasonalityColumns(studyDocument.getList("Seasonalities", String.class));
-		var pipeline = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Degenerate").append("Name", name)).getList("Pipeline", String.class));
-		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Degenerate").append("Name", name)).getList("Template", String.class));
-		var seasonalities = Conversion.getSeasonalities(StreamSupport.stream(Mongo.find("Seasonality", new Document("Name", new Document("$in", studyDocument.getList("Seasonalities", String.class)))).spliterator(), false).collect(Collectors.toList()));
+		var pipeline = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Fact").append("Name", name)).getList("Pipeline", String.class));
+		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Fact").append("Name", name)).getList("Template", String.class));
 
-		Document document = studyDocument.getList("Forecasts", String.class).stream().map(s -> new Document("Name", s)).reduce(new Document(), (d, s) -> {
+		var forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
+		var eventTime = Conversion.getEventTime(studyDocument.getString("Time"));
+		var eventValue = Conversion.getEventValue(studyDocument.getString("Value"));
+
+		var forecastClass = Conversion.getForecastClass(studyDocument.getString("Class").isEmpty() ? null : Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))));
+
+		var document = studyDocument.getList("Forecasts", String.class).stream().map(s -> new Document("Name", s)).reduce(new Document(), (d, s) -> {
 			var forecastDocument = Mongo.findOne("Forecast", new Document("Name", s.getString("Name")));
 			var collection = forecastDocument.getString("Collection");
+			var forecast = forecastDocument.getString("ForecastName");
 
 			forecastDocument.getList("Filters", Document.class).forEach(f -> {
-				var filter = f.get("Filter", Document.class).toJson();
-				var t = pipeline.replace("{filter}", filter);
+				var filter = f.get("Filter", Document.class);
+				var locationMap = Conversion.getLocationMap(f.get("LocationMap", Document.class));
+
+				var t = pipeline.replace("{filter}", filter.toJson());
+				t = t.replace("{forecast}", forecast);
+				t = t.replace("{forecastTime}", forecastTime);
+				t = t.replace("{eventTime}", eventTime);
+				t = t.replace("{eventValue}", eventValue);
+				t = t.replace("{locationMap}", locationMap);
+				t = t.replace("{forecastClass}", forecastClass);
 				var p = Document.parse(String.format("{\"document\":[%s]}", t)).getList("document", Document.class);
 				if(d.isEmpty())
 					d.append("pipeline", p).append("collection", collection);
@@ -50,8 +62,6 @@ public final class EventDate implements IExecute, IPredecessor {
 		var t = template.replace("{database}", database);
 		t = t.replace("{study}", study);
 		t = t.replace("{collection}", collection);
-		t = t.replace("{seasonalities}", seasonalities);
-		t = t.replace("{seasonalityColumns}", seasonalityColumns);
 		t = t.replace("{pipeline}",  document.getList("pipeline", Document.class).stream().map(Document::toJson).collect(Collectors.joining(",\n        ")));
 		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
 	}

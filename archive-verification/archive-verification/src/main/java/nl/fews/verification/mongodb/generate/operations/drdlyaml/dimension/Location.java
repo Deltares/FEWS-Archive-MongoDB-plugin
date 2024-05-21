@@ -23,9 +23,9 @@ public final class Location implements IExecute, IPredecessor {
 
 	@Override
 	public void execute(){
-		var environment = Settings.get("environment", String.class);
 		var database = Settings.get("verificationDb", String.class);
-		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Dimension").append("Name", "Location")).getList("Template", String.class));
+		var name = this.getClass().getSimpleName();
+		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Dimension").append("Name", name)).getList("Template", String.class));
 
 		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
 		var locationAttributes = Mongo.findOne("LocationAttributes", new Document("Name", studyDocument.getString("LocationAttributes")));
@@ -38,11 +38,10 @@ public final class Location implements IExecute, IPredecessor {
 		var columns = attributes.stream().map(s -> String.format("    - Name: %s\n      MongoType: %s\n      SqlName: %s\n      SqlType: %s\n", s, Conversion.getBsonType(locationAttributeTypes.get(s, "String")), s, Conversion.getSqlType(Conversion.getBsonType(locationAttributeTypes.get(s, "String"))))).collect(Collectors.toList());
 
 		template = template.replace("{database}", database);
-		template = template.replace("{environment}",  environment);
 		template = template.replace("{study}", study);
 		template = template.replace("{columns}", String.join("", columns));
 
-		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_Location_%s.drdl.yml", study, database)), template);
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s_%s.drdl.yml", study, name, database)), template);
 	}
 
 	@Override

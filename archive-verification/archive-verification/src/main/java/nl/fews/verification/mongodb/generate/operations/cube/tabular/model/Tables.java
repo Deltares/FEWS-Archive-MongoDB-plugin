@@ -5,7 +5,6 @@ import nl.fews.verification.mongodb.generate.shared.conversion.Conversion;
 import nl.fews.verification.mongodb.shared.database.Mongo;
 import org.bson.Document;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -21,27 +20,10 @@ public class Tables implements IModel {
 
 	@Override
 	public void generate() {
-		var structured = String.format("%s", template.get("model", Document.class).getList("dataSources", Document.class).get(0).getString("type")).equals("structured");
-		var cube = study.getString("Cube");
+		template.get("model", Document.class).getList("tables", Document.class).forEach(t ->
+			t.append("partitions", StreamSupport.stream(Mongo.find("output.PowerQuery", new Document("Study", study.getString("Name")).append("Name", t.getString("name"))).spliterator(), false).map(e ->
+				new Document("name", e.getString("Month").isEmpty() ? t.getString("name") : e.getString("Month")).append("source", new Document("type", "m").append("expression", e.getList("Expression", String.class)))).collect(Collectors.toList())));
 
-		if(cube.endsWith("_PowerQuery") && structured) {
-			template.get("model", Document.class).getList("tables", Document.class).forEach(t ->
-				t.append("partitions", StreamSupport.stream(Mongo.find("output.PowerQuery", new Document("Study", study.getString("Name")).append("Name", t.getString("name"))).spliterator(), false).map(e ->
-					new Document("name", e.getString("Month").isEmpty() ? t.getString("name") : e.getString("Month")).append("source", new Document("type", "m").append("expression", e.getList("Expression", String.class)))).collect(Collectors.toList())));
-		}
-		else if(cube.endsWith("_PowerQuerySql") && structured) {
-			template.get("model", Document.class).getList("tables", Document.class).forEach(t ->
-				t.append("partitions", StreamSupport.stream(Mongo.find("output.PowerQuerySql", new Document("Study", study.getString("Name")).append("Name", t.getString("name"))).spliterator(), false).map(e ->
-					new Document("name", e.getString("Month").isEmpty() ? t.getString("name") : e.getString("Month")).append("source", new Document("type", "m").append("expression", e.getList("Expression", String.class)))).collect(Collectors.toList())));
-		}
-		else if(cube.endsWith("_Sql") && !structured) {
-			template.get("model", Document.class).getList("tables", Document.class).forEach(t ->
-				t.append("partitions", StreamSupport.stream(Mongo.find("output.Sql", new Document("Study", study.getString("Name")).append("Name", t.getString("name"))).spliterator(), false).map(e ->
-					new Document("name", e.getString("Month").isEmpty() ? t.getString("name") : e.getString("Month")).append("source", new Document("type", "query").append("query", Arrays.stream(e.getString("Query").replace("\r", "").split("\n")).collect(Collectors.toList())).append("dataSource", "dataSource"))).collect(Collectors.toList())));
-		}
-		else{
-			throw new RuntimeException(String.format("%s not specified as a valid type: [ *_PowerQuery(structured) | *_PowerQuerySql(structured) | *_Sql(legacy) ]", study.getString("Cube")));
-		}
 		generateSeasonalityColumns();
 		generateLocationColumns();
 	}
