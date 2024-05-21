@@ -22,7 +22,7 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 	private static JSONObject testSettings = null;
 
 	static{
-		//LogUtils.initConsole();
+		LogUtils.initConsole();
 	}
 
 	@BeforeAll

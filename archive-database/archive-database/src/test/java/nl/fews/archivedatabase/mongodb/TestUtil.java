@@ -18,7 +18,7 @@ import java.util.stream.LongStream;
 public class TestUtil {
 
 	static {
-		//LogUtils.initConsole();
+		LogUtils.initConsole();
 	}
 
 	@SuppressWarnings({"unchecked"})

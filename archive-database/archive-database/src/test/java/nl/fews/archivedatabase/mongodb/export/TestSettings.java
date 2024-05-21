@@ -8,7 +8,7 @@ import nl.wldelft.util.LogUtils;
 public class TestSettings {
 
 	static {
-		//LogUtils.initConsole();
+		LogUtils.initConsole();
 	}
 
 	private TestSettings(){}
