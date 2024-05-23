@@ -70,7 +70,6 @@ function updateClock() {
         <v-list-item prepend-icon="mdi-export" :title.attr="'Output'">
           <v-menu activator="parent" location="left" open-on-hover>
             <v-list density="compact">
-              <v-list-item to="/outputCube">Cube</v-list-item>
               <v-list-item to="/outputPowerQuery">PowerQuery</v-list-item>
             </v-list>
           </v-menu>

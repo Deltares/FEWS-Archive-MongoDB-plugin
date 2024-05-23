@@ -32,11 +32,10 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 		var template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", name)).getList("Template", String.class));
 		var database = Settings.get("archiveDb", String.class);
 
-		var forecasts = Mongo.find("Forecast", new Document("Name", new Document("$in", studyDocument.getList("Forecasts", String.class))));
-		var toDeduplicate = StreamSupport.stream(forecasts.spliterator(), false).anyMatch(f -> f.getList("Filters", Document.class).stream().anyMatch(t -> t.getBoolean("Deduplicate")));
-		var deduplicate = toDeduplicate ?
-			"Table.Distinct(Table.Sort(Forecasts, {\"forecastId\", \"location\", \"forecastTime\", \"eventTime\", {\"partitionTime\", Order.Descending}, {\"dispatchTime\": Order.Descending}}), {\"forecastId\", \"location\", \"forecastTime\", \"eventTime\"})" :
-			"Forecasts";
+		var deduplicate = StreamSupport.stream(Mongo.find("Forecast", new Document("Name", new Document("$in", studyDocument.getList("Forecasts", String.class)))).spliterator(), false).anyMatch(f -> f.getList("Filters", Document.class).stream().anyMatch(t -> t.getBoolean("Deduplicate")));
+		var forecasts = deduplicate ?
+			"Table.Sort(Table.RemoveColumns(Table.Distinct(Odbc.Query(Source, \"SELECT forecastName, forecastId, location, ensemble, ensembleMember, forecastTime, forecastDate, forecastMinute, isOriginalForecast, eventTime, eventDate, eventMinute, leadTime, forecast, forecastClass, partitionTime, dispatchTime FROM {database}.`{study}_Forecasts` WHERE partitionTime >= '{month}-01' AND partitionTime < '{endMonth}-01' ORDER BY forecastId, location, forecastTime, eventTime, partitionTime DESC, dispatchTime DESC\"), {\"forecastId\", \"location\", \"forecastTime\", \"eventTime\"}), {\"partitionTime\", \"dispatchTime\"}), {\"location\", \"forecastTime\"})" :
+			"Odbc.Query(Source, \"SELECT forecastName, forecastId, location, ensemble, ensembleMember, forecastTime, forecastDate, forecastMinute, isOriginalForecast, eventTime, eventDate, eventMinute, leadTime, forecast, forecastClass FROM {database}.`{study}_Forecasts` WHERE partitionTime >= '{month}-01' AND partitionTime < '{endMonth}-01' ORDER BY location, forecastTime\")";
 
 		var startMonth = YearMonth.parse(forecastStartMonth);
 		var endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().plusDays(1).format(format) : studyDocument.getString("ForecastEndMonth"), format);
@@ -49,11 +48,12 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 			var month = m.format(format);
 
 			var t = template.replace("{databaseConnectionString}", databaseConnectionString);
+			t = t.replace("{forecasts}", forecasts);
 			t = t.replace("{database}", database);
-			t = t.replace("{deduplicate}", deduplicate);
 			t = t.replace("{study}", study);
 			t = t.replace("{month}", month);
 			t = t.replace("{endMonth}", m.plusMonths(1).format(format));
+			t = t.replace("{observedEndMonth}", m.plusMonths(2).format(format));
 
 			Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", name).append("Month", month).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
 		});
