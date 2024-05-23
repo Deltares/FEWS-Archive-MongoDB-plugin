@@ -9,7 +9,6 @@ import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
 import org.json.JSONArray;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -19,17 +18,18 @@ public class Deploy {
 	private Deploy(){}
 
 	public static void execute(){
-		var environment = Settings.get("environment", String.class);
-
 		Mongo.find("Study", new Document("Active", true)).forEach(study ->
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(Deploy.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));
 
 		updateConfig();
 		restartService();
+		updateSettings();
+	}
 
+	private static void updateSettings(){
 		Settings.put("reprocessDays", StreamSupport.stream(Mongo.find("Study", new Document()).spliterator(), false).collect(Collectors.toMap(x -> String.format("Verification_%s", x.getString("Name")), x -> x.getInteger("ReprocessDays"))));
 		IO.writeString(Path.of(Settings.get("bimPath"), "Settings.json"), Settings.toJsonString(2));
-		Mongo.updateOne("configuration.Settings", new Document("environment",  environment), new Document("$set", new Document("reprocessCubes", "")));
+		Mongo.updateOne("configuration.Settings", new Document("environment",  Settings.get("environment", String.class)), new Document("$set", new Document("reprocessCubes", "")));
 	}
 
 	private static void updateConfig(){
