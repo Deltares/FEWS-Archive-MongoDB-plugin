@@ -14,7 +14,6 @@ import ForecastPage from '../views/ForecastPage.vue';
 import LocationAttributesPage from '../views/LocationAttributesPage.vue';
 import NormalPage from '../views/NormalPage.vue';
 import ObservedPage from '../views/ObservedPage.vue';
-import OutputCubePage from '../views/OutputCubePage.vue';
 import OutputPowerQueryPage from '../views/OutputPowerQueryPage.vue';
 import SeasonalityPage from '../views/SeasonalityPage.vue';
 import StudyPage from '../views/StudyPage.vue';
@@ -39,7 +38,6 @@ export default createRouter({
         {path: '/locationAttributes', name: "LocationAttributes", component: LocationAttributesPage},
         {path: '/normal', name: "Normal", component: NormalPage},
         {path: '/observed', name: "Observed", component: ObservedPage},
-        {path: '/outputCube', name: "OutputCube", component: OutputCubePage},
         {path: '/outputPowerQuery', name: "OutputPowerQuery", component: OutputPowerQueryPage},
         {path: '/seasonality', name: "Seasonality", component: SeasonalityPage},
         {path: '/study', name: "Study", component: StudyPage},

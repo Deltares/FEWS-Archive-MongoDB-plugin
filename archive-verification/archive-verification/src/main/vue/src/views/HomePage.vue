@@ -34,7 +34,6 @@
           </ul>
           <div><span class="mdi mdi-export mr-2"/>Output</div>
           <ul class="ml-4 mb-4">
-            <li><router-link to="/outputCube"><span class="mdi mdi-link"/>Cube</router-link></li>
             <li><router-link to="/outputPowerQuery"><span class="mdi mdi-link"/>PowerQuery</router-link></li>
           </ul>
           <div><span class="mdi mdi-artboard mr-2"/>Template</div>

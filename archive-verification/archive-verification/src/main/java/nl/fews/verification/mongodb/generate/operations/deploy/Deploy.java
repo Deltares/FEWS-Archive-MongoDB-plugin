@@ -20,16 +20,6 @@ public class Deploy {
 
 	public static void execute(){
 		var environment = Settings.get("environment", String.class);
-		var timingsPath = Path.of(Settings.get("bimPath"), "Timings.json");
-		String timings;
-		try {
-			timings = Files.exists(timingsPath) ? IO.readString(timingsPath) : "";
-		}
-		catch (Exception ex){
-			timings = "";
-		}
-		IO.deleteFiles(Path.of(Settings.get("bimPath"), ""));
-		IO.writeString(timingsPath, timings);
 
 		Mongo.find("Study", new Document("Active", true)).forEach(study ->
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(Deploy.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));

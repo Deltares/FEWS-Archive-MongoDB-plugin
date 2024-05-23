@@ -6,7 +6,12 @@ import nl.fews.verification.mongodb.generate.operations.cube.tabular.model.DataS
 import nl.fews.verification.mongodb.generate.operations.cube.tabular.model.Roles;
 import nl.fews.verification.mongodb.generate.operations.cube.tabular.model.Tables;
 import nl.fews.verification.mongodb.shared.database.Mongo;
+import nl.fews.verification.mongodb.shared.io.IO;
+import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
+import org.bson.json.JsonWriterSettings;
+
+import java.nio.file.Path;
 
 public final class Model implements IExecute, IPredecessor {
 
@@ -31,7 +36,7 @@ public final class Model implements IExecute, IPredecessor {
 		new Tables(studyDocument, template).generate();
 		new Roles(template).generate();
 
-		Mongo.insertOne("output.Cube", new Document("Name", study).append("Bim", template));
+		IO.writeString(Path.of(Settings.get("bimPath"), String.format("Verification_%s.bim", study)), template.toJson(JsonWriterSettings.builder().indent(true).build()));
 	}
 
 	@Override
