@@ -41,7 +41,7 @@ async function test() {
     error.value = warning.value = success.value = null
     const result = await testQuery.refetch({collection: Collection, filters: JSON.parse(Filters)})
     const message = result.data["observedTest"].map(d => JSON.stringify(d)).join("<br>")
-    const allSucceed = result.data.["observedTest"].every(d => d["Success"] === "true")
+    const allSucceed = result.data["observedTest"].every(d => d["Success"] === "true")
     if(allSucceed) {success.value = {'message': message}} else {warning.value = {'message': message}}
   }
   catch (e){
