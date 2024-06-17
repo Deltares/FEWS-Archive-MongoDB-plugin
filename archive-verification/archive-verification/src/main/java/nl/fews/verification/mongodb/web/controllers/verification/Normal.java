@@ -2,6 +2,7 @@ package nl.fews.verification.mongodb.web.controllers.verification;
 
 import graphql.schema.DataFetchingEnvironment;
 import nl.fews.verification.mongodb.shared.database.Mongo;
+import nl.fews.verification.mongodb.shared.settings.Settings;
 import nl.fews.verification.mongodb.web.shared.conversion.Conversion;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
 @Controller
@@ -29,6 +31,20 @@ public class Normal {
 	@QueryMapping
 	public List<Document> normalN(DataFetchingEnvironment e){
 		return StreamSupport.stream(Mongo.find("Normal", new Document(), Conversion.getProjection(e)).sort(new Document("Name", 1)).spliterator(), false).toList();
+	}
+
+	@QueryMapping
+	public List<Document> normalTest(@Argument String collection, @Argument List<Map<String, Object>> filters, DataFetchingEnvironment e){
+		var database = Settings.get("archiveDb", String.class);
+		return filters.stream().map(f -> {
+			try{
+				var r = Mongo.aggregate(database, collection, List.of(new Document("$match", f.get("Filter")), new Document("$limit", 1))).maxTime(10, TimeUnit.SECONDS).first();
+				return new Document("FilterName", f.get("FilterName")).append("Success", String.format("%b", r != null));
+			}
+			catch (Exception ex){
+				return new Document("FilterName", f.get("FilterName")).append("Success", ex.getMessage());
+			}
+		}).toList();
 	}
 	
 	@MutationMapping

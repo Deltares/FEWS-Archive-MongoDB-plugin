@@ -7,8 +7,10 @@ import JsonEditorVue from 'json-editor-vue'
 const { result, loading, error, refetch } = useQuery(gql`query normalN {normalN {_id, Name, Collection, Filters}}`)
 const selected = ref({})
 const success = ref(null)
+const warning = ref(null)
 const sorted = computed(() => result?.value?.normalN ? result.value.normalN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
 
+const testQuery = useQuery(gql`query normalTest($collection: String!, $filters: JSON!) {normalTest(collection: $collection, filters: $filters){FilterName, Success}}`, {skip: true})
 const createMutation = useMutation(gql`mutation createNormal($name: String!, $collection: String!, $filters: JSON!) {createNormal(name: $name, collection: $collection, filters: $filters)}`)
 const updateMutation = useMutation(gql`mutation updateNormal($_id: ID!, $name: String!, $collection: String!, $filters: JSON!) {updateNormal(_id: $_id, name: $name, collection: $collection, filters: $filters)}`)
 const deleteMutation = useMutation(gql`mutation deleteNormal($_id: ID!) {deleteNormal(_id: $_id)}`)
@@ -29,6 +31,24 @@ async function remove() {
   if (confirm(`Remove ${Name} [${_id}]?`)) {
     await mutate(() => deleteMutation.mutate({_id: _id}))
     selected.value = {}
+  }
+}
+
+async function test() {
+  try {
+    const {Collection, Filters} = selected.value
+    loading.value = true
+    error.value = warning.value = success.value = null
+    const result = await testQuery.refetch({collection: Collection, filters: JSON.parse(Filters)})
+    const message = result.data["normalTest"].map(d => JSON.stringify(d)).join("<br>")
+    const allSucceed = result.data["normalTest"].every(d => d["Success"] === "true")
+    if(allSucceed) {success.value = {'message': message}} else {warning.value = {'message': message}}
+  }
+  catch (e){
+    error.value = e
+  }
+  finally {
+    loading.value = false
   }
 }
 
@@ -81,6 +101,7 @@ async function mutate(mutation){
     <v-btn @click="create">Create</v-btn>
     <v-btn class="ml-2" @click="update">Update</v-btn>
     <v-btn class="ml-2" @click="remove">Delete</v-btn>
+    <v-btn class="ml-2" @click="test">Test</v-btn>
   </div>
 </div>
 </template>

@@ -4,11 +4,15 @@ type Observed {
 	Collection: String!
 	Filters: [JSON]!
 }
+type ObservedTest {
+	FilterName: String!
+	Success: String!
+}
 extend type Query {
 	observedById(_id: ID!): Observed
 	observedByName(name: String!): Observed
 	observedN: [Observed]
-	observedTest(forecastStartMonth: String!, forecastEndMonth: String!, collection: String!, filters: JSON!): Boolean
+	observedTest(collection: String!, filters: JSON!): [ObservedTest]
 }
 extend type Mutation {
 	createObserved(name: String!, collection: String!, filters: JSON!): ID
