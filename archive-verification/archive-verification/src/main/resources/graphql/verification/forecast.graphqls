@@ -5,10 +5,15 @@ type Forecast {
 	Collection: String!
 	Filters: [JSON]!
 }
+type ForecastTest {
+	FilterName: String!
+	Success: String!
+}
 extend type Query {
 	forecastById(_id: ID!): Forecast
 	forecastByName(name: String!): Forecast
 	forecastN: [Forecast]
+	forecastTest(collection: String!, filters: JSON!): [ForecastTest]
 }
 extend type Mutation {
 	createForecast(name: String!, forecastName: String!, collection: String!, filters: JSON!): ID

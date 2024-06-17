@@ -4,10 +4,15 @@ type Normal {
 	Collection: String!
 	Filters: [JSON]!
 }
+type NormalTest {
+	FilterName: String!
+	Success: String!
+}
 extend type Query {
 	normalById(_id: ID!): Normal
 	normalByName(name: String!): Normal
 	normalN: [Normal]
+	normalTest(collection: String!, filters: JSON!): [NormalTest]
 }
 extend type Mutation {
 	createNormal(name: String!, collection: String!, filters: JSON!): ID
