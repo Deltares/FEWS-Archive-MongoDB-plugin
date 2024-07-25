@@ -20,24 +20,28 @@ public class Missing {
 			var study = new Document("Study", s.getString("Name"));
 
 			var observed = Mongo.findOne("Observed", new Document("Name", s.getString("Observed")));
-			var missingObserved = observed.getList("Filters", Document.class).parallelStream().map(l ->
-				new Document("Observed", new Document("Name", observed.getString("Name")).append("FilterName", l.getString("FilterName")).append("Filter", l.get("Filter")).append("Collection", observed.getString("Collection")))).filter(l ->
-					Mongo.aggregate(Settings.get("archiveDb"), observed.getString("Collection"), List.of(
-						new Document("$match", l.get("Observed", Document.class).get("Filter", Document.class)),
-						new Document("$match", new Document(Conversion.getEndTime(s.getString("Time")), new Document("$gte", Conversion.getYearMonthDate(s.getString("ForecastStartMonth"))))),
-						new Document("$limit", 1))).first() == null).toList();
-			if(!missingObserved.isEmpty())
-				study.append("Observed", missingObserved);
+			if (observed != null) {
+				var missingObserved = observed.getList("Filters", Document.class).parallelStream().map(l ->
+						new Document("Observed", new Document("Name", observed.getString("Name")).append("FilterName", l.getString("FilterName")).append("Filter", l.get("Filter")).append("Collection", observed.getString("Collection")))).filter(l ->
+						Mongo.aggregate(Settings.get("archiveDb"), observed.getString("Collection"), List.of(
+								new Document("$match", l.get("Observed", Document.class).get("Filter", Document.class)),
+								new Document("$match", new Document(Conversion.getEndTime(s.getString("Time")), new Document("$gte", Conversion.getYearMonthDate(s.getString("ForecastStartMonth"))))),
+								new Document("$limit", 1))).first() == null).collect(Collectors.toList());
+				if (!missingObserved.isEmpty())
+					study.append("Observed", missingObserved);
+			}
 
 			var normal = Mongo.findOne("Normal", new Document("Name", s.getString("Normal")));
-			var missingNormal = normal.getList("Filters", Document.class).parallelStream().map(l ->
-				new Document("Normal", new Document("Name", normal.getString("Name")).append("FilterName", l.getString("FilterName")).append("Filter", l.get("Filter")).append("Collection", normal.getString("Collection")))).filter(l ->
-					Mongo.aggregate(Settings.get("archiveDb"), normal.getString("Collection"), List.of(
-						new Document("$match", l.get("Normal", Document.class).get("Filter", Document.class)),
-						new Document("$match", new Document(Conversion.getEndTime(s.getString("Time")), new Document("$gte", Conversion.getYearMonthDate(s.getString("ForecastStartMonth"))))),
-						new Document("$limit", 1))).first() == null).toList();
-			if(!missingNormal.isEmpty())
-				study.append("Normal", missingNormal);
+			if (normal != null) {
+				var missingNormal = normal.getList("Filters", Document.class).parallelStream().map(l ->
+						new Document("Normal", new Document("Name", normal.getString("Name")).append("FilterName", l.getString("FilterName")).append("Filter", l.get("Filter")).append("Collection", normal.getString("Collection")))).filter(l ->
+						Mongo.aggregate(Settings.get("archiveDb"), normal.getString("Collection"), List.of(
+								new Document("$match", l.get("Normal", Document.class).get("Filter", Document.class)),
+								new Document("$match", new Document(Conversion.getEndTime(s.getString("Time")), new Document("$gte", Conversion.getYearMonthDate(s.getString("ForecastStartMonth"))))),
+								new Document("$limit", 1))).first() == null).collect(Collectors.toList());
+				if (!missingNormal.isEmpty())
+					study.append("Normal", missingNormal);
+			}
 
 			var forecasts = StreamSupport.stream(Mongo.find("Forecast", new Document("Name", new Document("$in", s.getList("Forecasts", String.class)))).spliterator(), true);
 			var missingForecast = forecasts.parallel().flatMap(forecast ->
@@ -46,7 +50,7 @@ public class Missing {
 						Mongo.aggregate(Settings.get("archiveDb"), forecast.getString("Collection"), List.of(
 							new Document("$match", l.get("Forecast", Document.class).get("Filter", Document.class)),
 							new Document("$match", new Document(Conversion.getForecastTime(s.getString("Time")), new Document("$gte", Conversion.getYearMonthDate(s.getString("ForecastStartMonth"))))),
-							new Document("$limit", 1))).first() == null)).toList();
+							new Document("$limit", 1))).first() == null)).collect(Collectors.toList());
 			if(!missingForecast.isEmpty())
 				study.append("Forecasts", missingForecast);
 
