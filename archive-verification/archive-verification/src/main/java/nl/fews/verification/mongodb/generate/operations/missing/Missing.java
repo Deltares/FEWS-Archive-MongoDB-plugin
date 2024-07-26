@@ -26,7 +26,7 @@ public class Missing {
 						Mongo.aggregate(Settings.get("archiveDb"), observed.getString("Collection"), List.of(
 								new Document("$match", l.get("Observed", Document.class).get("Filter", Document.class)),
 								new Document("$match", new Document(Conversion.getEndTime(s.getString("Time")), new Document("$gte", Conversion.getYearMonthDate(s.getString("ForecastStartMonth"))))),
-								new Document("$limit", 1))).first() == null).collect(Collectors.toList());
+								new Document("$limit", 1))).first() == null).toList();
 				if (!missingObserved.isEmpty())
 					study.append("Observed", missingObserved);
 			}
@@ -38,7 +38,7 @@ public class Missing {
 						Mongo.aggregate(Settings.get("archiveDb"), normal.getString("Collection"), List.of(
 								new Document("$match", l.get("Normal", Document.class).get("Filter", Document.class)),
 								new Document("$match", new Document(Conversion.getEndTime(s.getString("Time")), new Document("$gte", Conversion.getYearMonthDate(s.getString("ForecastStartMonth"))))),
-								new Document("$limit", 1))).first() == null).collect(Collectors.toList());
+								new Document("$limit", 1))).first() == null).toList();
 				if (!missingNormal.isEmpty())
 					study.append("Normal", missingNormal);
 			}
@@ -50,7 +50,7 @@ public class Missing {
 						Mongo.aggregate(Settings.get("archiveDb"), forecast.getString("Collection"), List.of(
 							new Document("$match", l.get("Forecast", Document.class).get("Filter", Document.class)),
 							new Document("$match", new Document(Conversion.getForecastTime(s.getString("Time")), new Document("$gte", Conversion.getYearMonthDate(s.getString("ForecastStartMonth"))))),
-							new Document("$limit", 1))).first() == null)).collect(Collectors.toList());
+							new Document("$limit", 1))).first() == null)).toList();
 			if(!missingForecast.isEmpty())
 				study.append("Forecasts", missingForecast);
 
@@ -59,6 +59,6 @@ public class Missing {
 		}).filter(f -> f.size() > 1).toList();
 
 		if(!missing.isEmpty())
-			Mail.send("Missing Verification Data", String.format("[\n%s\n]", missing.stream().map(d -> d.toJson(JsonWriterSettings.builder().indent(true).build())).collect(Collectors.joining(",\n"))));
+			Mail.send("Missing Verification Data", String.format("[%n%s%n]", missing.stream().map(d -> d.toJson(JsonWriterSettings.builder().indent(true).build())).collect(Collectors.joining(",\n"))));
 	}
 }

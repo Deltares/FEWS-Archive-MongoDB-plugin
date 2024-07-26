@@ -23,14 +23,14 @@ public class Integrity {
 	private static void orphaned() {
 		var orphaned = Stream.of("Observed", "Normal", "Class", "LocationAttributes").map(fieldCollection -> {
 			var existing = StreamSupport.stream(Mongo.find("Study", new Document()).spliterator(), true).parallel().map(s -> s.getString(fieldCollection)).collect(Collectors.toSet());
-			return Map.entry(fieldCollection, StreamSupport.stream(Mongo.find(fieldCollection, new Document()).spliterator(), true).filter(d -> !existing.contains(d.getString("Name"))).map(d -> d.getString("Name")).collect(Collectors.toList()));
+			return Map.entry(fieldCollection, StreamSupport.stream(Mongo.find(fieldCollection, new Document()).spliterator(), true).filter(d -> !existing.contains(d.getString("Name"))).map(d -> d.getString("Name")).toList());
 		}).filter(o -> !o.getValue().isEmpty()).collect(Collectors.toList());
 
 		orphaned.addAll(Map.of("Forecasts", "Forecast", "Seasonalities", "Seasonality").entrySet().stream().map(f -> {
 			var field = f.getKey();
 			var collection = f.getValue();
 			var existing = StreamSupport.stream(Mongo.find("Study", new Document()).spliterator(), true).parallel().flatMap(t -> t.getList(field, String.class).stream()).collect(Collectors.toSet());
-			return Map.entry(collection, StreamSupport.stream(Mongo.find(collection, new Document()).spliterator(), true).filter(d -> !existing.contains(d.getString("Name"))).map(d -> d.getString("Name")).collect(Collectors.toList()));
+			return Map.entry(collection, StreamSupport.stream(Mongo.find(collection, new Document()).spliterator(), true).filter(d -> !existing.contains(d.getString("Name"))).map(d -> d.getString("Name")).toList());
 		}).filter(o -> !o.getValue().isEmpty()).toList());
 
 		if(!orphaned.isEmpty())
@@ -48,7 +48,7 @@ public class Integrity {
 
 			Map.of("Forecasts", "Forecast", "Seasonalities", "Seasonality").forEach((field, collection) -> {
 				var existing = StreamSupport.stream(Mongo.find(collection, new Document("Name", new Document("$in", s.getList(field, String.class)))).spliterator(), true).map(t -> t.getString("Name")).collect(Collectors.toSet());
-				var m = s.getList(field, String.class).stream().filter(n -> !existing.contains(n)).collect(Collectors.toList());
+				var m = s.getList(field, String.class).stream().filter(n -> !existing.contains(n)).toList();
 				if(!m.isEmpty())
 					study.append(field, m);
 			});
@@ -57,6 +57,6 @@ public class Integrity {
 		}).filter(f -> f.size() > 1).toList();
 
 		if(!missing.isEmpty())
-			Mail.send("Missing Study Lookups", String.format("[\n%s\n]", missing.stream().map(d -> d.toJson(JsonWriterSettings.builder().indent(true).build())).collect(Collectors.joining(",\n"))));
+			Mail.send("Missing Study Lookups", String.format("[%n%s%n]", missing.stream().map(d -> d.toJson(JsonWriterSettings.builder().indent(true).build())).collect(Collectors.joining(",\n"))));
 	}
 }
