@@ -57,6 +57,6 @@ public class Integrity {
 		}).filter(f -> f.size() > 1).collect(Collectors.toList());
 
 		if(!missing.isEmpty())
-			Mail.send("Missing Study Lookups", String.format("[\n%s\n]", missing.stream().map(d -> d.toJson(JsonWriterSettings.builder().indent(true).build())).collect(Collectors.joining(",\n"))));
+			Mail.send("Missing Study Lookups", String.format("[%n%s%n]", missing.stream().map(d -> d.toJson(JsonWriterSettings.builder().indent(true).build())).collect(Collectors.joining(",\n"))));
 	}
 }

@@ -59,6 +59,6 @@ public class Missing {
 		}).filter(f -> f.size() > 1).collect(Collectors.toList());
 
 		if(!missing.isEmpty())
-			Mail.send("Missing Verification Data", String.format("[\n%s\n]", missing.stream().map(d -> d.toJson(JsonWriterSettings.builder().indent(true).build())).collect(Collectors.joining(",\n"))));
+			Mail.send("Missing Verification Data", String.format("[%n%s%n]", missing.stream().map(d -> d.toJson(JsonWriterSettings.builder().indent(true).build())).collect(Collectors.joining(",\n"))));
 	}
 }
