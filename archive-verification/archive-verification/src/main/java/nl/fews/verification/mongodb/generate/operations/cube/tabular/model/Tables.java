@@ -35,11 +35,16 @@ public class Tables implements IModel {
 
 	private void generateLocationColumns(){
 		var locationAttributes = Mongo.findOne("LocationAttributes", new Document("Name", study.getString("LocationAttributes")));
+		var attributes = locationAttributes.get("Attributes", Document.class);
+		attributes.put("locationId", "locationId");
+		attributes.put("shortName", "shortName");
+		attributes.put("group", "group");
+
 		var locations = Mongo.findOne("fews.Locations", new Document());
-		var locationAttributeTypes = Conversion.getLocationAttributeTypes(locations, locationAttributes);
+		var locationAttributeTypes = Conversion.getLocationAttributeTypes(locations, attributes);
 
 		template.get("model", Document.class).getList("tables", Document.class).stream().filter(t -> t.getString("name").equals("Location")).forEach(t ->
-			t.getList("columns", Document.class).addAll(locationAttributes.getList("Attributes", String.class).stream().map(s ->
-				new Document("name", s).append("dataType", Conversion.getCubeType(locationAttributeTypes.get(s, "String"))).append("sourceColumn", s).append("displayFolder", "Attributes")).toList()));
+			t.getList("columns", Document.class).addAll(attributes.entrySet().stream().map(s ->
+				new Document("name", s.getValue()).append("dataType", Conversion.getCubeType(locationAttributeTypes.get(s.getKey(), "String"))).append("sourceColumn", s.getValue()).append("displayFolder", "Attributes")).toList()));
 	}
 }

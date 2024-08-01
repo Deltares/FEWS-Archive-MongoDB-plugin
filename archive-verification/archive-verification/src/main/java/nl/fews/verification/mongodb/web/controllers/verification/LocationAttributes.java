@@ -32,12 +32,12 @@ public class LocationAttributes {
 	}
 	
 	@MutationMapping
-	public String createLocationAttributes(@Argument String name, @Argument List<String> attributes){
+	public String createLocationAttributes(@Argument String name, @Argument Map<String, Object> attributes){
 		return Mongo.insertOne("LocationAttributes", new Document("Name", name).append("Attributes", attributes)).getInsertedId().asObjectId().getValue().toString();
 	}
 
 	@MutationMapping
-	public Long updateLocationAttributes(@Argument String _id, @Argument String name, @Argument List<String> attributes){
+	public Long updateLocationAttributes(@Argument String _id, @Argument String name, @Argument Map<String, Object> attributes){
 		return Mongo.updateOne("LocationAttributes", new Document("_id", new ObjectId(_id)), new Document("$set", new Document("Name", name).append("Attributes", attributes))).getModifiedCount();
 	}
 

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -100,9 +101,9 @@ class ConversionTest {
 	void getLocationAttributeTypes() {
 		assertEquals(
 			new Document("locationId", "String").append("TestAttribute", "String").append("AnotherAttribute", "Double"),
-			Conversion.getLocationAttributeTypes(new Document("locations",
-				new Document("Location1", new Document("locationId", "Location1").append("attributes", new Document("TestAttribute", new Document("value", "ExampleValue")))).
-				append("Location2", new Document("locationId", "Location2").append("attributes", new Document("AnotherAttribute", new Document("value", 1.0))))), new Document("Attributes", List.of("TestAttribute", "AnotherAttribute"))));
+			Conversion.getLocationAttributeTypes(
+				new Document("locations", new Document("Location1", new Document("locationId", "Location1").append("attributes", new Document("TestAttribute", new Document("value", "ExampleValue")))).append("Location2", new Document("locationId", "Location2").append("attributes", new Document("AnotherAttribute", new Document("value", 1.0))))),
+				new Document(Map.of("TestAttribute", "TestAttribute", "AnotherAttribute", "AnotherAttribute"))));
 	}
 
 	@Test
