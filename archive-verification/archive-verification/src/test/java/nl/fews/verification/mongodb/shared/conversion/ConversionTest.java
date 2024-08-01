@@ -100,7 +100,7 @@ class ConversionTest {
 	@Test
 	void getLocationAttributeTypes() {
 		assertEquals(
-			new Document("locationId", "String").append("TestAttribute", "String").append("AnotherAttribute", "Double"),
+			new Document("locationId", "String").append("TestAttribute", "String").append("AnotherAttribute", "Double").append("group", "String").append("shortName", "String"),
 			Conversion.getLocationAttributeTypes(
 				new Document("locations", new Document("Location1", new Document("locationId", "Location1").append("attributes", new Document("TestAttribute", new Document("value", "ExampleValue")))).append("Location2", new Document("locationId", "Location2").append("attributes", new Document("AnotherAttribute", new Document("value", 1.0))))),
 				new Document(Map.of("TestAttribute", "TestAttribute", "AnotherAttribute", "AnotherAttribute"))));
