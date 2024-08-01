@@ -117,13 +117,14 @@ public class Conversion {
 	}
 
 	public static Document getLocationAttributeTypes(Document locations, Document locationAttributes){
-		Document r = new Document();
-		Map<String, Object> locationAttributesMap = locationAttributes.getList("Attributes", String.class).stream().collect(Collectors.toMap(a -> a, a -> a));
+		var r = new Document();
 		locations.get("locations", Document.class).values().forEach(v -> {
-			r.putAll(((Document)v).entrySet().stream().filter(a -> !a.getKey().equals("attributes") && locationAttributesMap.containsKey(a.getKey())).collect(Collectors.toMap(Map.Entry::getKey, a -> a.getValue().getClass().getSimpleName())));
-			r.putAll(((Document)v).get("attributes", Document.class).entrySet().stream().filter(a -> locationAttributesMap.containsKey(a.getKey())).collect(Collectors.toMap(Map.Entry::getKey, a -> ((Document)a.getValue()).get("value").getClass().getSimpleName())));
+			r.putAll(((Document)v).entrySet().stream().filter(a -> !a.getKey().equals("attributes") && locationAttributes.containsKey(a.getKey())).collect(Collectors.toMap(Map.Entry::getKey, a -> a.getValue().getClass().getSimpleName())));
+			r.putAll(((Document)v).get("attributes", Document.class).entrySet().stream().filter(a -> locationAttributes.containsKey(a.getKey())).collect(Collectors.toMap(Map.Entry::getKey, a -> ((Document)a.getValue()).get("value").getClass().getSimpleName())));
 		});
 		r.put("locationId", "String");
+		r.put("shortName", "String");
+		r.put("group", "String");
 		return r;
 	}
 

@@ -1,5 +1,7 @@
-package nl.fews.verification.mongodb.generate.shared.parser;
+package nl.fews.verification.mongodb.generate.parser;
 
+import nl.fews.verification.mongodb.generate.shared.parser.Parser;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -8,7 +10,7 @@ class ParserTest {
 
 	@Test
 	void parseFloat() {
-        assertEquals(1.5f, Parser.parseFloat("1.5"));
+        Assertions.assertEquals(1.5f, Parser.parseFloat("1.5"));
 
 		assertEquals("abc", Parser.parseFloat("abc"));
 

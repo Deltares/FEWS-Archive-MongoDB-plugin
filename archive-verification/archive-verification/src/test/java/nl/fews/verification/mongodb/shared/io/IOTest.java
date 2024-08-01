@@ -1,6 +1,5 @@
 package nl.fews.verification.mongodb.shared.io;
 
-import nl.fews.verification.mongodb.shared.io.IO;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;

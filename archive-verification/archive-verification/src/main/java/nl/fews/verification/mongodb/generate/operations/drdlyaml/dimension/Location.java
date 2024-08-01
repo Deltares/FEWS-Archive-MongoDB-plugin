@@ -29,13 +29,15 @@ public final class Location implements IExecute, IPredecessor {
 
 		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
 		var locationAttributes = Mongo.findOne("LocationAttributes", new Document("Name", studyDocument.getString("LocationAttributes")));
-		var locations = Mongo.findOne("fews.Locations", new Document());
-		var locationAttributeTypes = Conversion.getLocationAttributeTypes(locations, locationAttributes);
+		var attributes = locationAttributes.get("Attributes", Document.class);
+		attributes.put("locationId", "locationId");
+		attributes.put("shortName", "shortName");
+		attributes.put("group", "group");
 
-		var attributes = locationAttributes.getList("Attributes", String.class);
-		if(!attributes.contains("locationId"))
-			attributes.add(0, "locationId");
-		var columns = attributes.stream().map(s -> String.format("    - Name: %s\n      MongoType: %s\n      SqlName: %s\n      SqlType: %s\n", s, Conversion.getBsonType(locationAttributeTypes.get(s, "String")), s, Conversion.getSqlType(Conversion.getBsonType(locationAttributeTypes.get(s, "String"))))).collect(Collectors.toList());
+		var locations = Mongo.findOne("fews.Locations", new Document());
+		var locationAttributeTypes = Conversion.getLocationAttributeTypes(locations, attributes);
+
+		var columns = attributes.entrySet().stream().sorted((a, b) -> (a.getKey().equals("locationId") ? " " : a.getKey()).compareTo(b.getKey())).map(s -> String.format("    - Name: %s\n      MongoType: %s\n      SqlName: %s\n      SqlType: %s\n", s.getKey(), Conversion.getBsonType(locationAttributeTypes.get(s.getKey(), "String")), s.getValue(), Conversion.getSqlType(Conversion.getBsonType(locationAttributeTypes.get(s.getKey(), "String"))))).collect(Collectors.toList());
 
 		template = template.replace("{database}", database);
 		template = template.replace("{study}", study);
