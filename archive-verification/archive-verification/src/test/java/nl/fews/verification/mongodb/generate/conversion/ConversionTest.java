@@ -1,4 +1,4 @@
-package nl.fews.verification.mongodb.shared.conversion;
+package nl.fews.verification.mongodb.generate.conversion;
 
 import nl.fews.verification.mongodb.generate.shared.conversion.Conversion;
 import org.bson.Document;

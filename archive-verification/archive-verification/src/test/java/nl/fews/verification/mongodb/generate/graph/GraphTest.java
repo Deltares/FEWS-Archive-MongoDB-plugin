@@ -1,4 +1,4 @@
-package nl.fews.verification.mongodb.shared.graph;
+package nl.fews.verification.mongodb.generate.graph;
 
 import nl.fews.verification.mongodb.generate.interfaces.IExecute;
 import nl.fews.verification.mongodb.generate.interfaces.IPredecessor;

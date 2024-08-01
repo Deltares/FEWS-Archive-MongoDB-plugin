@@ -1,4 +1,4 @@
-package nl.fews.verification.mongodb.shared.parser;
+package nl.fews.verification.mongodb.generate.parser;
 
 import nl.fews.verification.mongodb.generate.shared.parser.Parser;
 import org.junit.jupiter.api.Assertions;
