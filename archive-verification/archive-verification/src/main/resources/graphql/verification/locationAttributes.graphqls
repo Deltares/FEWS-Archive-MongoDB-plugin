@@ -1,7 +1,7 @@
 type LocationAttributes {
 	_id: ID!
 	Name: String!
-	Attributes: [String]!
+	Attributes: JSON!
 }
 extend type Query {
 	locationAttributesById(_id: ID!): LocationAttributes
