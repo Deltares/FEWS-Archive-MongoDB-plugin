@@ -53,6 +53,6 @@ public class GenerateConfiguration implements SchedulingConfigurer {
 	@Override
 	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
 		taskRegistrar.setScheduler(Executors.newScheduledThreadPool(1));
-    	taskRegistrar.addFixedRateTask(this::generate, Duration.parse(Settings.get("taskInterval")));
+		taskRegistrar.addFixedRateTask(this::generate, Duration.parse(Settings.get("taskInterval")).toMillis());
 	}
 }
