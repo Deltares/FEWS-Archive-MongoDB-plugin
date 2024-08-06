@@ -37,6 +37,7 @@ public class ConfigurationDescription {
 			@Argument String toEmailAddresses,
 			@Argument String fromEmailAddress,
 			@Argument String drdlYamlPath,
+			@Argument String fewsRestApiUri,
 			@Argument String environment,
 			@Argument String threads,
 			@Argument String cubeAdmins,
@@ -47,18 +48,20 @@ public class ConfigurationDescription {
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
 			@Argument String execute,
+			@Argument String reprocessCubes,
 			@Argument String taskInterval,
 			@Argument String fewsArchiveDbAesPassword,
 			@Argument String fewsArchiveDbUsername,
 			@Argument String parallelPartitions,
 			@Argument String drdlYamlConfigPath,
 			@Argument String fewsArchiveDbConnection,
-			@Argument String refreshViews){
+			@Argument String drdlYamlServiceRestartSuccess){
 		return Mongo.insertOne("configuration.Description",
 				new Document("Name", name)
 				.append("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)
 				.append("drdlYamlPath", drdlYamlPath)
+				.append("fewsRestApiUri", fewsRestApiUri)
 				.append("environment", environment)
 				.append("threads", threads)
 				.append("cubeAdmins", cubeAdmins)
@@ -69,13 +72,14 @@ public class ConfigurationDescription {
 				.append("tabularConnectionString", tabularConnectionString)
 				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
 				.append("execute", execute)
+				.append("reprocessCubes", reprocessCubes)
 				.append("taskInterval", taskInterval)
 				.append("fewsArchiveDbAesPassword", fewsArchiveDbAesPassword)
 				.append("fewsArchiveDbUsername", fewsArchiveDbUsername)
 				.append("parallelPartitions", parallelPartitions)
 				.append("drdlYamlConfigPath", drdlYamlConfigPath)
 				.append("fewsArchiveDbConnection", fewsArchiveDbConnection)
-				.append("refreshViews", refreshViews)
+				.append("drdlYamlServiceRestartSuccess", drdlYamlServiceRestartSuccess)
 		).getInsertedId().asObjectId().getValue().toString();
 	}
 
@@ -86,6 +90,7 @@ public class ConfigurationDescription {
 			@Argument String toEmailAddresses,
 			@Argument String fromEmailAddress,
 			@Argument String drdlYamlPath,
+			@Argument String fewsRestApiUri,
 			@Argument String environment,
 			@Argument String threads,
 			@Argument String cubeAdmins,
@@ -96,18 +101,20 @@ public class ConfigurationDescription {
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
 			@Argument String execute,
+			@Argument String reprocessCubes,
 			@Argument String taskInterval,
 			@Argument String fewsArchiveDbAesPassword,
 			@Argument String fewsArchiveDbUsername,
 			@Argument String parallelPartitions,
 			@Argument String drdlYamlConfigPath,
 			@Argument String fewsArchiveDbConnection,
-			@Argument String refreshViews){
+			@Argument String drdlYamlServiceRestartSuccess){
 		return Mongo.updateOne("configuration.Description", new Document("_id", new ObjectId(_id)), new Document("$set",
 				new Document("Name", name)
 				.append("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)
 				.append("drdlYamlPath", drdlYamlPath)
+				.append("fewsRestApiUri", fewsRestApiUri)
 				.append("environment", environment)
 				.append("threads", threads)
 				.append("cubeAdmins", cubeAdmins)
@@ -118,13 +125,14 @@ public class ConfigurationDescription {
 				.append("tabularConnectionString", tabularConnectionString)
 				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
 				.append("execute", execute)
+				.append("reprocessCubes", reprocessCubes)
 				.append("taskInterval", taskInterval)
 				.append("fewsArchiveDbAesPassword", fewsArchiveDbAesPassword)
 				.append("fewsArchiveDbUsername", fewsArchiveDbUsername)
 				.append("parallelPartitions", parallelPartitions)
 				.append("drdlYamlConfigPath", drdlYamlConfigPath)
 				.append("fewsArchiveDbConnection", fewsArchiveDbConnection)
-				.append("refreshViews", refreshViews)
+				.append("drdlYamlServiceRestartSuccess", drdlYamlServiceRestartSuccess)
 			)).getModifiedCount();
 	}
 
