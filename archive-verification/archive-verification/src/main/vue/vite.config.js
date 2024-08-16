@@ -6,7 +6,7 @@ import { resolve } from 'path';
 
 export default defineConfig(({mode}) => ({
   plugins: [vue()],
-  base: "/verification/",
+  base: "./",
   build: {
     outDir: resolve(__dirname, '../resources/static'),
     minify: mode !== 'development',

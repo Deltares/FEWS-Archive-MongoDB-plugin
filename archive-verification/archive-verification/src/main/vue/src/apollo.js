@@ -1,7 +1,7 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core'
 
 const apolloClient = new ApolloClient({
-  link: new HttpLink({uri: '/verification/graphql'}),
+  link: new HttpLink({uri: './graphql'}),
   connectToDevTools: false,
   cache: new InMemoryCache()
 })

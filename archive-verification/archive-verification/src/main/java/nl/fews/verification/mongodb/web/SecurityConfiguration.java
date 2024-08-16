@@ -22,7 +22,9 @@ public class SecurityConfiguration{
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		var cache = new HttpSessionRequestCache();
 		cache.setMatchingRequestParameterName(null);
-        return http.authorizeHttpRequests(a -> a.requestMatchers("/**").hasAnyRole("VERIFICATION_ADMIN", "VERIFICATION_USER").anyRequest().authenticated())
+        return http.authorizeHttpRequests(a -> a
+				.requestMatchers("/error", "/images/**").permitAll()
+				.requestMatchers("/**").hasAnyRole("VERIFICATION_ADMIN", "VERIFICATION_USER").anyRequest().authenticated())
 			.csrf(c -> c.ignoringRequestMatchers("/graphql/**")).requestCache(r -> r.requestCache(cache))
 			.oauth2Login(o -> o.userInfoEndpoint(e -> e.userAuthoritiesMapper(authoritiesMapper()))).build();
     }
