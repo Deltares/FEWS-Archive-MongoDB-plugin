@@ -20,8 +20,10 @@ import java.util.stream.Collectors;
 public class SecurityConfiguration{
 	@Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		return http.authorizeHttpRequests(a -> a.antMatchers("/**").hasAnyRole("VERIFICATION_ADMIN", "VERIFICATION_USER").anyRequest().authenticated())
-			.csrf(c -> c.ignoringRequestMatchers(new AntPathRequestMatcher("/graphql/**")))
+		return http.authorizeHttpRequests(a -> a
+				.antMatchers("/error", "/images/**").permitAll()
+				.antMatchers("/**").hasAnyRole("VERIFICATION_ADMIN", "VERIFICATION_USER").anyRequest().authenticated())
+			.csrf(c -> c.ignoringAntMatchers("/graphql/**"))
 			.oauth2Login(o -> o.userInfoEndpoint(e -> e.userAuthoritiesMapper(authoritiesMapper()))).build();
     }
 

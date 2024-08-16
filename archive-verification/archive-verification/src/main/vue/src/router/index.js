@@ -1,6 +1,7 @@
 import {createRouter, createWebHashHistory} from "vue-router";
 
 import HomePage from '../views/HomePage.vue';
+import ErrorPage from '../views/ErrorPage.vue';
 import ClassPage from '../views/ClassPage.vue';
 import ConfigurationDescriptionPage from '../views/ConfigurationDescriptionPage.vue';
 import DimensionIsOriginalForecastPage from '../views/DimensionIsOriginalForecastPage.vue';
@@ -25,6 +26,7 @@ export default createRouter({
     history: createWebHashHistory(),
     routes:[
         {path: '/', name: "Home", component: HomePage},
+        {path: '/error', name: "Error", component: ErrorPage},
         {path: '/class', name: "Class", component: ClassPage},
         {path: '/configurationDescription', name: "ConfigurationDescription", component: ConfigurationDescriptionPage},
         {path: '/configurationSettings', name: "ConfigurationSettings", component: ConfigurationSettingsPage},

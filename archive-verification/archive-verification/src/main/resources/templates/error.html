@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Error</title>
+    <style>
+        .error-bg{
+          background: url('./images/Bee-doo.jpg') top left / cover no-repeat fixed;
+          height: 100%;
+        }
+    </style>
+</head>
+<body class="error-bg">
+    <pre>
+<th:block th:each="entry : ${errorAttributes.entrySet()}" th:text="${entry.key} + ': ' + ${entry.value} + '&#10;'" />
+    </pre>
+</body>
+</html>
