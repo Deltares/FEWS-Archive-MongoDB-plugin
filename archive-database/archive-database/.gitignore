@@ -8,10 +8,10 @@
 *.tar.gz
 *.rar
 
-/target
-/out
-/src/test/resources/*.json
-/src/test/*.json
-/.idea/sonarlint/issuestore
-/.idea/workspace.xml
-/.idea/sonarlint/securityhotspotstore
+target
+out
+src/test/resources/*.json
+src/test/*.json
+.idea/sonarlint/issuestore
+.idea/workspace.xml
+.idea/sonarlint/securityhotspotstore
