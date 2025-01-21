@@ -1,0 +1,5 @@
+/.idea/sonarlint
+/.idea/workspace.xml
+/*.nc
+/*.exe
+/environment.yml

@@ -1,0 +1,3 @@
+## GPU Environment Variables
+- `XLA_PYTHON_CLIENT_PREALLOCATE=false`
+- `XLA_PYTHON_CLIENT_ALLOCATOR=platform`
