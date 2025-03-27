@@ -1,4 +1,4 @@
-package nl.fews.verification.mongodb.generate.operations.drdlyaml.fact;
+package nl.fews.verification.mongodb.generate.operations.csv.fact;
 
 import nl.fews.verification.mongodb.generate.interfaces.IExecute;
 import nl.fews.verification.mongodb.generate.interfaces.IPredecessor;
@@ -9,7 +9,6 @@ import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
 
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public final class Normal implements IExecute, IPredecessor {
@@ -60,11 +59,7 @@ public final class Normal implements IExecute, IPredecessor {
 		t = t.replace("{study}", study);
 		t = t.replace("{collection}", collection);
 		t = t.replace("{pipeline}", document.getList("pipeline", Document.class).stream().map(Document::toJson).collect(Collectors.joining(",\n        ")));
-		
-		if(studyDocument.getString("Cube").equals("Default"))
-			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
-		else if (studyDocument.getString("Cube").equals("Csv"))
-			Mongo.insertOne("output.DrdlYaml", new Document("Study", study).append("Name", String.format("%s_%s", study, name)).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
 	}
 
 	@Override

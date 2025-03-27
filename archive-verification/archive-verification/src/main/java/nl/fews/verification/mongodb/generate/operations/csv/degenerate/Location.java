@@ -1,4 +1,4 @@
-package nl.fews.verification.mongodb.generate.operations.drdlyaml.degenerate;
+package nl.fews.verification.mongodb.generate.operations.csv.degenerate;
 
 import nl.fews.verification.mongodb.generate.interfaces.IExecute;
 import nl.fews.verification.mongodb.generate.interfaces.IPredecessor;
@@ -11,15 +11,14 @@ import org.bson.Document;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public final class LeadTime implements IExecute, IPredecessor {
+public final class Location implements IExecute, IPredecessor {
 
 	private final String[] predecessors = new String[]{};
 	private final String study;
 
-	public LeadTime(String study){
+	public Location(String study){
 		this.study = study;
 	}
 
@@ -31,7 +30,6 @@ public final class LeadTime implements IExecute, IPredecessor {
 		var pipeline = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Degenerate").append("Name", name)).getList("Pipeline", String.class));
 		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Degenerate").append("Name", name)).getList("Template", String.class));
 		var forecastTime = Conversion.getForecastTime(studyDocument.getString("Time"));
-		var eventTime = Conversion.getEventTime(studyDocument.getString("Time"));
 		var format = Conversion.getMonthDateTimeFormatter();
 		var forecastStartMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(-1).format(format);
 		var forecastEndMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().format(format) : studyDocument.getString("ForecastEndMonth"), format).plusMonths(1).format(format);
@@ -42,9 +40,10 @@ public final class LeadTime implements IExecute, IPredecessor {
 
 			forecastDocument.getList("Filters", Document.class).forEach(f -> {
 				var filter = f.get("Filter", Document.class).toJson();
+				var locationMap = Conversion.getLocationMap(f.get("LocationMap", Document.class));
 				var t = pipeline.replace("{filter}", filter);
 				t = t.replace("{forecastTime}", forecastTime);
-				t = t.replace("{eventTime}", eventTime);
+				t = t.replace("{locationMap}", locationMap);
 				t = t.replace("{forecastStartMonth}", forecastStartMonth);
 				t = t.replace("{forecastEndMonth}", forecastEndMonth);
 				var p = Document.parse(String.format("{\"document\":[%s]}", t)).getList("document", Document.class);
@@ -60,11 +59,7 @@ public final class LeadTime implements IExecute, IPredecessor {
 		t = t.replace("{study}", study);
 		t = t.replace("{collection}", collection);
 		t = t.replace("{pipeline}",  document.getList("pipeline", Document.class).stream().map(Document::toJson).collect(Collectors.joining(",\n        ")));
-		
-		if(studyDocument.getString("Cube").equals("Default"))
-			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_LeadTime.drdl.yml", study)), t);
-		else if (studyDocument.getString("Cube").equals("Csv"))
-			Mongo.insertOne("output.DrdlYaml", new Document("Study", study).append("Name", String.format("%s_LeadTime", study)).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_Location_%s.drdl.yml", study, database)), t);
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public final class Observed implements IExecute, IPredecessor {
@@ -59,7 +60,11 @@ public final class Observed implements IExecute, IPredecessor {
 		t = t.replace("{study}", study);
 		t = t.replace("{collection}", collection);
 		t = t.replace("{pipeline}", document.getList("pipeline", Document.class).stream().map(Document::toJson).collect(Collectors.joining(",\n        ")));
-		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
+		
+		if(studyDocument.getString("Cube").equals("Default"))
+			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
+		else if (studyDocument.getString("Cube").equals("Csv"))
+			Mongo.insertOne("output.DrdlYaml", new Document("Study", study).append("Name", String.format("%s_%s", study, name)).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
 	}
 
 	@Override

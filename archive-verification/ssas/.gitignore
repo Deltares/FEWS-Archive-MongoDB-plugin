@@ -1,7 +1,7 @@
-/Verification/.vs
-/Verification/**/bin
-/Verification/**/obj
-/Verification/**/*.user
-/Verification/**/*.suo
-/Verification/**/*.layout
-/Verification/**/*.settings
+.vs
+bin
+obj
+*.user
+*.suo
+*.layout
+*.settings

@@ -1,4 +1,4 @@
-package nl.fews.verification.mongodb.generate.operations.drdlyaml.fact;
+package nl.fews.verification.mongodb.generate.operations.csv.fact;
 
 import nl.fews.verification.mongodb.generate.interfaces.IExecute;
 import nl.fews.verification.mongodb.generate.interfaces.IPredecessor;
@@ -9,15 +9,14 @@ import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
 
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public final class Normal implements IExecute, IPredecessor {
+public final class Observed implements IExecute, IPredecessor {
 
 	private final String[] predecessors = new String[]{};
 	private final String study;
 
-	public Normal(String study){
+	public Observed(String study){
 		this.study = study;
 	}
 
@@ -29,16 +28,16 @@ public final class Normal implements IExecute, IPredecessor {
 		var pipeline = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Fact").append("Name", name)).getList("Pipeline", String.class));
 		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Fact").append("Name", name)).getList("Template", String.class));
 
-		var normalDocument = Mongo.findOne("Normal", new Document("Name", studyDocument.getString("Normal")));
-		var collection = normalDocument.getString("Collection");
+		var observedDocument = Mongo.findOne("Observed", new Document("Name", studyDocument.getString("Observed")));
+		var collection = observedDocument.getString("Collection");
 
 		var startTime = Conversion.getStartTime(studyDocument.getString("Time"));
 		var endTime = Conversion.getEndTime(studyDocument.getString("Time"));
 		var eventTime = Conversion.getEventTime(studyDocument.getString("Time"));
 		var eventValue = Conversion.getEventValue(studyDocument.getString("Value"));
-		var forecastClass = Conversion.getForecastClass(studyDocument.getString("Class").isEmpty() ? null : Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))));
+		var observedClass = Conversion.getObservedClass(studyDocument.getString("Class").isEmpty() ? null : Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))));
 
-		Document document = normalDocument.getList("Filters", Document.class).stream().reduce(new Document(), (d, f) -> {
+		Document document = observedDocument.getList("Filters", Document.class).stream().reduce(new Document(), (d, f) -> {
 			var filter = f.get("Filter", Document.class);
 			var locationMap = Conversion.getLocationMap(f.get("LocationMap", Document.class));
 
@@ -48,7 +47,7 @@ public final class Normal implements IExecute, IPredecessor {
 			t = t.replace("{eventTime}", eventTime);
 			t = t.replace("{eventValue}", eventValue);
 			t = t.replace("{locationMap}", locationMap);
-			t = t.replace("{forecastClass}", forecastClass);
+			t = t.replace("{observedClass}", observedClass);
 			var p = Document.parse(String.format("{\"document\":[%s]}", t)).getList("document", Document.class);
 			if(d.isEmpty())
 				d.append("pipeline", p);
@@ -60,11 +59,7 @@ public final class Normal implements IExecute, IPredecessor {
 		t = t.replace("{study}", study);
 		t = t.replace("{collection}", collection);
 		t = t.replace("{pipeline}", document.getList("pipeline", Document.class).stream().map(Document::toJson).collect(Collectors.joining(",\n        ")));
-		
-		if(studyDocument.getString("Cube").equals("Default"))
-			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
-		else if (studyDocument.getString("Cube").equals("Csv"))
-			Mongo.insertOne("output.DrdlYaml", new Document("Study", study).append("Name", String.format("%s_%s", study, name)).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package nl.fews.verification.mongodb.generate.operations.drdlyaml.degenerate;
+package nl.fews.verification.mongodb.generate.operations.csv.degenerate;
 
 import nl.fews.verification.mongodb.generate.interfaces.IExecute;
 import nl.fews.verification.mongodb.generate.interfaces.IPredecessor;
@@ -11,7 +11,6 @@ import org.bson.Document;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public final class LeadTime implements IExecute, IPredecessor {
@@ -60,11 +59,7 @@ public final class LeadTime implements IExecute, IPredecessor {
 		t = t.replace("{study}", study);
 		t = t.replace("{collection}", collection);
 		t = t.replace("{pipeline}",  document.getList("pipeline", Document.class).stream().map(Document::toJson).collect(Collectors.joining(",\n        ")));
-		
-		if(studyDocument.getString("Cube").equals("Default"))
-			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_LeadTime.drdl.yml", study)), t);
-		else if (studyDocument.getString("Cube").equals("Csv"))
-			Mongo.insertOne("output.DrdlYaml", new Document("Study", study).append("Name", String.format("%s_LeadTime", study)).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_LeadTime.drdl.yml", study)), t);
 	}
 
 	@Override

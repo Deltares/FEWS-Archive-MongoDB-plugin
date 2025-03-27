@@ -1,5 +1,5 @@
-/Verification/.vs
-/Verification/**/bin
-/Verification/**/obj
-/Verification/**/*.user
-/Verification/**/*.suo
+.vs
+bin
+obj
+*.user
+*.suo
