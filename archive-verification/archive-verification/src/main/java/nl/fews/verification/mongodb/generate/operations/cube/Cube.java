@@ -16,7 +16,10 @@ public class Cube {
 	public static void execute(){
 		var timingsPath = Path.of(Settings.get("bimPath"), "Timings.json");
 		var timings = getTimings(timingsPath);
-		IO.deleteFiles(Path.of(Settings.get("bimPath"), ""));
+		var bimPath = Path.of(Settings.get("bimPath", String.class), "");
+		if (!Files.exists(bimPath))
+			IO.createDirectories(bimPath);
+		IO.deleteFiles(bimPath);
 		IO.writeString(timingsPath, timings);
 
 		Mongo.find("Study", new Document("Active", true)).forEach(study ->

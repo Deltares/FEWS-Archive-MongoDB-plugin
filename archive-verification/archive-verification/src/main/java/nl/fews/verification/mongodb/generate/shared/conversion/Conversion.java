@@ -2,12 +2,11 @@ package nl.fews.verification.mongodb.generate.shared.conversion;
 
 import org.bson.Document;
 
+import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -137,5 +136,32 @@ public class Conversion {
 		return String.format("{\"$switch\":\n          {\"branches\": [\n%s\n          ],\n          \"default\": \"undefinedLocation\"}}", _class.getList("Locations", Document.class).stream().map(
 			l -> String.format("            {\"case\": {\"$or\": [{\"$eq\": [\"\", \"%s\"]}, {\"$eq\": [\"$location\", \"%s\"]}]}, \"then\": %s}", l.getString("Location"), l.getString("Location"), String.format("{\"$switch\":\n              {\"branches\": [\n%s\n              ],\n              \"default\": \"undefinedValue\"}}", l.getList("Breakpoint", Document.class).stream().map(
 				b -> String.format("                {\"case\": {\"$%s\": [\"$%s\", %s]}, \"then\": \"%s\"}", b.getString("Operator"), classType, b.get("Threshold"), b.getString("Name"))).collect(Collectors.joining(",\n"))))).collect(Collectors.joining(",\n")));
+	}
+
+	public static Object toBson(Object value) {
+        if (value instanceof Map<?, ?> map) {
+			return new Document(map.entrySet().stream().collect(Collectors.toMap(m -> m.getKey().toString(), m -> m.getValue() == null ? "" : toBson(m.getValue()), (a, b) -> a, HashMap::new)));
+        }
+		else if (value instanceof List<?> list) {
+			return list.stream().map(Conversion::toBson).toList();
+        }
+		else {
+            return value;
+        }
+    }
+
+	public static Object convertDate(Object value){
+		if (value instanceof Document d) {
+			if (d.containsKey("$date")) {
+				return Date.from(Instant.parse(d.getString("$date")));
+			}
+			return new Document(d.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> convertDate(e.getValue()))));
+		}
+		else if (value instanceof List<?> list) {
+			return list.stream().map(Conversion::convertDate).toList();
+		}
+		else {
+			return value;
+		}
 	}
 }

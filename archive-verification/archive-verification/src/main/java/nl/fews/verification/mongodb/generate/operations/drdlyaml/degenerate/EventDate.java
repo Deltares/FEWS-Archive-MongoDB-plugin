@@ -25,6 +25,7 @@ public final class EventDate implements IExecute, IPredecessor {
 	@Override
 	public void execute(){
 		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
+		var acquisitionType = Settings.get("acquisitionType", String.class);
 		var database = Settings.get("archiveDb", String.class);
 		var name = this.getClass().getSimpleName();
 		var seasonalityColumns = Conversion.getSeasonalityColumns(studyDocument.getList("Seasonalities", String.class));
@@ -55,9 +56,9 @@ public final class EventDate implements IExecute, IPredecessor {
 		t = t.replace("{seasonalityColumns}", seasonalityColumns);
 		t = t.replace("{pipeline}",  document.getList("pipeline", Document.class).stream().map(Document::toJson).collect(Collectors.joining(",\n        ")));
 
-		if(studyDocument.getString("Cube").equals("Default"))
+		if(acquisitionType.equals("mongodb"))
 			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
-		else if (studyDocument.getString("Cube").equals("Csv"))
+		else if (acquisitionType.equals("csv"))
 			Mongo.insertOne("output.DrdlYaml", new Document("Study", study).append("Name", String.format("%s_%s", study, name)).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
 	}
 

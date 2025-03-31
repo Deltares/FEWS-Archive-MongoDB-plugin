@@ -2,9 +2,7 @@ package nl.fews.verification.mongodb.generate.operations.cube.tabular;
 
 import nl.fews.verification.mongodb.generate.interfaces.IExecute;
 import nl.fews.verification.mongodb.generate.interfaces.IPredecessor;
-import nl.fews.verification.mongodb.generate.operations.cube.tabular.model.DataSources;
-import nl.fews.verification.mongodb.generate.operations.cube.tabular.model.Roles;
-import nl.fews.verification.mongodb.generate.operations.cube.tabular.model.Tables;
+import nl.fews.verification.mongodb.generate.operations.cube.tabular.model.*;
 import nl.fews.verification.mongodb.shared.database.Mongo;
 import nl.fews.verification.mongodb.shared.io.IO;
 import nl.fews.verification.mongodb.shared.settings.Settings;

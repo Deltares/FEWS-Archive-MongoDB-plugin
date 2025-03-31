@@ -1,10 +1,12 @@
 package nl.fews.verification.mongodb.shared.io;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class IO {
 	private IO(){}
@@ -17,7 +19,7 @@ public class IO {
 	 * @throws RuntimeException if an error occurs while reading the resource file
 	 */
 	public static String getResourceString(String path){
-		try(InputStream stream = IO.class.getClassLoader().getResourceAsStream(path)) {
+		try(var stream = IO.class.getClassLoader().getResourceAsStream(path)) {
 			return new String(stream.readAllBytes());
 		}
 		catch (Exception ex){
@@ -56,11 +58,54 @@ public class IO {
 		}
 	}
 
+	public static void deleteTree(Path path){
+		try (var walk = Files.walk(path)) {
+			walk.sorted(Comparator.reverseOrder()).filter(file -> !file.equals(path)).forEach(f -> {
+					try{
+						Files.deleteIfExists(f);
+					}
+					catch (Exception ex){
+						throw new RuntimeException(ex);
+					}
+			});
+		}
+		catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
 	public static List<Path> listFiles(Path path){
-		try (Stream<Path> list = Files.list(path)){
+		try (var list = Files.list(path)){
 			return list.toList();
 		}
 		catch (Exception ex){
+			throw new RuntimeException(ex);
+		}
+	}
+
+	public static void createDirectories(Path path){
+		try {
+			Files.createDirectories(path);
+		}
+		catch (Exception ex){
+			throw new RuntimeException(ex);
+		}
+	}
+
+	public static void moveFile(Path src, Path dst){
+		try {
+			Files.move(src, dst, StandardCopyOption.REPLACE_EXISTING);
+		}
+		catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	public static Instant lastModified(Path path){
+		try {
+			return Files.getLastModifiedTime(path).toInstant();
+		}
+		catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
 	}
@@ -72,7 +117,7 @@ public class IO {
 	 * @throws RuntimeException if an error occurs while deleting the files
 	 */
 	public static void deleteFiles(Path path){
-		try (Stream<Path> list = Files.list(path)){
+		try (var list = Files.list(path)){
 			list.toList().parallelStream().forEach(f -> f.toFile().delete());
 		}
 		catch (Exception ex){

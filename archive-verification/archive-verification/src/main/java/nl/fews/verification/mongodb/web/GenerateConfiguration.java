@@ -11,6 +11,7 @@ import java.io.StringWriter;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +26,9 @@ public class GenerateConfiguration implements SchedulingConfigurer {
 
 	private static final Logger logger = LoggerFactory.getLogger(GenerateConfiguration.class);
 
-	public void generate(){
+	private static final AtomicBoolean running = new AtomicBoolean(false);
 
+	public void generate(){
 		JSONObject settings;
 		try {
 			Path path = Path.of(Settings.get("bimPath"), "Settings.json");
@@ -37,7 +39,7 @@ public class GenerateConfiguration implements SchedulingConfigurer {
 			settings = null;
 		}
 
-		if (settings == null || !settings.getBoolean("execute")) {
+		if ((settings == null || settings.getBoolean("execute")) && running.compareAndSet(false, true)) {
 			try {
 				Generate.execute();
 			}
@@ -47,12 +49,15 @@ public class GenerateConfiguration implements SchedulingConfigurer {
 				ex.printStackTrace(new PrintWriter(sw));
 				Mail.send("ERROR - Verification GenerateTimer", sw.toString());
 			}
+			finally {
+				running.set(false);
+			}
 		}
 	}
 
 	@Override
 	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
 		taskRegistrar.setScheduler(Executors.newScheduledThreadPool(1));
-		taskRegistrar.addFixedRateTask(this::generate, Duration.parse(Settings.get("taskInterval")).toMillis());
+		taskRegistrar.addFixedRateTask(this::generate, Duration.parse(Settings.get("taskInterval")));
 	}
 }

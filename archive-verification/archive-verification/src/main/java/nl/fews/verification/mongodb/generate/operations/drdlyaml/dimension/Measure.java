@@ -21,15 +21,15 @@ public final class Measure implements IExecute, IPredecessor {
 
 	@Override
 	public void execute(){
-		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
+		var acquisitionType = Settings.get("acquisitionType", String.class);
 		var name = this.getClass().getSimpleName();
 		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Dimension").append("Name", name)).getList("Template", String.class));
 		template = template.replace("{database}", Settings.get("verificationDb"));
 		template = template.replace("{study}", study);
 		
-		if(studyDocument.getString("Cube").equals("Default"))
+		if(acquisitionType.equals("mongodb"))
 			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), template);
-		else if (studyDocument.getString("Cube").equals("Csv"))
+		else if (acquisitionType.equals("csv"))
 			Mongo.insertOne("output.DrdlYaml", new Document("Study", study).append("Name", String.format("%s_%s", study, name)).append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).toList()));
 	}
 

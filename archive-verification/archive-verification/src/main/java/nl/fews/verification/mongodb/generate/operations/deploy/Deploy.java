@@ -21,8 +21,11 @@ public class Deploy {
 		Mongo.find("Study", new Document("Active", true)).forEach(study ->
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(Deploy.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));
 
-		updateConfig();
-		restartService();
+		var acquisitionType = Settings.get("acquisitionType", String.class);
+		if (acquisitionType.equals("mongodb")){
+			updateConfig();
+			restartService();
+		}
 		updateSettings();
 	}
 

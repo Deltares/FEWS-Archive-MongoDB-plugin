@@ -6,6 +6,7 @@ import nl.fews.verification.mongodb.shared.database.Mongo;
 import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 
 public final class Location implements IExecute, IPredecessor {
@@ -19,14 +20,30 @@ public final class Location implements IExecute, IPredecessor {
 
 	@Override
 	public void execute(){
-		var database = Settings.get("databaseConnectionString", String.class);
-		var table = String.format("%s_Location", study);
-		var sql = String.format("SELECT s.location, l.* FROM %s.`%s` s INNER JOIN %s.`%s` l ON l.locationId=s.locationId ORDER BY location", Settings.get("archiveDb"), table, Settings.get("verificationDb"), table);
-
-		var template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", "Location")).getList("Template", String.class));
-		template = template.replace("{database}", database);
-		template = template.replace("{sql}", sql);
-
+		var acquisitionType = Settings.get("acquisitionType", String.class);
+		var name = this.getClass().getSimpleName();
+		
+		String template;
+		
+		if (acquisitionType.equals("mongodb")){
+			var database = Settings.get("databaseConnectionString", String.class);
+			var table = String.format("%s_Location", study);
+			var sql = String.format("SELECT s.location, l.* FROM %s.`%s` s INNER JOIN %s.`%s` l ON l.locationId=s.locationId ORDER BY location", Settings.get("archiveDb"), table, Settings.get("verificationDb"), table);
+	
+			template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", "Location")).getList("Template", String.class));
+			template = template.replace("{database}", database);
+			template = template.replace("{sql}", sql);
+		}
+		else if (acquisitionType.equals("csv")){
+			var csvPath = Settings.get("csvPath", String.class);
+			template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", "Csv")).getList("Template", String.class));
+			template = template.replace("{rootPath}", Path.of(csvPath, "data").toString());
+			template = template.replace("{folderPath}", Path.of(csvPath, "data", study, name) + "\\");
+			template = template.replace("{file}", String.format("%s_%s", study, name) + ".csv");
+		}
+		else {
+			throw new IllegalArgumentException(acquisitionType);
+		}
 		Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", "Location").append("Month", "").append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).toList()));
 	}
 

@@ -26,6 +26,7 @@ public final class LeadTime implements IExecute, IPredecessor {
 	@Override
 	public void execute(){
 		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
+		var acquisitionType = Settings.get("acquisitionType", String.class);
 		var database = Settings.get("archiveDb", String.class);
 		var name = this.getClass().getSimpleName();
 		var pipeline = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Degenerate").append("Name", name)).getList("Pipeline", String.class));
@@ -61,10 +62,10 @@ public final class LeadTime implements IExecute, IPredecessor {
 		t = t.replace("{collection}", collection);
 		t = t.replace("{pipeline}",  document.getList("pipeline", Document.class).stream().map(Document::toJson).collect(Collectors.joining(",\n        ")));
 		
-		if(studyDocument.getString("Cube").equals("Default"))
-			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_LeadTime.drdl.yml", study)), t);
-		else if (studyDocument.getString("Cube").equals("Csv"))
-			Mongo.insertOne("output.DrdlYaml", new Document("Study", study).append("Name", String.format("%s_LeadTime", study)).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
+		if(acquisitionType.equals("mongodb"))
+			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
+		else if (acquisitionType.equals("csv"))
+			Mongo.insertOne("output.DrdlYaml", new Document("Study", study).append("Name", String.format("%s_%s", study, name)).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
 	}
 
 	@Override

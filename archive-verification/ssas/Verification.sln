@@ -5,8 +5,6 @@ VisualStudioVersion = 17.8.34408.163
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6870E480-7721-4708-BFB8-9AE898AA21B3}") = "Verification", "Verification\Verification.smproj", "{8CE414BB-95B2-4C99-9E03-51BA72086E22}"
 EndProject
-Project("{6870E480-7721-4708-BFB8-9AE898AA21B3}") = "VerificationCsv", "VerificationCsv\VerificationCsv.smproj", "{9587D796-DEB7-4494-AAA2-E0357616DDA9}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Development|x86 = Development|x86
@@ -15,9 +13,6 @@ Global
 		{8CE414BB-95B2-4C99-9E03-51BA72086E22}.Development|x86.ActiveCfg = Development|x86
 		{8CE414BB-95B2-4C99-9E03-51BA72086E22}.Development|x86.Build.0 = Development|x86
 		{8CE414BB-95B2-4C99-9E03-51BA72086E22}.Development|x86.Deploy.0 = Development|x86
-		{9587D796-DEB7-4494-AAA2-E0357616DDA9}.Development|x86.ActiveCfg = Development|x86
-		{9587D796-DEB7-4494-AAA2-E0357616DDA9}.Development|x86.Build.0 = Development|x86
-		{9587D796-DEB7-4494-AAA2-E0357616DDA9}.Development|x86.Deploy.0 = Development|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
