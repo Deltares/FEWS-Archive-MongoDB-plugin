@@ -1,29 +1,11 @@
-package nl.fews.verification.mongodb.generate.operations.csv.data.forecastobserved;
+package nl.fews.verification.mongodb.generate.operations.data.data.query;
 
 import org.bson.Document;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 
 public final class Common {
 
 	private Common(){}
-
-    public static  List<Document> deduplicateTime(List<Document> documents, String timeField){
-		var deduplicated = new ArrayList<Document>();
-		var seen = new HashSet<Instant>();
-		for (var r : documents) {
-			var k = r.getDate(timeField).toInstant();
-			if (!seen.contains(k)) {
-				seen.add(k);
-				deduplicated.add(r);
-			}
-		}
-		return deduplicated;
-	}
 
 	public static String getValueClass(Document _class, Double value, String location){
 		if (_class == null){

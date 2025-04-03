@@ -8,7 +8,6 @@ import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
 
 import java.nio.file.Path;
-import java.util.Arrays;
 
 public final class IsOriginalObserved implements IExecute, IPredecessor {
 
@@ -21,16 +20,12 @@ public final class IsOriginalObserved implements IExecute, IPredecessor {
 
 	@Override
 	public void execute(){
-		var acquisitionType = Settings.get("acquisitionType", String.class);
 		var name = this.getClass().getSimpleName();
 		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Dimension").append("Name", name)).getList("Template", String.class));
 		template = template.replace("{database}", Settings.get("verificationDb"));
 		template = template.replace("{study}", study);
 		
-		if(acquisitionType.equals("mongodb"))
-			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), template);
-		else if (acquisitionType.equals("csv"))
-			Mongo.insertOne("output.DrdlYaml", new Document("Study", study).append("Name", String.format("%s_%s", study, name)).append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).toList()));
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), template);
 	}
 
 	@Override

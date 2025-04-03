@@ -7,12 +7,10 @@ import nl.fews.verification.mongodb.shared.database.Mongo;
 import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
 
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.StreamSupport;
 
 public final class ForecastObserved implements IExecute, IPredecessor {
 
@@ -25,7 +23,6 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 
 	@Override
 	public void execute(){
-		var acquisitionType = Settings.get("acquisitionType", String.class);
 		var name = this.getClass().getSimpleName();
 
 		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
@@ -38,45 +35,19 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 		for(var m = startMonth; m.compareTo(endMonth) <= 0; m = m.plusMonths(1))
 			months.add(m);
 
-		String template;
+		var template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", name)).getList("Template", String.class));
+		var databaseConnectionString = Settings.get("databaseConnectionString", String.class);
+		var database = Settings.get("verificationDb", String.class);
 
-		if (acquisitionType.equals("mongodb")){
-			template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", name)).getList("Template", String.class));
-			var databaseConnectionString = Settings.get("databaseConnectionString", String.class);
-			var database = Settings.get("archiveDb", String.class);
-			var deduplicate = StreamSupport.stream(Mongo.find("Forecast", new Document("Name", new Document("$in", studyDocument.getList("Forecasts", String.class)))).spliterator(), false).anyMatch(f -> f.getList("Filters", Document.class).stream().anyMatch(t -> t.getBoolean("Deduplicate")));
-			var forecasts = deduplicate ?
-				"Table.Sort(Table.RemoveColumns(Table.Distinct(Odbc.Query(Source, \"SELECT forecastName, forecastId, location, ensemble, ensembleMember, forecastTime, forecastDate, forecastMinute, isOriginalForecast, eventTime, eventDate, eventMinute, leadTime, forecast, forecastClass, partitionTime, dispatchTime FROM {database}.`{study}_Forecasts` WHERE partitionTime >= '{month}-01' AND partitionTime < '{endMonth}-01' ORDER BY forecastId, location, forecastTime, eventTime, partitionTime DESC, dispatchTime DESC\"), {\"forecastId\", \"location\", \"forecastTime\", \"eventTime\"}), {\"partitionTime\", \"dispatchTime\"}), {\"location\", \"forecastTime\"})" :
-				"Odbc.Query(Source, \"SELECT forecastName, forecastId, location, ensemble, ensembleMember, forecastTime, forecastDate, forecastMinute, isOriginalForecast, eventTime, eventDate, eventMinute, leadTime, forecast, forecastClass FROM {database}.`{study}_Forecasts` WHERE partitionTime >= '{month}-01' AND partitionTime < '{endMonth}-01' ORDER BY location, forecastTime\")";
+		months.parallelStream().forEach(m -> {
+			var month = m.format(format);
+			var t = template.replace("{databaseConnectionString}", databaseConnectionString);
+			t = t.replace("{database}", database);
+			t = t.replace("{study}", study);
+			t = t.replace("{month}", month);
 
-			months.parallelStream().forEach(m -> {
-				var month = m.format(format);
-				var t = template.replace("{databaseConnectionString}", databaseConnectionString);
-				t = t.replace("{forecasts}", forecasts);
-				t = t.replace("{database}", database);
-				t = t.replace("{study}", study);
-				t = t.replace("{month}", month);
-				t = t.replace("{endMonth}", m.plusMonths(1).format(format));
-				t = t.replace("{observedEndMonth}", m.plusMonths(2).format(format));
-
-				Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", name).append("Month", month).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
-			});
-		}
-		else if (acquisitionType.equals("csv")){
-			var dataPath = Path.of(Settings.get("csvPath", String.class), "data").toString();
-			template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", "Csv")).getList("Template", String.class));
-			months.parallelStream().forEach(m -> {
-				var month = m.format(format);
-				var t = template.replace("{rootPath}", dataPath);
-				t = t.replace("{folderPath}", Path.of(dataPath, study, name) + "\\");
-				t = t.replace("{file}", String.format("%s_%s_%s", study, name, month) + ".csv");
-
-				Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", name).append("Month", month).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
-			});
-		}
-		else {
-			throw new IllegalArgumentException(acquisitionType);
-		}
+			Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", name).append("Month", month).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));
+		});
 	}
 
 	@Override

@@ -14,24 +14,15 @@ public class DrdlYaml {
 	private DrdlYaml(){}
 
 	public static void execute(){
-		var acquisitionType = Settings.get("acquisitionType", String.class);
+		var drdlYamlPath = Path.of(Settings.get("drdlYamlPath", String.class), "");
+		if (!Files.exists(drdlYamlPath))
+			IO.createDirectories(drdlYamlPath);
+		IO.deleteFiles(drdlYamlPath);
 
-		if (acquisitionType.equals("mongodb")) {
-			var drdlYamlPath = Path.of(Settings.get("drdlYamlPath", String.class), "");
-			if (!Files.exists(drdlYamlPath))
-				IO.createDirectories(drdlYamlPath);
-			IO.deleteFiles(drdlYamlPath);
-		}
-		else if (acquisitionType.equals("csv")) {
-			Mongo.deleteMany("output.DrdlYaml", new Document());
-		}
-		
 		Mongo.find("Study", new Document("Active", true)).forEach(study ->
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(DrdlYaml.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));
 
-		if (acquisitionType.equals("mongodb")) {
-			var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "").append("Name", "Info")).getList("Template", String.class));
-			IO.writeString(Path.of(Settings.get("drdlYamlPath"), "Info.drdl.yml"), template);
-		}
+		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "").append("Name", "Info")).getList("Template", String.class));
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), "Info.drdl.yml"), template);
 	}
 }

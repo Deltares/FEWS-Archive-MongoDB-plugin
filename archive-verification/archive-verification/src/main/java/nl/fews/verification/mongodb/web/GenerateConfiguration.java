@@ -39,7 +39,7 @@ public class GenerateConfiguration implements SchedulingConfigurer {
 			settings = null;
 		}
 
-		if ((settings == null || settings.getBoolean("execute")) && running.compareAndSet(false, true)) {
+		if ((settings == null || /*!*/settings.getBoolean("execute")) && running.compareAndSet(false, true)) {
 			try {
 				Generate.execute();
 			}

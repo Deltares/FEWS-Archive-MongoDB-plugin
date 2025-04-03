@@ -9,8 +9,6 @@ import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
 
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
 
 public final class Location implements IExecute, IPredecessor {
 
@@ -23,7 +21,6 @@ public final class Location implements IExecute, IPredecessor {
 
 	@Override
 	public void execute(){
-		var acquisitionType = Settings.get("acquisitionType", String.class);
 		var database = Settings.get("verificationDb", String.class);
 		var name = this.getClass().getSimpleName();
 		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Dimension").append("Name", name)).getList("Template", String.class));
@@ -44,10 +41,7 @@ public final class Location implements IExecute, IPredecessor {
 		template = template.replace("{study}", study);
 		template = template.replace("{columns}", String.join("", columns));
 		
-		if(acquisitionType.equals("mongodb"))
-			IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s_%s.drdl.yml", study, name, database)), template);
-		else if (acquisitionType.equals("csv"))
-			Mongo.insertOne("output.DrdlYaml", new Document("Study", study).append("Name", String.format("%s_%s_%s", study, name, database)).append("Expression", Arrays.stream(template.replace("\r", "").split("\n")).toList()));
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s_Dimension.drdl.yml", study, name)), template);
 	}
 
 	@Override

@@ -56,13 +56,31 @@ public final class MongoIndex {
 		return mongoClient;
 	}
 
-	public static void ensureCollection(String collection){
+	private static void ensureCollection(String collection){
 		MongoCollection<Document> mongoCollection = create().getDatabase(database).getCollection(collection);
 		Map<String, Object> existingIndexes = new HashMap<>();
 		mongoCollection.listIndexes().forEach(index -> existingIndexes.put(index.get("key", Document.class).keySet().stream().sorted().collect(Collectors.joining("_")), index.get("key", Document.class)));
 
 		List<IndexModel> indexes = new ArrayList<>();
 		for (Document document: getCollectionIndexes(collection)) {
+			document = Document.parse(document.toJson());
+			Object o = document.remove("unique");
+			boolean unique = o != null && (o.equals(true) || !o.equals(0));
+			String key = document.keySet().stream().sorted().collect(Collectors.joining("_"));
+			if(!existingIndexes.containsKey(key))
+				indexes.add(new IndexModel(document, new IndexOptions().unique(unique)));
+		}
+		if(!indexes.isEmpty())
+			mongoCollection.createIndexes(indexes);
+	}
+
+	public static void ensureCollection(String collection, List<Document> index){
+		MongoCollection<Document> mongoCollection = create().getDatabase(database).getCollection(collection);
+		Map<String, Object> existingIndexes = new HashMap<>();
+		mongoCollection.listIndexes().forEach(i -> existingIndexes.put(i.get("key", Document.class).keySet().stream().sorted().collect(Collectors.joining("_")), i.get("key", Document.class)));
+
+		List<IndexModel> indexes = new ArrayList<>();
+		for (Document document: index) {
 			document = Document.parse(document.toJson());
 			Object o = document.remove("unique");
 			boolean unique = o != null && (o.equals(true) || !o.equals(0));

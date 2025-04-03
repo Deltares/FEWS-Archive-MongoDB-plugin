@@ -1,4 +1,4 @@
-package nl.fews.verification.mongodb.generate.operations.drdlyaml.degenerate;
+package nl.fews.verification.mongodb.generate.operations.drdlyaml.fact;
 
 import nl.fews.verification.mongodb.generate.interfaces.IExecute;
 import nl.fews.verification.mongodb.generate.interfaces.IPredecessor;
@@ -9,26 +9,26 @@ import org.bson.Document;
 
 import java.nio.file.Path;
 
-public final class Forecast implements IExecute, IPredecessor {
+public final class ForecastObserved implements IExecute, IPredecessor {
 
 	private final String[] predecessors = new String[]{};
 	private final String study;
 
-	public Forecast(String study){
+	public ForecastObserved(String study){
 		this.study = study;
 	}
 
 	@Override
 	public void execute(){
-		var collection = String.format("verification.%s_ForecastObserved", study);
-		var database = Settings.get("archiveDb", String.class);
 		var name = this.getClass().getSimpleName();
-		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Degenerate").append("Name", name)).getList("Template", String.class));
+		var collection = String.format("verification.%s_%s", study, name);
+		var database = Settings.get("archiveDb", String.class);
+		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Fact").append("Name", name)).getList("Template", String.class));
 
 		var t = template.replace("{database}", database);
 		t = t.replace("{study}", study);
 		t = t.replace("{collection}", collection);
-		
+
 		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
 	}
 

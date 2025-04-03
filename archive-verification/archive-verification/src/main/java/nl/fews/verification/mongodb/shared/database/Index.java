@@ -62,10 +62,6 @@ public final class Index {
 					new Document(Stream.of("Study", "Name").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
 					new Document(Stream.of("Study").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
 			}),
-			Map.entry("output.DrdlYaml", new Document[]{
-					new Document(Stream.of("Study", "Name").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
-					new Document(Stream.of("Study").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-			}),
 			Map.entry("template.Cube", new Document[]{
 					new Document(Stream.of("Name").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1)
 			}),

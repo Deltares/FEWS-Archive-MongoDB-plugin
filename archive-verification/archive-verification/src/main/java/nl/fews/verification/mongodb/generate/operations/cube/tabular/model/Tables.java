@@ -5,6 +5,7 @@ import nl.fews.verification.mongodb.generate.shared.conversion.Conversion;
 import nl.fews.verification.mongodb.shared.database.Mongo;
 import org.bson.Document;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
@@ -20,7 +21,7 @@ public class Tables implements IModel {
 	@Override
 	public void generate() {
 		template.get("model", Document.class).getList("tables", Document.class).forEach(t ->
-			t.append("partitions", StreamSupport.stream(Mongo.find("output.PowerQuery", new Document("Study", study.getString("Name")).append("Name", t.getString("name"))).spliterator(), false).map(e ->
+			t.append("partitions", StreamSupport.stream(Mongo.find("output.PowerQuery", new Document("Study", study.getString("Name")).append("Name", t.getString("name"))).spliterator(), false).sorted(Comparator.comparing(e -> e.getString("Month"))).map(e ->
 				new Document("name", e.getString("Month").isEmpty() ? t.getString("name") : e.getString("Month")).append("source", new Document("type", "m").append("expression", e.getList("Expression", String.class)))).toList()));
 
 		generateSeasonalityColumns();

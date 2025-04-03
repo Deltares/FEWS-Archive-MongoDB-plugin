@@ -1,6 +1,5 @@
 package nl.fews.verification.mongodb.generate.operations.deploy;
 
-import nl.fews.verification.mongodb.shared.crypto.Crypto;
 import nl.fews.verification.mongodb.shared.database.Mongo;
 import nl.fews.verification.mongodb.generate.shared.execute.Execute;
 import nl.fews.verification.mongodb.generate.shared.graph.Graph;
@@ -21,11 +20,8 @@ public class Deploy {
 		Mongo.find("Study", new Document("Active", true)).forEach(study ->
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(Deploy.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));
 
-		var acquisitionType = Settings.get("acquisitionType", String.class);
-		if (acquisitionType.equals("mongodb")){
-			updateConfig();
-			restartService();
-		}
+		updateConfig();
+		restartService();
 		updateSettings();
 	}
 
@@ -37,14 +33,23 @@ public class Deploy {
 
 	private static void updateConfig(){
 		var drdlYamlConfig = IO.readString(Path.of(Settings.get("drdlYamlConfigPath"), ""));
-		var matcher = Pattern.compile("mongodb://.+:\\d+").matcher(Settings.get("fewsArchiveDbConnection"));
-		var drdlYamlMongoDbUri = matcher.find() ? matcher.group() : "";
-		if(!drdlYamlConfig.contains(drdlYamlMongoDbUri)) {
-			IO.writeString(Path.of(String.format("%s.bak", Settings.get("drdlYamlConfigPath", String.class)), ""), drdlYamlConfig);
-			drdlYamlConfig = drdlYamlConfig.replaceAll("mongodb://.+:\\d+", drdlYamlMongoDbUri.replace("$", "\\$"));
-			drdlYamlConfig = drdlYamlConfig.replaceAll("username:.+", String.format("username: %s", Settings.get("fewsArchiveDbUsername", String.class).replace("$", "\\$")));
-			drdlYamlConfig = drdlYamlConfig.replaceAll("password:.+", String.format("password: %s", Crypto.decrypt(Settings.get("fewsArchiveDbAesPassword", String.class)).replace("$", "\\$")));
-			IO.writeString(Path.of(Settings.get("drdlYamlConfigPath"), ""), drdlYamlConfig);
+		var matcher = Pattern.compile("mongodb://(.+):(.+)@(.+):(\\d+)/").matcher(Settings.get("mongoVerificationDbConnection"));
+		if(matcher.find()){
+			var user = matcher.group(1);
+			var pass = matcher.group(2);
+			var server = matcher.group(3);
+			var port = matcher.group(4);
+			var uri = String.format("mongodb://%s:%s/", server, port);
+			if(!drdlYamlConfig.contains(uri)) {
+				IO.writeString(Path.of(String.format("%s.bak", Settings.get("drdlYamlConfigPath", String.class)), ""), drdlYamlConfig);
+				drdlYamlConfig = drdlYamlConfig.replaceAll("mongodb://.+/", uri.replace("$", "\\$"));
+				drdlYamlConfig = drdlYamlConfig.replaceAll("username:.+", String.format("username: %s", user.replace("$", "\\$")));
+				drdlYamlConfig = drdlYamlConfig.replaceAll("password:.+", String.format("password: %s", pass.replace("$", "\\$")));
+				IO.writeString(Path.of(Settings.get("drdlYamlConfigPath"), ""), drdlYamlConfig);
+			}
+		}
+		else {
+			throw new IllegalArgumentException("mongoVerificationDbConnection should match pattern \"mongodb://(.+):(.+)@(.+):(\\d+)/\"");
 		}
 	}
 
