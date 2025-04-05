@@ -28,6 +28,7 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 
 	private final String[] predecessors = new String[]{};
 	private final String study;
+	private final boolean parallel = true;
 
 	public ForecastObserved(String study){
 		this.study = study;
@@ -45,6 +46,15 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 		var endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().plusDays(1).format(format) : studyDocument.getString("ForecastEndMonth"), format);
 		var reprocessStartMonth = reprocessCube ? startMonth : YearMonth.parse(LocalDateTime.now().minusDays(studyDocument.getInteger("ReprocessDays")).format(format), format);
 
+		MongoIndex.ensureCollection(collection, List.of(
+			new Document(Stream.of("forecastId", "forecastTime", "location", "month").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
+			new Document(Stream.of("month").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+			new Document(Stream.of("location").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+			new Document(Stream.of("forecastId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+			new Document(Stream.of("forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+			new Document(Stream.of("forecastId", "forecast", "ensemble", "ensembleMember").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
+		));
+
 		var months = new ArrayList<YearMonth>();
 		for(var m = startMonth; m.compareTo(endMonth) <= 0; m = m.plusMonths(1)) {
 			var month = Mongo.findOne(collection, new Document("month", m.format(format)));
@@ -55,45 +65,46 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 			}
 		}
 
-		var pool = Executors.newFixedThreadPool(Settings.get("threads", Integer.class)*4);
-		try {
-			List<Future<Object>> results = pool.invokeAll(months.stream().map(m -> (Callable<Object>) () -> query(m, format, collection, studyDocument)).toList());
-			for (Future<Object> x : results) {
-				x.get();
+		if (parallel) {
+			var pool = Executors.newFixedThreadPool(Settings.get("threads", Integer.class)*2);
+			try {
+				List<Future<Object>> results = pool.invokeAll(months.stream().map(m -> (Callable<Object>) () -> query(m, format, collection, studyDocument)).toList());
+				for (Future<Object> x : results) {
+					x.get();
+				}
+			}
+			catch (InterruptedException | ExecutionException ex) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException(ex);
+			}
+			finally {
+				pool.shutdown();
 			}
 		}
-		catch (InterruptedException | ExecutionException ex) {
-			Thread.currentThread().interrupt();
-			throw new RuntimeException(ex);
-		}
-		finally {
-			pool.shutdown();
+		else {
+			for (var m: months){
+				query(m, format, collection, studyDocument);
+			}
 		}
 	}
 
-	private Object query(YearMonth month, DateTimeFormatter format, String collection, Document studyDocument){
+	private Object query(YearMonth m, DateTimeFormatter format, String collection, Document studyDocument){
 		var lastModified = new Date();
-		var tempMonth = String.format("%s_temp", month.format(format));
-
-		MongoIndex.ensureCollection(collection, List.of(
-			new Document(Stream.of("forecastId", "forecastTime", "location", "month").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
-			new Document(Stream.of("month").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-			new Document(Stream.of("location").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-			new Document(Stream.of("forecastId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-			new Document(Stream.of("forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-			new Document(Stream.of("forecastId", "forecast", "ensemble", "ensembleMember").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-		));
+		var month = m.format(format);
+		var tempMonth = String.format("%s_temp", month);
 
 		Mongo.deleteMany(collection, new Document("month", tempMonth));
 
-		for (var locationId: getForecastLocationIds(studyDocument, month)) {
-			var forecasts = getForecastData(studyDocument, month, locationId);
-			var observedLookup = getObservedData(studyDocument, month, locationId).stream().collect(Collectors.toMap(t -> t.getDate("eventTime"), t -> t, (a, b) -> a));
+		for (var locationId: getForecastLocationIds(studyDocument, m)) {
+			var forecasts = getForecastData(studyDocument, m, locationId);
+			var observedLookup = getObservedData(studyDocument, m, locationId).stream().collect(Collectors.toMap(t -> t.getDate("eventTime"), t -> t, (a, b) -> a));
 			insertForecastObserved(forecasts, observedLookup, tempMonth, lastModified, collection);
-			insertNormalForecastObserved(forecasts, observedLookup, studyDocument, month, locationId, tempMonth, lastModified, collection);
+			var normalForecasts = collapseForecastTime(forecasts);
+			forecasts.clear();
+			insertNormalForecastObserved(normalForecasts, observedLookup, studyDocument, m, locationId, tempMonth, lastModified, collection);
 		}
-		Mongo.deleteMany(collection, new Document("month", month.format(format)));
-		Mongo.updateMany(collection, new Document("month", tempMonth), new Document("$set", new Document("month", month.format(format))));
+		Mongo.deleteMany(collection, new Document("month", month));
+		Mongo.updateMany(collection, new Document("month", tempMonth), new Document("$set", new Document("month", month)));
 		return null;
 	}
 
@@ -118,12 +129,11 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 			}
 		}
 		if (!forecastObserved.isEmpty())
-			Mongo.insertMany(collection, forecasts);
+			Mongo.insertMany(collection, forecastObserved);
 	}
 
-	private static void insertNormalForecastObserved(List<Document> forecasts, Map<Date, Document> observedLookup, Document studyDocument, YearMonth month, String locationId, String tempMonth, Date lastModified, String collection){
+	private static void insertNormalForecastObserved(List<Document> normalForecasts, Map<Date, Document> observedLookup, Document studyDocument, YearMonth month, String locationId, String tempMonth, Date lastModified, String collection){
 		var normalLookup = getNormalData(studyDocument, month, locationId).stream().collect(Collectors.toMap(t -> t.getDate("forecastTime"), t -> t, (a, b) -> a));
-		var normalForecasts = collapseForecastTime(forecasts);
 		var forecastObserved = new ArrayList<Document>();
 		for (var forecast: normalForecasts){
 			forecast.remove("_id");
@@ -149,7 +159,7 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 			}
 		}
 		if (!forecastObserved.isEmpty())
-			Mongo.insertMany(collection, forecasts);
+			Mongo.insertMany(collection, forecastObserved);
 	}
 
 	private static List<String> getForecastLocationIds(Document studyDocument, YearMonth month){
@@ -157,10 +167,11 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 		var startMonth = Conversion.getYearMonthDate(month);
 		var endMonth = Conversion.getYearMonthDate(month.plusMonths(1));
 
-		return StreamSupport.stream(Mongo.find("Forecast", new Document("Name", new Document("$in", studyDocument.getList("Forecasts", String.class)))).spliterator(), false).flatMap(forecast ->
+		var locations = StreamSupport.stream(Mongo.find("Forecast", new Document("Name", new Document("$in", studyDocument.getList("Forecasts", String.class)))).spliterator(), false).flatMap(forecast ->
 			forecast.getList("Filters", Document.class).stream().flatMap(filter ->
 				StreamSupport.stream(Mongo.distinct(Settings.get("archiveDb", String.class), forecast.getString("Collection"), "locationId",
 					filter.get("Filter", Document.class).append(forecastTime, new Document("$gte", startMonth).append("$lt", endMonth)), String.class).spliterator(), false))).toList();
+		return new HashSet<>(locations).stream().sorted().toList();
 	}
 
 	private static List<Document> collapseForecastTime(List<Document> forecasts){

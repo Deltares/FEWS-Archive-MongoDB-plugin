@@ -27,6 +27,7 @@ public final class Forecast {
 		var eventTime = Conversion.getEventTime(studyDocument.getString("Time"));
 		var eventValue = Conversion.getEventValue(studyDocument.getString("Value"));
 		var forecastClass = studyDocument.getString("Class").isEmpty() ? null : new Document(Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))).getList("Locations", Document.class).stream().collect(Collectors.toMap(c -> c.getString("Location"), c -> c.getList("Breakpoint", Document.class))));
+		var maxLeadTimeMinutes = studyDocument.getInteger("MaxLeadTimeMinutes");
 		var startMonth = Conversion.getYearMonthDate(month);
 		var endMonth = Conversion.getYearMonthDate(month.plusMonths(1));
 		var db = Settings.get("archiveDb", String.class);
@@ -70,7 +71,7 @@ public final class Forecast {
 					documents.add(r);
 				}
 				documents = documents.stream().collect(Collectors.toMap(d -> String.format("%s_%s", d.getString("forecastId"), d.getDate("forecastTime")), d -> d, (a, b) -> b)).entrySet().stream().sorted(Map.Entry.comparingByKey()).map(Map.Entry::getValue).toList();
-				results.addAll(getForecastTimeseries(fFillForecast(documents), forecastClass));
+				results.addAll(getForecastTimeseries(fFillForecast(documents, month), forecastClass, maxLeadTimeMinutes));
 			});
 		});
 		for (var r: results){
@@ -108,22 +109,26 @@ public final class Forecast {
 		return timeseries;
 	}
 
-	private static List<Document> getForecastTimeseries(List<Document> forecasts, Document forecastClass){
+	private static List<Document> getForecastTimeseries(List<Document> forecasts, Document forecastClass, Integer maxLeadTimeMinutes){
 		for (var forecast: forecasts) {
 			for (var timeseries: forecast.getList("timeseries", Document.class)) {
+				var leadTime = (timeseries.getDate("eventTime").getTime() - forecast.getDate("forecastTime").getTime()) / (60 * 1000);
+				if (maxLeadTimeMinutes > 0 && leadTime > maxLeadTimeMinutes)
+					continue;
 				var i = timeseries.getDate("eventTime").toInstant();
 				timeseries
 					.append("eventDate", Date.from(i.atZone(ZoneOffset.UTC).toLocalDate().atStartOfDay(ZoneOffset.UTC).toInstant()))
 					.append("eventMinute", i.atZone(ZoneOffset.UTC).getHour() * 60 + i.atZone(ZoneOffset.UTC).getMinute())
-					.append("leadTime", (timeseries.getDate("eventTime").getTime() - forecast.getDate("forecastTime").getTime()) / (60 * 1000))
+					.append("leadTime", leadTime)
 					.append("forecastClass", getValueClass(forecastClass, timeseries.getDouble("forecast"), forecast.getString("location")));
 			}
 		}
 		return forecasts;
 	}
 	
-	private static List<Document> fFillForecast(List<Document> forecasts) {
+	private static List<Document> fFillForecast(List<Document> forecasts, YearMonth month) {
 		var filled = new ArrayList<Document>();
+		var nextMonth = Conversion.getYearMonthDate(month.plusMonths(1));
 		Document curr = null;
 		for (var partition: forecasts.stream().collect(Collectors.groupingBy(d -> d.getString("forecastId"))).entrySet()) {
 			for (var next : partition.getValue().stream().sorted(Comparator.comparing(d -> d.getDate("forecastTime").getTime())).toList()) {
@@ -131,9 +136,12 @@ public final class Forecast {
 					filled.add(curr);
 					var m = curr.getInteger("timeStepMinutes");
 					for (
-							Instant i = curr.getDate("forecastTime").toInstant().plusSeconds(m * 60L);
-							i.compareTo(next.getDate("forecastTime").toInstant()) < 0 && i.compareTo(curr.getDate("forecastTime").toInstant().plus(24, ChronoUnit.HOURS)) <= 0;
-							i = i.plusSeconds(m * 60L)) {
+						Instant i = curr.getDate("forecastTime").toInstant().plusSeconds(m * 60L);
+						i.compareTo(next.getDate("forecastTime").toInstant()) < 0 && i.compareTo(curr.getDate("forecastTime").toInstant().plus(24, ChronoUnit.HOURS)) <= 0;
+						i = i.plusSeconds(m * 60L)
+					) {
+						if (Date.from(i).compareTo(nextMonth) >= 0)
+							continue;
 						var copy = Document.parse(curr.toJson());
 						copy.append("forecastTime", Date.from(i));
 						copy.append("forecastDate", Date.from(i.atZone(ZoneOffset.UTC).toLocalDate().atStartOfDay(ZoneOffset.UTC).toInstant()));

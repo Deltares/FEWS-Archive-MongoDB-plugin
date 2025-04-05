@@ -14,6 +14,7 @@ type Study {
 	Cube: String!
 	Active: Boolean!
 	ReprocessDays: Int!
+	MaxLeadTimeMinutes: Int!
 }
 extend type Query {
 	studyById(_id: ID!): Study
@@ -21,7 +22,7 @@ extend type Query {
 	studyN: [Study]
 }
 extend type Mutation {
-	createStudy(name: String!, observed: String!, forecasts: [String!]!, seasonalities: [String!]!, _class: String!, locationAttributes: String!, forecastStartMonth: String!, forecastEndMonth: String!, time: String!, value: String!, normal: String!, cube: String!, active: Boolean!, reprocessDays: Int!): ID
-	updateStudy(_id: ID!, name: String!, observed: String!, forecasts: [String!]!, seasonalities: [String!]!, _class: String!, locationAttributes: String!, forecastStartMonth: String!, forecastEndMonth: String!, time: String!, value: String!, normal: String!, cube: String!, active: Boolean!, reprocessDays: Int!): Int
+	createStudy(name: String!, observed: String!, forecasts: [String!]!, seasonalities: [String!]!, _class: String!, locationAttributes: String!, forecastStartMonth: String!, forecastEndMonth: String!, time: String!, value: String!, normal: String!, cube: String!, active: Boolean!, reprocessDays: Int!, maxLeadTimeMinutes: Int!): ID
+	updateStudy(_id: ID!, name: String!, observed: String!, forecasts: [String!]!, seasonalities: [String!]!, _class: String!, locationAttributes: String!, forecastStartMonth: String!, forecastEndMonth: String!, time: String!, value: String!, normal: String!, cube: String!, active: Boolean!, reprocessDays: Int!, maxLeadTimeMinutes: Int!): Int
 	deleteStudy(_id: ID!): Int
 }

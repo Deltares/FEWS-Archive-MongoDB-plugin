@@ -22,6 +22,7 @@
     drdlYamlConfigPath: String!
     fewsArchiveDbConnection: String!
 	drdlYamlServiceRestartSuccess: String!
+	dataStaleAfterSeconds: Int!
 }
 extend type Query {
 	configurationSettingsById(_id: ID!): ConfigurationSettings
@@ -29,7 +30,7 @@ extend type Query {
 	configurationSettingsN: [ConfigurationSettings]
 }
 extend type Mutation {
-	createConfigurationSettings(toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, fewsRestApiUri: String!, environment: String!, threads: Int!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: Boolean!, reprocessCubes: String!, taskInterval: String!, fewsArchiveDbAesPassword: String!, fewsArchiveDbUsername: String!, parallelPartitions: Int!, drdlYamlConfigPath: String!, fewsArchiveDbConnection: String!, drdlYamlServiceRestartSuccess: String!): ID
-	updateConfigurationSettings(_id: ID!, toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, fewsRestApiUri: String!, environment: String!, threads: Int!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: Boolean!, reprocessCubes: String!, taskInterval: String!, fewsArchiveDbAesPassword: String!, fewsArchiveDbUsername: String!, parallelPartitions: Int!, drdlYamlConfigPath: String!, fewsArchiveDbConnection: String!, drdlYamlServiceRestartSuccess: String!): Int
+	createConfigurationSettings(toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, fewsRestApiUri: String!, environment: String!, threads: Int!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: Boolean!, reprocessCubes: String!, taskInterval: String!, fewsArchiveDbAesPassword: String!, fewsArchiveDbUsername: String!, parallelPartitions: Int!, drdlYamlConfigPath: String!, fewsArchiveDbConnection: String!, drdlYamlServiceRestartSuccess: String!, dataStaleAfterSeconds: Int!): ID
+	updateConfigurationSettings(_id: ID!, toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, fewsRestApiUri: String!, environment: String!, threads: Int!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: Boolean!, reprocessCubes: String!, taskInterval: String!, fewsArchiveDbAesPassword: String!, fewsArchiveDbUsername: String!, parallelPartitions: Int!, drdlYamlConfigPath: String!, fewsArchiveDbConnection: String!, drdlYamlServiceRestartSuccess: String!, dataStaleAfterSeconds: Int!): Int
 	deleteConfigurationSettings(_id: ID!): Int
 }
