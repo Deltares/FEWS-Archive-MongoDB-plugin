@@ -20,16 +20,20 @@ public final class LeadTime implements IExecute, IPredecessor {
 
 	@Override
 	public void execute(){
-		var collection = String.format("verification.%s_ForecastObserved", study);
-		var database = Settings.get("archiveDb", String.class);
 		var name = this.getClass().getSimpleName();
+		var database = Settings.get("verificationDb", String.class);
+		var collection = String.format("verification.%s_ForecastObserved", study);
 		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Degenerate").append("Name", name)).getList("Template", String.class));
 
-		var t = template.replace("{database}", database);
-		t = t.replace("{study}", study);
-		t = t.replace("{collection}", collection);
+		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
+		var maxLeadTimeMinutes = studyDocument.getInteger("MaxLeadTimeMinutes").toString();
+
+		template = template.replace("{database}", database);
+		template = template.replace("{study}", study);
+		template = template.replace("{collection}", collection);
+		template = template.replace("{maxLeadTimeMinutes}", maxLeadTimeMinutes);
 		
-		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), template);
 	}
 
 	@Override

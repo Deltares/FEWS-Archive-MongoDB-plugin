@@ -21,8 +21,8 @@ public final class Location implements IExecute, IPredecessor {
 
 	@Override
 	public void execute(){
-		var database = Settings.get("verificationDb", String.class);
 		var name = this.getClass().getSimpleName();
+		var database = Settings.get("verificationDb", String.class);
 		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Dimension").append("Name", name)).getList("Template", String.class));
 
 		var studyDocument = Mongo.findOne("Study", new Document("Name", study));

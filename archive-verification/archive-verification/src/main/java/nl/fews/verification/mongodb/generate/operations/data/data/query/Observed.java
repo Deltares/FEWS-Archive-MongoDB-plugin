@@ -7,46 +7,50 @@ import org.bson.Document;
 
 import java.time.Instant;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static nl.fews.verification.mongodb.generate.operations.data.data.query.Common.getLocationIdQuery;
 
 public class Observed {
 
 	private Observed(){}
 
-    public static List<Document> getObservedData(Document studyDocument, YearMonth month, String locationId){
-		Document filter = Mongo.findOne("Observed", new Document("Name", studyDocument.getString("Observed")));
-		var collection = filter.getString("Collection");
-		var startTime = Conversion.getStartTime(studyDocument.getString("Time"));
-		var endTime = Conversion.getEndTime(studyDocument.getString("Time"));
-		var eventTime = Conversion.getEventTime(studyDocument.getString("Time"));
-		var eventValue = Conversion.getEventValue(studyDocument.getString("Value"));
-		var observedClass = studyDocument.getString("Class").isEmpty() ? null : new Document(Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))).getList("Locations", Document.class).stream().collect(Collectors.toMap(c -> c.getString("Location"), c -> c.getList("Breakpoint", Document.class))));
+    public static List<Document> getData(Document studyDocument, YearMonth month, String mappedLocationId){
+		Document observed = Mongo.findOne("Observed", new Document("Name", studyDocument.getString("Observed")));
+		var collection = observed.getString("Collection");
+		var startTimeKey = Conversion.getStartTime(studyDocument.getString("Time"));
+		var endTimeKey = Conversion.getEndTime(studyDocument.getString("Time"));
+		var eventTimeKey = Conversion.getEventTime(studyDocument.getString("Time"));
+		var eventValueKey = Conversion.getEventValue(studyDocument.getString("Value"));
+		var _class = studyDocument.getString("Class").isEmpty() ? null : new Document(Mongo.findOne("Class", new Document("Name", studyDocument.getString("Class"))).getList("Locations", Document.class).stream().collect(Collectors.toMap(c -> c.getString("Location"), c -> c.getList("Breakpoint", Document.class))));
 		var startMonth = Conversion.getYearMonthDate(month);
 		var endMonth = Conversion.getYearMonthDate(month.plusMonths(2));
 		var db = Settings.get("archiveDb", String.class);
 
 		var results = new ArrayList<Document>();
-		filter.getList("Filters", Document.class).forEach(f -> {
-			var locationMap = f.get("LocationMap", Document.class);
-			var documents = new ArrayList<Document>();
+		for (var filter: observed.getList("Filters", Document.class)) {
+			var match = filter.get("Filter", Document.class);
+			var locationMap = filter.get("LocationMap", Document.class);
+			var locationIdQuery = getLocationIdQuery(filter, locationMap, mappedLocationId);
+			if (locationIdQuery == null)
+				continue;
 			var pipeline = List.of(
-				new Document("$match", f.get("Filter", Document.class).append("locationId", locationId).append(endTime, new Document("$gte", startMonth)).append(startTime, new Document("$lt", endMonth))),
-				new Document("$project", new Document("_id", 0).append(startTime, 1).append("timeStepMinutes", "$metaData.timeStepMinutes").append(String.format("timeseries.%s", eventTime), 1).append(String.format("timeseries.%s", eventValue), 1)),
-				new Document("$sort", new Document(startTime, 1))
+				new Document("$match", match.append("locationId", locationIdQuery).append(endTimeKey, new Document("$gte", startMonth)).append(startTimeKey, new Document("$lt", endMonth))),
+				new Document("$project", new Document("_id", 0).append("locationId", 1).append(startTimeKey, 1).append("timeStepMinutes", "$metaData.timeStepMinutes").append(String.format("timeseries.%s", eventTimeKey), 1).append(String.format("timeseries.%s", eventValueKey), 1)),
+				new Document("$sort", new Document(startTimeKey, 1))
 			);
+			var documents = new ArrayList<Document>();
 			Mongo.aggregate(db, collection, pipeline).forEach(r -> {
-				r.append("location", locationMap.get(locationId, locationId)).append("timeseries", fFillObservedTimeseries(r, eventTime, eventValue));
+				r.append("location", locationMap.get(r.getString("locationId"), r.getString("locationId"))).append("timeseries", fFillTimeseries(r, eventTimeKey, eventValueKey));
 				documents.add(r);
 			});
-			results.addAll(unwindObservedTimeseries(documents, observedClass));
-		});
+			results.addAll(unwindTimeseries(documents, _class));
+		}
 		return results;
 	}
 
-	static List<Document> fFillObservedTimeseries(Document observed, String eventTime, String eventValue){
+	static List<Document> fFillTimeseries(Document observed, String eventTime, String eventValue){
 		var timeseries = new ArrayList<Document>();
 		var m = observed.getInteger("timeStepMinutes");
 		var v = Double.NaN;
@@ -65,23 +69,23 @@ public class Observed {
 			}
 			l += m;
 			if (l <= 24 * 60)
-				timeseries.add(new Document("eventTime", Date.from(d)).append("observed", v).append("isOriginalObserved", l == m));
+				timeseries.add(new Document("et", Date.from(d)).append("ov", v).append("oo", l == m));
 			else
-				timeseries.add(new Document("eventTime", Date.from(d)).append("observed", null).append("isOriginalObserved", true));
+				timeseries.add(new Document("et", Date.from(d)).append("ov", null).append("oo", true));
 		}
 		return timeseries;
 	}
 
-	private static List<Document> unwindObservedTimeseries(List<Document> observed, Document observedClass){
+	private static List<Document> unwindTimeseries(List<Document> observeds, Document observedClass){
 		var unwound = new ArrayList<Document>();
-		for (var d: observed) {
-			for (var t: d.getList("timeseries", Document.class)) {
+		for (var observed: observeds) {
+			for (var timeseries: observed.getList("timeseries", Document.class)) {
 				unwound.add(
 					new Document()
-					.append("isOriginalObserved", t.getBoolean("isOriginalObserved"))
-					.append("eventTime", t.getDate("eventTime"))
-					.append("observed", t.getDouble("observed"))
-					.append("observedClass", Common.getValueClass(observedClass, t.getDouble("observed"), d.getString("location"))));
+					.append("oo", timeseries.getBoolean("oo"))
+					.append("et", timeseries.getDate("et"))
+					.append("ov", timeseries.getDouble("ov"))
+					.append("oc", Common.getValueClass(observedClass, timeseries.getDouble("ov"), observed.getString("location"))));
 			}
 		}
 		return unwound;

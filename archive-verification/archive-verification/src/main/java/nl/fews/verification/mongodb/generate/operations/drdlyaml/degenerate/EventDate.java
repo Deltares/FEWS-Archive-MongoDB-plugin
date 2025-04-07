@@ -22,21 +22,22 @@ public final class EventDate implements IExecute, IPredecessor {
 
 	@Override
 	public void execute(){
-		var collection = String.format("verification.%s_ForecastObserved", study);
-		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
-		var database = Settings.get("archiveDb", String.class);
 		var name = this.getClass().getSimpleName();
-		var seasonalityColumns = Conversion.getSeasonalityColumns(studyDocument.getList("Seasonalities", String.class));
+		var database = Settings.get("verificationDb", String.class);
+		var collection = String.format("verification.%s_ForecastObserved", study);
 		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Degenerate").append("Name", name)).getList("Template", String.class));
+
+		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
+		var seasonalityColumns = Conversion.getSeasonalityColumns(studyDocument.getList("Seasonalities", String.class));
 		var seasonalities = Conversion.getSeasonalities(StreamSupport.stream(Mongo.find("Seasonality", new Document("Name", new Document("$in", studyDocument.getList("Seasonalities", String.class)))).spliterator(), false).toList());
 
-		var t = template.replace("{database}", database);
-		t = t.replace("{study}", study);
-		t = t.replace("{collection}", collection);
-		t = t.replace("{seasonalities}", seasonalities);
-		t = t.replace("{seasonalityColumns}", seasonalityColumns);
+		template = template.replace("{database}", database);
+		template = template.replace("{study}", study);
+		template = template.replace("{collection}", collection);
+		template = template.replace("{seasonalities}", seasonalities);
+		template = template.replace("{seasonalityColumns}", seasonalityColumns);
 
-		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), t);
+		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), template);
 	}
 
 	@Override

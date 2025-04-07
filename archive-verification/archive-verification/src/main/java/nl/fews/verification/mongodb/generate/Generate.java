@@ -27,7 +27,7 @@ public class Generate {
 			PowerQuery.execute();
 			Cube.execute();
 			Data.execute();
-			Deploy.execute();
+			//Deploy.execute();
 		}
 		catch (Exception ex) {
 			logger.error(ex.getMessage(), ex);

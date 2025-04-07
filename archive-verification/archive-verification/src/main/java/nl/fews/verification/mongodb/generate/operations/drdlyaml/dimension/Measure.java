@@ -22,8 +22,10 @@ public final class Measure implements IExecute, IPredecessor {
 	@Override
 	public void execute(){
 		var name = this.getClass().getSimpleName();
+		var database = Settings.get("verificationDb", String.class);
 		var template = String.join("\n", Mongo.findOne("template.DrdlYaml", new Document("Type", "Dimension").append("Name", name)).getList("Template", String.class));
-		template = template.replace("{database}", Settings.get("verificationDb"));
+
+		template = template.replace("{database}", database);
 		template = template.replace("{study}", study);
 		
 		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), template);
