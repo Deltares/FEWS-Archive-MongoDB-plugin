@@ -6,7 +6,6 @@
 	drdlYamlPath: String!
 	fewsRestApiUri: String!
 	environment: String!
-	threads: String!
 	cubeAdmins: String!
 	cubeUsers: String!
 	bimPath: String!
@@ -19,19 +18,90 @@
 	taskInterval: String!
 	fewsArchiveDbAesPassword: String!
 	fewsArchiveDbUsername: String!
-	parallelPartitions: String!
 	drdlYamlConfigPath: String!
 	fewsArchiveDbConnection: String!
 	drdlYamlServiceRestartSuccess: String!
 	dataStaleAfterSeconds: String!
+    cubeParallelPartitions: String!
+	cubeThreads: String!
+	dataParallelPartitions: String!
+	dataThreads: String!
+	fewsVerificationDbAesPassword: String!
+	fewsVerificationDbConnection: String!
+	fewsVerificationDbUsername: String!
+	parallel: String!
+	processData: String!
 }
 extend type Query {
 	configurationDescriptionById(_id: ID!): ConfigurationDescription
-	configurationDescriptionByName(name: String!): ConfigurationDescription
+	configurationDescriptionByEnvironment(name: String!): ConfigurationDescription
 	configurationDescriptionN: [ConfigurationDescription]
 }
 extend type Mutation {
-	createConfigurationDescription(name: String!, toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, fewsRestApiUri: String!, environment: String!, threads: String!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: String!, reprocessCubes: String!, taskInterval: String!, fewsArchiveDbAesPassword: String!, fewsArchiveDbUsername: String!, parallelPartitions: String!, drdlYamlConfigPath: String!, fewsArchiveDbConnection: String!, drdlYamlServiceRestartSuccess: String!, dataStaleAfterSeconds: String!): ID
-	updateConfigurationDescription(_id: ID!, name: String!, toEmailAddresses: String!, fromEmailAddress: String!, drdlYamlPath: String!, fewsRestApiUri: String!, environment: String!, threads: String!, cubeAdmins: String!, cubeUsers: String!, bimPath: String!, databaseConnectionString: String!, smtpServer: String!, tabularConnectionString: String!, drdlYamlServiceRestart: String!, execute: String!, reprocessCubes: String!, taskInterval: String!, fewsArchiveDbAesPassword: String!, fewsArchiveDbUsername: String!, parallelPartitions: String!, drdlYamlConfigPath: String!, fewsArchiveDbConnection: String!, drdlYamlServiceRestartSuccess: String!, dataStaleAfterSeconds: String!): Int
+	createConfigurationDescription(
+		name: String!,
+		toEmailAddresses: String!,
+		fromEmailAddress: String!,
+		drdlYamlPath: String!,
+		fewsRestApiUri: String!,
+		environment: String!,
+		cubeAdmins: String!,
+		cubeUsers: String!,
+		bimPath: String!,
+		databaseConnectionString: String!,
+		smtpServer: String!,
+		tabularConnectionString: String!,
+		drdlYamlServiceRestart: String!,
+		execute: String!,
+		reprocessCubes: String!,
+		taskInterval: String!,
+		fewsArchiveDbAesPassword: String!,
+		fewsArchiveDbUsername: String!,
+		drdlYamlConfigPath: String!,
+		fewsArchiveDbConnection: String!,
+		drdlYamlServiceRestartSuccess: String!,
+		dataStaleAfterSeconds: String!,
+		cubeParallelPartitions: String!,
+		cubeThreads: String!,
+		dataParallelPartitions: String!,
+		dataThreads: String!,
+		fewsVerificationDbAesPassword: String!,
+		fewsVerificationDbConnection: String!,
+		fewsVerificationDbUsername: String!,
+		parallel: String!,
+		processData: String!): ID
+	updateConfigurationDescription(
+		_id: ID!,
+		name: String!,
+		toEmailAddresses: String!,
+		fromEmailAddress: String!,
+		drdlYamlPath: String!,
+		fewsRestApiUri: String!,
+		environment: String!,
+		cubeAdmins: String!,
+		cubeUsers: String!,
+		bimPath: String!,
+		databaseConnectionString: String!,
+		smtpServer: String!,
+		tabularConnectionString: String!,
+		drdlYamlServiceRestart: String!,
+		execute: String!,
+		reprocessCubes: String!,
+		taskInterval: String!,
+		fewsArchiveDbAesPassword: String!,
+		fewsArchiveDbUsername: String!,
+		drdlYamlConfigPath: String!,
+		fewsArchiveDbConnection: String!,
+		drdlYamlServiceRestartSuccess: String!,
+		dataStaleAfterSeconds: String!,
+		cubeParallelPartitions: String!,
+		cubeThreads: String!,
+		dataParallelPartitions: String!,
+		dataThreads: String!,
+		fewsVerificationDbAesPassword: String!,
+		fewsVerificationDbConnection: String!,
+		fewsVerificationDbUsername: String!,
+		parallel: String!,
+		processData: String!): Int
 	deleteConfigurationDescription(_id: ID!): Int
 }

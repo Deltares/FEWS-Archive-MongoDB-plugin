@@ -21,7 +21,7 @@ public class Deploy {
 			Graph.getDirectedAcyclicGraphGroups(Graph.getDirectedAcyclicGraph(Deploy.class, new Object[]{study.getString("Name")})).forEach(Execute::execute));
 
 		updateConfig();
-		restartService();
+		//restartService();
 		updateSettings();
 	}
 

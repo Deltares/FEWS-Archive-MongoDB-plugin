@@ -27,7 +27,6 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 
 	private final String[] predecessors = new String[]{};
 	private final String study;
-	private final boolean parallel = true;
 
 	public ForecastObserved(String study){
 		this.study = study;
@@ -37,35 +36,14 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 	public void execute(){
 		var name = this.getClass().getSimpleName();
 		var collection = String.format("verification.%s_%s", study, name);
-		var reprocessCube = Arrays.stream(Settings.get("reprocessCubes", String.class).split(",")).map(String::trim).toList().contains(String.format("Verification_%s", study));
 		var studyDocument = Mongo.findOne("Study", new Document("Name", study));
-		var forecastStartMonth = studyDocument.getString("ForecastStartMonth");
 		var format = Conversion.getMonthDateTimeFormatter();
-		var startMonth = YearMonth.parse(forecastStartMonth);
-		var endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().plusDays(1).format(format) : studyDocument.getString("ForecastEndMonth"), format);
-		var reprocessStartMonth = reprocessCube ? startMonth : YearMonth.parse(LocalDateTime.now().minusDays(studyDocument.getInteger("ReprocessDays")).format(format), format);
-
-		MongoIndex.ensureCollection(collection, List.of(
-			new Document(Stream.of("forecastId", "forecastTime", "location", "month").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
-			new Document(Stream.of("month").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-			new Document(Stream.of("location").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-			new Document(Stream.of("location", "locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-			new Document(Stream.of("forecastId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
-			new Document(Stream.of("forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
-		));
-
-		var months = new ArrayList<YearMonth>();
-		for(var m = startMonth; m.compareTo(endMonth) <= 0; m = m.plusMonths(1)) {
-			var month = Mongo.findOne(collection, new Document("month", m.format(format)));
-			var lastModified = month != null ? month.getDate("lastModified").toInstant() : null;
-			var dataStaleAfterSeconds = Settings.get("dataStaleAfterSeconds", Integer.class);
-			if (month == null || lastModified.compareTo(new Date().toInstant().minusSeconds(dataStaleAfterSeconds)) < 0 && m.compareTo(reprocessStartMonth) >= 0) {
-				months.add(m);
-			}
-		}
+		var months = getMonthsToProcess(studyDocument, study, collection);
+		boolean parallel = Settings.get("parallel", Boolean.class);
+		ensureCollection(collection);
 
 		if (parallel) {
-			var pool = Executors.newFixedThreadPool(Settings.get("threads", Integer.class)*4);
+			var pool = Executors.newFixedThreadPool(Settings.get("dataParallelPartitions", Integer.class));
 			try {
 				List<Future<Object>> results = pool.invokeAll(months.stream().map(m -> (Callable<Object>) () -> query(m, format, collection, studyDocument)).toList());
 				for (Future<Object> x : results) {
@@ -180,6 +158,36 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 			f.get(0).append("timeseries", f.stream().flatMap((Document s) ->
 				s.getList("timeseries", Document.class).stream()).collect(Collectors.toMap((Document t) ->
 					t.getDate("et"), t -> t, (a, b) -> a)).values().stream().sorted(Comparator.comparing(s -> s.getDate("et"))).toList())).sorted(Comparator.comparing(s -> s.getDate("forecastTime"))).toList();
+	}
+
+	private static void ensureCollection(String collection){
+		MongoIndex.ensureCollection(collection, List.of(
+			new Document(Stream.of("forecastId", "forecastTime", "location", "month").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))).append("unique", 1),
+			new Document(Stream.of("month").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+			new Document(Stream.of("location").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+			new Document(Stream.of("location", "locationId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+			new Document(Stream.of("forecastId").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new))),
+			new Document(Stream.of("forecastTime").collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)))
+		));
+	}
+
+	private static List<YearMonth> getMonthsToProcess(Document studyDocument, String study, String collection){
+		var format = Conversion.getMonthDateTimeFormatter();
+		var forecastStartMonth = studyDocument.getString("ForecastStartMonth");
+		var reprocessCube = Arrays.stream(Settings.get("reprocessCubes", String.class).split(",")).map(String::trim).toList().contains(String.format("Verification_%s", study));
+		var startMonth = YearMonth.parse(forecastStartMonth);
+		var endMonth = YearMonth.parse(studyDocument.getString("ForecastEndMonth").isEmpty() ? LocalDateTime.now().plusDays(1).format(format) : studyDocument.getString("ForecastEndMonth"), format);
+		var reprocessStartMonth = reprocessCube ? startMonth : YearMonth.parse(LocalDateTime.now().minusDays(studyDocument.getInteger("ReprocessDays")).format(format), format);
+		var months = new ArrayList<YearMonth>();
+		for(var m = startMonth; m.compareTo(endMonth) <= 0; m = m.plusMonths(1)) {
+			var month = Mongo.findOne(collection, new Document("month", m.format(format)));
+			var lastModified = month != null ? month.getDate("lastModified").toInstant() : null;
+			var dataStaleAfterSeconds = Settings.get("dataStaleAfterSeconds", Integer.class);
+			if (month == null || lastModified.compareTo(new Date().toInstant().minusSeconds(dataStaleAfterSeconds)) < 0 && m.compareTo(reprocessStartMonth) >= 0) {
+				months.add(m);
+			}
+		}
+		return months;
 	}
 
 	@Override

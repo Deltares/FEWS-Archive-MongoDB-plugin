@@ -29,10 +29,15 @@ public final class Settings {
 
 	static{
 		try {
-			String mongoVerificationDbConnection = getMongoDbConnection(System.getenv("FEWS_VERIFICATION_DB_CONNECTION"), System.getenv("FEWS_VERIFICATION_DB_USERNAME"), System.getenv("FEWS_VERIFICATION_DB_AES_PASSWORD"));
+			String mongoSettingsDbConnection = getMongoDbConnection(System.getenv("FEWS_VERIFICATION_DB_CONNECTION"), System.getenv("FEWS_VERIFICATION_DB_USERNAME"), System.getenv("FEWS_VERIFICATION_DB_AES_PASSWORD"));
+			Settings.put("mongoSettingsDbConnection", mongoSettingsDbConnection);
+			Settings.put("settingsDb", new ConnectionString(mongoSettingsDbConnection).getDatabase());
+			getSettings(mongoSettingsDbConnection, InetAddress.getLocalHost().getHostName().toUpperCase());
+			logger.info(String.format("***SETTINGS DB CONNECTED***: [%s]", mongoSettingsDbConnection.replaceAll("//(.+):(.+)@", "//$1:********@")));
+
+			String mongoVerificationDbConnection = getMongoDbConnection(Settings.get("fewsVerificationDbConnection"), Settings.get("fewsVerificationDbUsername"), Settings.get("fewsVerificationDbAesPassword"));
 			Settings.put("mongoVerificationDbConnection", mongoVerificationDbConnection);
 			Settings.put("verificationDb", new ConnectionString(mongoVerificationDbConnection).getDatabase());
-			getSettings(mongoVerificationDbConnection, InetAddress.getLocalHost().getHostName().toUpperCase());
 			logger.info(String.format("***VERIFICATION DB CONNECTED***: [%s]", mongoVerificationDbConnection.replaceAll("//(.+):(.+)@", "//$1:********@")));
 
 			String mongoArchiveDbConnection = getMongoDbConnection(Settings.get("fewsArchiveDbConnection"), Settings.get("fewsArchiveDbUsername"), Settings.get("fewsArchiveDbAesPassword"));
@@ -51,18 +56,18 @@ public final class Settings {
 
 		try (MongoClient db = MongoClients.create(mongoDbConnection)) {
 
-			Document settings = db.getDatabase(Settings.get("verificationDb")).getCollection("configuration.Settings").find(new Document("environment", settingsType)).limit(1).projection(new Document("_id", 0)).first();
+			Document settings = db.getDatabase(Settings.get("settingsDb")).getCollection("configuration.Settings").find(new Document("environment", settingsType)).limit(1).projection(new Document("_id", 0)).first();
 			if(settings != null)
 				logger.info(String.format("Using database settings [environment] for [%s].", settingsType));
 
 			if(settings == null) {
-				settings = db.getDatabase(Settings.get("verificationDb")).getCollection("configuration.Settings").find(new Document("environment", hostName)).limit(1).projection(new Document("_id", 0)).first();
+				settings = db.getDatabase(Settings.get("settingsDb")).getCollection("configuration.Settings").find(new Document("environment", hostName)).limit(1).projection(new Document("_id", 0)).first();
 				if(settings != null)
 					logger.info(String.format("Using database settings [environment] for [%s].", hostName));
 			}
 
 			if(settings == null) {
-				settings = db.getDatabase(Settings.get("verificationDb")).getCollection("configuration.Settings").find(new Document("environment", "Default")).limit(1).projection(new Document("_id", 0)).first();
+				settings = db.getDatabase(Settings.get("settingsDb")).getCollection("configuration.Settings").find(new Document("environment", "Default")).limit(1).projection(new Document("_id", 0)).first();
 				if(settings != null)
 					logger.info(String.format("Using database settings [environment] for [%s].", "Default"));
 			}
@@ -96,7 +101,7 @@ public final class Settings {
 				return validMongoDbConnection(m.find() ? m.replaceFirst(String.format("$1%s:%s@$2", dbUsername.replace("$", "\\$"), Crypto.decrypt(dbAesPassword).replace("$", "\\$"))) : dbConnection);
 			}
 			catch (Exception ex){
-			exceptions.add(ex);
+				exceptions.add(ex);
 			}
 		}
 
@@ -106,7 +111,7 @@ public final class Settings {
 			 	return validMongoDbConnection(m.find() ? m.replaceFirst(String.format("$1%s%%40%s@$2", System.getProperty("user.name").replace("$", "\\$"), userDnsDomain.replace("$", "\\$"))) : dbConnection);
 			}
 			catch (Exception ex){
-			exceptions.add(ex);
+				exceptions.add(ex);
 			}
 		}
 

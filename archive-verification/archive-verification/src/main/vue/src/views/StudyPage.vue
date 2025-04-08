@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { ref, computed } from "vue";
 
-const study = useQuery(gql`query studyN {studyN {_id, Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube, Active, ReprocessDays}}`)
+const study = useQuery(gql`query studyN {studyN {_id, Name, Observed, Forecasts, Seasonalities, Class, LocationAttributes, ForecastStartMonth, ForecastEndMonth, Time, Value, Normal, Cube, Active, ReprocessDays, MaxLeadTimeMinutes}}`)
 const observed = useQuery(gql`query observedN {observedN {_id, Name}}`)
 const forecast = useQuery(gql`query forecastN {forecastN {_id, Name}}`)
 const normal = useQuery(gql`query normalN {normalN {_id, Name}}`)

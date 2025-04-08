@@ -37,7 +37,6 @@ public class ConfigurationSettings {
 			@Argument String drdlYamlPath,
 			@Argument String fewsRestApiUri,
 			@Argument String environment,
-			@Argument int threads,
 			@Argument String cubeAdmins,
 			@Argument String cubeUsers,
 			@Argument String bimPath,
@@ -50,17 +49,25 @@ public class ConfigurationSettings {
 			@Argument String taskInterval,
 			@Argument String fewsArchiveDbAesPassword,
 			@Argument String fewsArchiveDbUsername,
-			@Argument int parallelPartitions,
 			@Argument String drdlYamlConfigPath,
 			@Argument String fewsArchiveDbConnection,
-			@Argument String drdlYamlServiceRestartSuccess){
+			@Argument String drdlYamlServiceRestartSuccess,
+			@Argument int dataStaleAfterSeconds,
+			@Argument int cubeParallelPartitions,
+			@Argument int cubeThreads,
+			@Argument int dataParallelPartitions,
+			@Argument int dataThreads,
+			@Argument String fewsVerificationDbAesPassword,
+			@Argument String fewsVerificationDbConnection,
+			@Argument String fewsVerificationDbUsername,
+			@Argument boolean parallel,
+			@Argument String processData){
 		return Mongo.insertOne("configuration.Settings",
 				new Document("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)
 				.append("drdlYamlPath", drdlYamlPath)
 				.append("fewsRestApiUri", fewsRestApiUri)
 				.append("environment", environment)
-				.append("threads", threads)
 				.append("cubeAdmins", cubeAdmins)
 				.append("cubeUsers", cubeUsers)
 				.append("bimPath", bimPath)
@@ -73,10 +80,19 @@ public class ConfigurationSettings {
 				.append("taskInterval", taskInterval)
 				.append("fewsArchiveDbAesPassword", fewsArchiveDbAesPassword)
 				.append("fewsArchiveDbUsername", fewsArchiveDbUsername)
-				.append("parallelPartitions", parallelPartitions)
 				.append("drdlYamlConfigPath", drdlYamlConfigPath)
 				.append("fewsArchiveDbConnection", fewsArchiveDbConnection)
 				.append("drdlYamlServiceRestartSuccess", drdlYamlServiceRestartSuccess)
+				.append("dataStaleAfterSeconds", dataStaleAfterSeconds)
+				.append("cubeParallelPartitions", cubeParallelPartitions)
+				.append("cubeThreads", cubeThreads)
+				.append("dataParallelPartitions", dataParallelPartitions)
+				.append("dataThreads", dataThreads)
+				.append("fewsVerificationDbAesPassword", fewsVerificationDbAesPassword)
+				.append("fewsVerificationDbConnection", fewsVerificationDbConnection)
+				.append("fewsVerificationDbUsername", fewsVerificationDbUsername)
+				.append("parallel", parallel)
+				.append("processData", processData)
 		).getInsertedId().asObjectId().getValue().toString();
 	}
 
@@ -88,7 +104,6 @@ public class ConfigurationSettings {
 			@Argument String drdlYamlPath,
 			@Argument String fewsRestApiUri,
 			@Argument String environment,
-			@Argument int threads,
 			@Argument String cubeAdmins,
 			@Argument String cubeUsers,
 			@Argument String bimPath,
@@ -101,17 +116,25 @@ public class ConfigurationSettings {
 			@Argument String taskInterval,
 			@Argument String fewsArchiveDbAesPassword,
 			@Argument String fewsArchiveDbUsername,
-			@Argument int parallelPartitions,
 			@Argument String drdlYamlConfigPath,
 			@Argument String fewsArchiveDbConnection,
-			@Argument String drdlYamlServiceRestartSuccess){
+			@Argument String drdlYamlServiceRestartSuccess,
+			@Argument int dataStaleAfterSeconds,
+			@Argument int cubeParallelPartitions,
+			@Argument int cubeThreads,
+			@Argument int dataParallelPartitions,
+			@Argument int dataThreads,
+			@Argument String fewsVerificationDbAesPassword,
+			@Argument String fewsVerificationDbConnection,
+			@Argument String fewsVerificationDbUsername,
+			@Argument boolean parallel,
+			@Argument String processData){
 		return Mongo.updateOne("configuration.Settings", new Document("_id", new ObjectId(_id)), new Document("$set",
 				new Document("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)
 				.append("drdlYamlPath", drdlYamlPath)
 				.append("fewsRestApiUri", fewsRestApiUri)
 				.append("environment", environment)
-				.append("threads", threads)
 				.append("cubeAdmins", cubeAdmins)
 				.append("cubeUsers", cubeUsers)
 				.append("bimPath", bimPath)
@@ -124,10 +147,19 @@ public class ConfigurationSettings {
 				.append("taskInterval", taskInterval)
 				.append("fewsArchiveDbAesPassword", fewsArchiveDbAesPassword)
 				.append("fewsArchiveDbUsername", fewsArchiveDbUsername)
-				.append("parallelPartitions", parallelPartitions)
 				.append("drdlYamlConfigPath", drdlYamlConfigPath)
 				.append("fewsArchiveDbConnection", fewsArchiveDbConnection)
 				.append("drdlYamlServiceRestartSuccess", drdlYamlServiceRestartSuccess)
+				.append("dataStaleAfterSeconds", dataStaleAfterSeconds)
+				.append("cubeParallelPartitions", cubeParallelPartitions)
+				.append("cubeThreads", cubeThreads)
+				.append("dataParallelPartitions", dataParallelPartitions)
+				.append("dataThreads", dataThreads)
+				.append("fewsVerificationDbAesPassword", fewsVerificationDbAesPassword)
+				.append("fewsVerificationDbConnection", fewsVerificationDbConnection)
+				.append("fewsVerificationDbUsername", fewsVerificationDbUsername)
+				.append("parallel", parallel)
+				.append("processData", processData)
 		)).getModifiedCount();
 	}
 

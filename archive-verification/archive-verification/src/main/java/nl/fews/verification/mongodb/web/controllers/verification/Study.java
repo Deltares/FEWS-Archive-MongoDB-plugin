@@ -11,7 +11,6 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.StreamSupport;
 
 @Controller
@@ -46,7 +45,8 @@ public class Study {
 			@Argument String normal,
 			@Argument String cube,
 			@Argument boolean active,
-			@Argument int reprocessDays){
+			@Argument int reprocessDays,
+			@Argument int maxLeadTimeMinutes){
 		return Mongo.insertOne("Study",
 				new Document("Name", name)
 				.append("Observed", observed)
@@ -62,6 +62,7 @@ public class Study {
 				.append("Cube", cube)
 				.append("Active", active)
 				.append("ReprocessDays", reprocessDays)
+				.append("MaxLeadTimeMinutes", maxLeadTimeMinutes)
 		).getInsertedId().asObjectId().getValue().toString();
 	}
 
@@ -81,7 +82,8 @@ public class Study {
 			@Argument String normal,
 			@Argument String cube,
 			@Argument boolean active,
-			@Argument int reprocessDays){
+			@Argument int reprocessDays,
+			@Argument int maxLeadTimeMinutes){
 		return Mongo.updateOne("Study", new Document("_id", new ObjectId(_id)), new Document("$set",
 				new Document("Name", name)
 				.append("Observed", observed)
@@ -97,6 +99,7 @@ public class Study {
 				.append("Cube", cube)
 				.append("Active", active)
 				.append("ReprocessDays", reprocessDays)
+				.append("MaxLeadTimeMinutes", maxLeadTimeMinutes)
 		)).getModifiedCount();
 	}
 
