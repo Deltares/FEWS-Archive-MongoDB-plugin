@@ -34,6 +34,7 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 		var months = new ArrayList<YearMonth>();
 		for(var m = startMonth; m.compareTo(endMonth) <= 0; m = m.plusMonths(1))
 			months.add(m);
+		months.add(0, YearMonth.of(1, 1));
 
 		var template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", name)).getList("Template", String.class));
 		var databaseConnectionString = Settings.get("databaseConnectionString", String.class);
