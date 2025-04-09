@@ -33,7 +33,7 @@ public final class Common {
 		var breakpoints = _class.containsKey(location) ? _class.getList(location, Document.class) : _class.getList("", Document.class);
 		for (var b : breakpoints) {
 			if(evaluateBreakpoint(b, value)){
-				return _class.getString("Name");
+				return b.getString("Name");
 			}
 		}
 		return "UNDEFINED";
