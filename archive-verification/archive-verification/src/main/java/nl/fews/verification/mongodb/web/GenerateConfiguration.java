@@ -45,9 +45,13 @@ public class GenerateConfiguration implements SchedulingConfigurer {
 			}
 			catch (Exception ex) {
 				logger.warn(ex.getMessage(), ex);
-				StringWriter sw = new StringWriter();
-				ex.printStackTrace(new PrintWriter(sw));
-				Mail.send("ERROR - Verification GenerateTimer", sw.toString());
+				try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)){
+					ex.printStackTrace(pw);
+					Mail.send("ERROR - Verification GenerateTimer", sw.toString());
+				}
+				catch (Exception mex) {
+					logger.warn(mex.getMessage(), mex);
+				}
 			}
 			finally {
 				running.set(false);
