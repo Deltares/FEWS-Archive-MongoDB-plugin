@@ -81,9 +81,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArraysResults = Collections.synchronizedList(new ArrayList<>());
 		IntStream.range(0, timeSeriesArrays.size()).parallel().forEach(i -> {
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
-			Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importStitchedSimulatedHistorical(period, timeSeriesArray.getHeader());
-			if(timeSeriesArrayResult != null && !TimeSeriesArrayUtil.timeSeriesArrayValuesAreEqual(timeSeriesArray, timeSeriesArrayResult.getObject0()))
-				timeSeriesArraysResults.add(timeSeriesArrayResult.getObject0());
+			if(!timeSeriesArray.getHeader().equals(TimeSeriesHeader.NONE)) {
+				Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importStitchedSimulatedHistorical(period, timeSeriesArray.getHeader());
+				if (timeSeriesArrayResult != null && !TimeSeriesArrayUtil.timeSeriesArrayValuesAreEqual(timeSeriesArray, timeSeriesArrayResult.getObject0()))
+					timeSeriesArraysResults.add(timeSeriesArrayResult.getObject0());
+			}
 		});
 		return new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArraysResults.toArray(new TimeSeriesArray[0]));
 	}
@@ -142,9 +144,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArraysResults = Collections.synchronizedList(new ArrayList<>());
 		IntStream.range(0, timeSeriesArrays.size()).parallel().forEach(i -> {
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
-			Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importExternalHistorical(period, timeSeriesArray.getHeader());
-			if (timeSeriesArrayResult != null && !TimeSeriesArrayUtil.timeSeriesArrayValuesAreEqual(timeSeriesArray, timeSeriesArrayResult.getObject0()))
-				timeSeriesArraysResults.add(timeSeriesArrayResult.getObject0());
+			if(!timeSeriesArray.getHeader().equals(TimeSeriesHeader.NONE)) {
+				Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importExternalHistorical(period, timeSeriesArray.getHeader());
+				if (timeSeriesArrayResult != null && !TimeSeriesArrayUtil.timeSeriesArrayValuesAreEqual(timeSeriesArray, timeSeriesArrayResult.getObject0()))
+					timeSeriesArraysResults.add(timeSeriesArrayResult.getObject0());
+			}
 		});
 		return new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArraysResults.toArray(new TimeSeriesArray[0]));
 	}

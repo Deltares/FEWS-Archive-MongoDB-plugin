@@ -4,6 +4,7 @@ import nl.fews.archivedatabase.mongodb.TestUtil;
 import nl.fews.archivedatabase.mongodb.shared.database.Collection;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.util.LogUtils;
+import org.apache.logging.log4j.LogManager;
 import org.json.JSONObject;
 
 import java.net.InetAddress;
@@ -16,6 +17,7 @@ public class TestSettings {
 
 	static {
 		LogUtils.initConsole();
+		LogManager.getLogger("Test");
 	}
 
 	private TestSettings(){}
