@@ -62,12 +62,6 @@
                   <include>org.mongodb:bson</include>
                 </includes>
               </artifactSet>
-              <relocations>
-                <relocation>
-                  <pattern>org.json</pattern>
-                  <shadedPattern>com.infisys.json</shadedPattern>
-                </relocation>
-              </relocations>
             </configuration>
           </execution>
         </executions>
