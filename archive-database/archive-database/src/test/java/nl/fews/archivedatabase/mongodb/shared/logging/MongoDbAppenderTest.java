@@ -14,7 +14,7 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 class MongoDbAppenderTest {
 	@Container
-	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:6.0"));
+	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:7.0"));
 
 	@BeforeEach
 	public void setUpClass(){
