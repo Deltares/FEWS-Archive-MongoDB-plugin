@@ -232,7 +232,7 @@ public final class Insert {
 		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = NetcdfUtil.getTimeSeriesArrays(netcdfFile);
 		for (int i = 0; i < timeSeriesArrays.size(); i++) {
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
-			if(!timeSeriesArray.getHeader().equals(TimeSeriesHeader.NONE)) {
+			if(!timeSeriesArray.getHeader().isNone()) {
 				TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
 
 				timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
@@ -261,7 +261,7 @@ public final class Insert {
 		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = NetcdfUtil.getTimeSeriesArrays(netcdfFile);
 		for (int i = 0; i < timeSeriesArrays.size(); i++) {
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
-			if(!timeSeriesArray.getHeader().equals(TimeSeriesHeader.NONE)) {
+			if(!timeSeriesArray.getHeader().isNone()) {
 				TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
 
 				timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
