@@ -218,7 +218,7 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 			TimeSeries timeSeries = (TimeSeries)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "shared.timeseries", TimeSeriesTypeUtil.getTimeSeriesTypeClassName(timeSeriesType))).getConstructor().newInstance();
 			Synchronize synchronize = (Synchronize)Class.forName(String.format("%s.%s.%s", BASE_NAMESPACE, "export.operations", String.format("Synchronize%s", TimeSeriesTypeUtil.getTimeSeriesTypeTypes(timeSeriesType)))).getConstructor().newInstance();
 
-			Map<Document, List<TimeSeriesArray<TimeSeriesHeader>>> groupedTimeSeriesArrays = Arrays.stream(timeSeriesArrays.toArray()).filter(a -> !a.getHeader().isNone()).collect(Collectors.groupingBy(g -> Database.getKeyDocument(BucketUtil.getBucketKeyFields(collection), timeSeries.getRoot(g.getHeader(), List.of(), timeSeries.getRunInfo(g.getHeader())))));
+			Map<Document, List<TimeSeriesArray<TimeSeriesHeader>>> groupedTimeSeriesArrays = Arrays.stream(timeSeriesArrays.toArray()).collect(Collectors.groupingBy(g -> Database.getKeyDocument(BucketUtil.getBucketKeyFields(collection), timeSeries.getRoot(g.getHeader(), List.of(), timeSeries.getRunInfo(g.getHeader())))));
 			List<TimeSeriesArray<TimeSeriesHeader>> uniqueTimeSeriesArrays = new ArrayList<>();
 			for (Map.Entry<Document, List<TimeSeriesArray<TimeSeriesHeader>>> timeSeriesHeader: groupedTimeSeriesArrays.entrySet()) {
 				uniqueTimeSeriesArrays.add(timeSeriesHeader.getValue().get(0));
@@ -229,21 +229,19 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 				}
 			}
 			uniqueTimeSeriesArrays.parallelStream().forEach(timeSeriesArray -> {
-				if(!timeSeriesArray.getHeader().isNone()) {
-					TimeSeriesHeader header = timeSeriesArray.getHeader();
+				TimeSeriesHeader header = timeSeriesArray.getHeader();
 
-					Document metaDataDocument = timeSeries.getMetaData(header, areaId, sourceId);
-					List<Document> timeseriesDocuments = TimeSeriesUtil.trimNullValues(timeSeries.getEvents(timeSeriesArray, metaDataDocument));
-					Document runInfoDocument = timeSeries.getRunInfo(header);
-					Document rootDocument = timeSeries.getRoot(header, timeseriesDocuments, runInfoDocument);
+				Document metaDataDocument = timeSeries.getMetaData(header, areaId, sourceId);
+				List<Document> timeseriesDocuments = TimeSeriesUtil.trimNullValues(timeSeries.getEvents(timeSeriesArray, metaDataDocument));
+				Document runInfoDocument = timeSeries.getRunInfo(header);
+				Document rootDocument = timeSeries.getRoot(header, timeseriesDocuments, runInfoDocument);
 
-					if (!metaDataDocument.isEmpty()) rootDocument.append("metaData", metaDataDocument);
-					if (!runInfoDocument.isEmpty()) rootDocument.append("runInfo", runInfoDocument);
-					if (!timeseriesDocuments.isEmpty()) rootDocument.append("timeseries", timeseriesDocuments);
+				if (!metaDataDocument.isEmpty()) rootDocument.append("metaData", metaDataDocument);
+				if (!runInfoDocument.isEmpty()) rootDocument.append("runInfo", runInfoDocument);
+				if (!timeseriesDocuments.isEmpty()) rootDocument.append("timeseries", timeseriesDocuments);
 
-					if (!timeseriesDocuments.isEmpty()) {
-						synchronize.synchronize(rootDocument, timeSeriesType);
-					}
+				if (!timeseriesDocuments.isEmpty()) {
+					synchronize.synchronize(rootDocument, timeSeriesType);
 				}
 			});
 		}
