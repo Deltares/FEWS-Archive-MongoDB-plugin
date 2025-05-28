@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { ref, computed } from "vue";
 
-const { result, loading, error, refetch } = useQuery(gql`query configurationSettingsN {configurationSettingsN {_id, toEmailAddresses, fromEmailAddress, drdlYamlPath, environment, cubeAdmins, cubeUsers, bimPath, databaseConnectionString, smtpServer, tabularConnectionString, drdlYamlServiceRestart, execute, reprocessCubes, taskInterval, fewsArchiveDbAesPassword, fewsArchiveDbUsername, drdlYamlConfigPath, fewsArchiveDbConnection, drdlYamlServiceRestartSuccess, dataStaleAfterSeconds, cubeParallelPartitions, cubeThreads, dataParallelPartitions, dataThreads, fewsVerificationDbAesPassword, fewsVerificationDbConnection, fewsVerificationDbUsername, parallel, processData}}`)
+const { result, loading, error, refetch } = useQuery(gql`query configurationSettingsN {configurationSettingsN {_id, toEmailAddresses, fromEmailAddress, drdlYamlPath, fewsRestApiUri, environment, cubeAdmins, cubeUsers, bimPath, databaseConnectionString, smtpServer, tabularConnectionString, drdlYamlServiceRestart, execute, reprocessCubes, taskInterval, fewsArchiveDbAesPassword, fewsArchiveDbUsername, drdlYamlConfigPath, fewsArchiveDbConnection, drdlYamlServiceRestartSuccess, dataStaleAfterSeconds, cubeParallelPartitions, cubeThreads, dataParallelPartitions, dataThreads, fewsVerificationDbAesPassword, fewsVerificationDbConnection, fewsVerificationDbUsername, parallel, processData}}`)
 const selected = ref({})
 const success = ref(null)
 const sorted = computed(() => result?.value?.configurationSettingsN ? result.value.configurationSettingsN.slice().sort((a, b) => a.environment.localeCompare(b.environment)) : [])
