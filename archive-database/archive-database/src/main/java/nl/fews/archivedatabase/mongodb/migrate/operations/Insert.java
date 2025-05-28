@@ -232,15 +232,13 @@ public final class Insert {
 		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = NetcdfUtil.getTimeSeriesArrays(netcdfFile);
 		for (int i = 0; i < timeSeriesArrays.size(); i++) {
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
-			if(!timeSeriesArray.getHeader().isNone()) {
-				TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
+			TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
 
-				timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
+			timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
 
-				Document ts = Insert.extractTimeSeries(timeSeriesType, timeSeriesArray, netcdfContent, archiveRunInfo, areaId);
-				if (ts.containsKey("timeseries"))
-					insertedIds.addAll(singleInsertTimeseries(collection, ts, netcdfFile));
-			}
+			Document ts = Insert.extractTimeSeries(timeSeriesType, timeSeriesArray, netcdfContent, archiveRunInfo, areaId);
+			if (ts.containsKey("timeseries"))
+				insertedIds.addAll(singleInsertTimeseries(collection, ts, netcdfFile));
 		}
 		return new Pair<>(collection, insertedIds);
 	}
@@ -261,15 +259,13 @@ public final class Insert {
 		TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays = NetcdfUtil.getTimeSeriesArrays(netcdfFile);
 		for (int i = 0; i < timeSeriesArrays.size(); i++) {
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
-			if(!timeSeriesArray.getHeader().isNone()) {
-				TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
+			TimeSeriesRecord timeSeriesRecord = timeSeriesRecordsMap.get(timeSeriesArray.getHeader().getLocationId()).get(timeSeriesArray.getHeader().getParameterId());
 
-				timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
+			timeSeriesArray = NetcdfUtil.getTimeSeriesArrayMerged(timeSeriesArray, timeSeriesRecord);
 
-				Document ts = Insert.extractTimeSeries(timeSeriesType, timeSeriesArray, netcdfContent, archiveRunInfo, areaId);
-				if (ts.containsKey("timeseries"))
-					timeSeries.add(ts);
-			}
+			Document ts = Insert.extractTimeSeries(timeSeriesType, timeSeriesArray, netcdfContent, archiveRunInfo, areaId);
+			if (ts.containsKey("timeseries"))
+				timeSeries.add(ts);
 		}
 		return timeSeries;
 	}
