@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TimeSeriesArrayUtilTest {
 
 	@Container
-	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:6.0"));
+	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:7.0"));
 
 	@BeforeEach
 	public void setUpClass(){

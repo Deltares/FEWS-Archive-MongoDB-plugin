@@ -236,11 +236,11 @@ public class MongoDbArchiveDatabaseTimeSeriesExporter implements ArchiveDatabase
 				Document runInfoDocument = timeSeries.getRunInfo(header);
 				Document rootDocument = timeSeries.getRoot(header, timeseriesDocuments, runInfoDocument);
 
-				if(!metaDataDocument.isEmpty()) rootDocument.append("metaData", metaDataDocument);
-				if(!runInfoDocument.isEmpty()) rootDocument.append("runInfo", runInfoDocument);
-				if(!timeseriesDocuments.isEmpty()) rootDocument.append("timeseries", timeseriesDocuments);
+				if (!metaDataDocument.isEmpty()) rootDocument.append("metaData", metaDataDocument);
+				if (!runInfoDocument.isEmpty()) rootDocument.append("runInfo", runInfoDocument);
+				if (!timeseriesDocuments.isEmpty()) rootDocument.append("timeseries", timeseriesDocuments);
 
-				if(!timeseriesDocuments.isEmpty()){
+				if (!timeseriesDocuments.isEmpty()) {
 					synchronize.synchronize(rootDocument, timeSeriesType);
 				}
 			});

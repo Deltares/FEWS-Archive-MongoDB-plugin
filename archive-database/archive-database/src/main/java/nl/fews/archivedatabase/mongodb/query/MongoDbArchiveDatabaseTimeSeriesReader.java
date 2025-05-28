@@ -81,7 +81,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		IntStream.range(0, timeSeriesArrays.size()).parallel().forEach(i -> {
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
 			Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importStitchedSimulatedHistorical(period, timeSeriesArray.getHeader());
-			if(timeSeriesArrayResult != null && !TimeSeriesArrayUtil.timeSeriesArrayValuesAreEqual(timeSeriesArray, timeSeriesArrayResult.getObject0()))
+			if (timeSeriesArrayResult != null && timeSeriesArrayResult.getObject0().getHeader() != null && !timeSeriesArrayResult.getObject0().getHeader().equals(TimeSeriesHeader.NONE) && !timeSeriesArrayResult.getObject0().getHeader().isNone() && !TimeSeriesArrayUtil.timeSeriesArrayValuesAreEqual(timeSeriesArray, timeSeriesArrayResult.getObject0()))
 				timeSeriesArraysResults.add(timeSeriesArrayResult.getObject0());
 		});
 		return new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArraysResults.toArray(new TimeSeriesArray[0]));
@@ -137,12 +137,11 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 	public TimeSeriesArrays<TimeSeriesHeader> importExternalHistorical(@NonNull Period period, @NonNull TimeSeriesArrays<TimeSeriesHeader> timeSeriesArrays) {
 		if(period.getEndDate().before(period.getStartDate()))
 			throw new IllegalArgumentException("End of period must fall on or after start of period");
-
 		List<TimeSeriesArray<TimeSeriesHeader>> timeSeriesArraysResults = Collections.synchronizedList(new ArrayList<>());
 		IntStream.range(0, timeSeriesArrays.size()).parallel().forEach(i -> {
 			TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = timeSeriesArrays.get(i);
 			Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importExternalHistorical(period, timeSeriesArray.getHeader());
-			if (timeSeriesArrayResult != null && !TimeSeriesArrayUtil.timeSeriesArrayValuesAreEqual(timeSeriesArray, timeSeriesArrayResult.getObject0()))
+			if (timeSeriesArrayResult != null && timeSeriesArrayResult.getObject0().getHeader() != null && !timeSeriesArrayResult.getObject0().getHeader().equals(TimeSeriesHeader.NONE) && !timeSeriesArrayResult.getObject0().getHeader().isNone() && !TimeSeriesArrayUtil.timeSeriesArrayValuesAreEqual(timeSeriesArray, timeSeriesArrayResult.getObject0()))
 				timeSeriesArraysResults.add(timeSeriesArrayResult.getObject0());
 		});
 		return new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArraysResults.toArray(new TimeSeriesArray[0]));
@@ -197,7 +196,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		List<Box<TimeSeriesArrays<TimeSeriesHeader>, SystemActivityDescriptor>> timeSeriesArrays = Collections.synchronizedList(new ArrayList<>());
 		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().parallelStream().forEach(fewsTimeSeriesHeader -> {
 			Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = isStitched ? importStitchedSimulatedHistorical(archiveDatabaseImportRequest.period(), fewsTimeSeriesHeader) : importSimulatedHistorical(fewsTimeSeriesHeader);
-			if(timeSeriesArrayResult != null)
+			if(timeSeriesArrayResult != null && timeSeriesArrayResult.getObject0().getHeader() != null && !timeSeriesArrayResult.getObject0().getHeader().equals(TimeSeriesHeader.NONE) && !timeSeriesArrayResult.getObject0().getHeader().isNone())
 				timeSeriesArrays.add(new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArrayResult.getObject0()), timeSeriesArrayResult.getObject1()));
 		}));
 		return timeSeriesArrays;
@@ -218,7 +217,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest ->
 			IntStream.range(0, archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().size()).parallel().forEach(i -> {
 				Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importSimulatedForecasting(archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().get(i), archiveDatabaseImportRequest.getTaskRunIds().get(i));
-				if(timeSeriesArrayResult != null)
+				if(timeSeriesArrayResult != null && timeSeriesArrayResult.getObject0().getHeader() != null && !timeSeriesArrayResult.getObject0().getHeader().equals(TimeSeriesHeader.NONE) && !timeSeriesArrayResult.getObject0().getHeader().isNone())
 					timeSeriesArrays.add(new Box<>(new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArrayResult.getObject0()), timeSeriesArrayResult.getObject1()));
 			})
 		);
@@ -319,7 +318,7 @@ public class MongoDbArchiveDatabaseTimeSeriesReader implements ArchiveDatabaseTi
 		List<TimeSeriesArrays<TimeSeriesHeader>> timeSeriesArrays = Collections.synchronizedList(new ArrayList<>());
 		archiveDatabaseForecastImportRequests.parallelStream().forEach(archiveDatabaseImportRequest -> archiveDatabaseImportRequest.getFewsTimeSeriesHeaders().parallelStream().forEach(fewsTimeSeriesHeader -> {
 			Box<TimeSeriesArray<TimeSeriesHeader>, SystemActivityDescriptor> timeSeriesArrayResult = importExternalForecasting(fewsTimeSeriesHeader);
-			if(timeSeriesArrayResult != null && !timeSeriesArrayResult.getObject0().isEmpty())
+			if(timeSeriesArrayResult != null && timeSeriesArrayResult.getObject0().getHeader() != null && !timeSeriesArrayResult.getObject0().getHeader().equals(TimeSeriesHeader.NONE) && !timeSeriesArrayResult.getObject0().getHeader().isNone() && !timeSeriesArrayResult.getObject0().isEmpty())
 				timeSeriesArrays.add(new TimeSeriesArrays<TimeSeriesHeader>(timeSeriesArrayResult.getObject0()));
 		}));
 		return timeSeriesArrays;
