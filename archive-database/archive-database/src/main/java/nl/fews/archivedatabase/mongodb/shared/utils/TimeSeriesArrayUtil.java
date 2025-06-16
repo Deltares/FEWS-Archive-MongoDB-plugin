@@ -21,6 +21,11 @@ public class TimeSeriesArrayUtil {
 	/**
 	 *
 	 */
+	private static final Object mutex = new Object();
+
+	/**
+	 *
+	 */
 	private TimeSeriesArrayUtil() {
 	}
 
@@ -54,8 +59,19 @@ public class TimeSeriesArrayUtil {
 			if(runInfo.containsKey("dispatchTime")) headerRequestBuilder.setDispatchTime(runInfo.getDate("dispatchTime").getTime());
 			if(runInfo.containsKey("time0")) headerRequestBuilder.setTimeZero(runInfo.getDate("time0").getTime());
 		}
-
-		return Settings.get("headerProvider", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build());
+		synchronized (mutex) {
+			for (int i = 0; i < 5; i++) {
+				var h = Settings.get("headerProvider", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build());
+				if (h != null && h.getObject0() != null && !h.getObject0().equals(TimeSeriesHeader.NONE) && !h.getObject0().isNone()) {
+					return h;
+				}
+				try{
+					Thread.sleep(100);
+				}
+				catch (InterruptedException e) {/*IGNORE*/}
+			}
+			throw new RuntimeException("Settings.get(\"headerProvider\", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build()) FAILED");
+		}
 	}
 
 	/**
