@@ -45,7 +45,7 @@ public class ConfigurationSettings {
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
 			@Argument boolean execute,
-			@Argument boolean reprocessCubes,
+			@Argument String reprocessCubes,
 			@Argument String taskInterval,
 			@Argument String fewsArchiveDbAesPassword,
 			@Argument String fewsArchiveDbUsername,
@@ -61,7 +61,7 @@ public class ConfigurationSettings {
 			@Argument String fewsVerificationDbConnection,
 			@Argument String fewsVerificationDbUsername,
 			@Argument boolean parallel,
-			@Argument String processData){
+			@Argument boolean processData){
 		return Mongo.insertOne("configuration.Settings",
 				new Document("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)
@@ -112,7 +112,7 @@ public class ConfigurationSettings {
 			@Argument String tabularConnectionString,
 			@Argument String drdlYamlServiceRestart,
 			@Argument boolean execute,
-			@Argument boolean reprocessCubes,
+			@Argument String reprocessCubes,
 			@Argument String taskInterval,
 			@Argument String fewsArchiveDbAesPassword,
 			@Argument String fewsArchiveDbUsername,
@@ -128,7 +128,7 @@ public class ConfigurationSettings {
 			@Argument String fewsVerificationDbConnection,
 			@Argument String fewsVerificationDbUsername,
 			@Argument boolean parallel,
-			@Argument String processData){
+			@Argument boolean processData){
 		return Mongo.updateOne("configuration.Settings", new Document("_id", new ObjectId(_id)), new Document("$set",
 				new Document("toEmailAddresses", toEmailAddresses)
 				.append("fromEmailAddress", fromEmailAddress)

@@ -1,11 +1,10 @@
- type ConfigurationSettings {
+type ConfigurationSettings {
 	_id: ID!
 	toEmailAddresses: String!
 	fromEmailAddress: String!
 	drdlYamlPath: String!
 	fewsRestApiUri: String!
 	environment: String!
-	threads: Int!
 	cubeAdmins: String!
 	cubeUsers: String!
 	bimPath: String!
@@ -18,12 +17,11 @@
 	taskInterval: String!
 	fewsArchiveDbAesPassword: String!
 	fewsArchiveDbUsername: String!
-	parallelPartitions: Int!
-    drdlYamlConfigPath: String!
-    fewsArchiveDbConnection: String!
+	drdlYamlConfigPath: String!
+	fewsArchiveDbConnection: String!
 	drdlYamlServiceRestartSuccess: String!
 	dataStaleAfterSeconds: Int!
-    cubeParallelPartitions: Int!
+	cubeParallelPartitions: Int!
 	cubeThreads: Int!
 	dataParallelPartitions: Int!
 	dataThreads: Int!
