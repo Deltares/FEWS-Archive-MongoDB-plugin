@@ -42,6 +42,7 @@ public class TestSettings {
 			Settings.put("archiveDatabaseUserName", "fews_admin");
 			Settings.put("baseDirectoryArchive", Paths.get("src", "test", "resources").toAbsolutePath().toString());
 
+			Settings.put("headerProvider", new TestUtil.HeaderProviderTestImplementation());
 			Settings.put("archiveDatabaseUnitConverter", new TestUtil.ArchiveDatabaseUnitConverterTestImplementation());
 			Settings.put("archiveDatabaseTimeConverter", new TestUtil.ArchiveDatabaseTimeConverterTestImplementation());
 			Settings.put("archiveDatabaseRegionConfigInfoProvider", new TestUtil.ArchiveDatabaseRegionConfigInfoProviderTestImplementation());

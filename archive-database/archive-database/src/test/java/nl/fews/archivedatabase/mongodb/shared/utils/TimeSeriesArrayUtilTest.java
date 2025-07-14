@@ -3,10 +3,13 @@ package nl.fews.archivedatabase.mongodb.shared.utils;
 import nl.fews.archivedatabase.mongodb.TestUtil;
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
+import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
+import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
+import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -36,5 +39,19 @@ class TimeSeriesArrayUtilTest {
 			Map<Boolean, List<Period>> existingPeriods = TimeSeriesArrayUtil.getTimeSeriesArrayExistingPeriods(timeSeriesArray);
 			assertEquals(1, existingPeriods.get(false).size());
 		}
+	}
+
+	@Test
+	void getTimeSeriesHeader() {
+
+		Document result = new Document().
+			append("moduleInstanceId", "moduleInstanceId").
+			append("locationId", "locationId").
+			append("parameterId", "parameterId").
+			append("qualifierIds", List.of("qualifierId1", "qualifierId2")).
+			append("encodedTimeStepId", "encodedTimeStepId");
+
+		var r = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, TimeSeriesType.SIMULATED_FORECASTING, result);
+		assertNotNull(r);
 	}
 }

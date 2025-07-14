@@ -8,21 +8,17 @@ import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
 import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
 import nl.wldelft.util.Box;
 import nl.wldelft.util.Period;
+import nl.wldelft.util.ThreadUtils;
 import nl.wldelft.util.timeseries.*;
 import org.bson.Document;
 import org.javatuples.Pair;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class TimeSeriesArrayUtil {
-
-	/**
-	 *
-	 */
-	private static final Object mutex = new Object();
-
 	/**
 	 *
 	 */
@@ -36,7 +32,7 @@ public class TimeSeriesArrayUtil {
 	 * @param result result
 	 * @return TimeSeriesArray<TimeSeriesHeader>
 	 */
-	public synchronized static Box<TimeSeriesHeader, SystemActivityDescriptor> getTimeSeriesHeader(TimeSeriesValueType timeSeriesValueType, TimeSeriesType timeSeriesType, Document result){
+	public static Box<TimeSeriesHeader, SystemActivityDescriptor> getTimeSeriesHeader(TimeSeriesValueType timeSeriesValueType, TimeSeriesType timeSeriesType, Document result){
 		HeaderRequest.HeaderRequestBuilder headerRequestBuilder = new HeaderRequest.HeaderRequestBuilder();
 		headerRequestBuilder.setValueType(timeSeriesValueType);
 		headerRequestBuilder.setTimeSeriesType(timeSeriesType);
@@ -59,19 +55,34 @@ public class TimeSeriesArrayUtil {
 			if(runInfo.containsKey("dispatchTime")) headerRequestBuilder.setDispatchTime(runInfo.getDate("dispatchTime").getTime());
 			if(runInfo.containsKey("time0")) headerRequestBuilder.setTimeZero(runInfo.getDate("time0").getTime());
 		}
-		synchronized (mutex) {
-			for (int i = 0; i < 5; i++) {
-				var h = Settings.get("headerProvider", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build());
-				if (h != null && h.getObject0() != null && !h.getObject0().equals(TimeSeriesHeader.NONE) && !h.getObject0().isNone()) {
-					return h;
-				}
-				try{
-					Thread.sleep(100);
-				}
-				catch (InterruptedException e) {/*IGNORE*/}
+		return getTimeSeriesHeader(result, headerRequestBuilder);
+	}
+
+	/**
+	 *
+	 * @param headerRequestBuilder headerRequestBuilder
+	 * @return Box<TimeSeriesHeader, SystemActivityDescriptor>
+	 */
+	private static Box<TimeSeriesHeader, SystemActivityDescriptor> getTimeSeriesHeader(Document result, HeaderRequest.HeaderRequestBuilder headerRequestBuilder){
+		for (int i = 0; i < 5; i++) {
+			var headerBox = new AtomicReference<Box<TimeSeriesHeader, SystemActivityDescriptor>>();
+			var thread = ThreadUtils.newThread(() -> headerBox.set(Settings.get("headerProvider", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build())), "getTimeSeriesHeader");
+			thread.start();
+			try {
+				thread.join(1000);
 			}
-			throw new RuntimeException("Settings.get(\"headerProvider\", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build()) FAILED");
+			catch (InterruptedException e) {/*IGNORE*/}
+
+			var h = headerBox.get();
+			if (h != null && h.getObject0() != null && !h.getObject0().equals(TimeSeriesHeader.NONE) && !h.getObject0().isNone()) {
+				return h;
+			}
+			try{
+				Thread.sleep(100);
+			}
+			catch (InterruptedException e) {/*IGNORE*/}
 		}
+		throw new RuntimeException(String.format("FewsTimeSeriesHeaderProvider.getHeader(headerRequestBuilder.build()) FAILED %s", result.toJson()));
 	}
 
 	/**
