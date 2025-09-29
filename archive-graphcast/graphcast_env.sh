@@ -26,12 +26,9 @@ eval "$(/"$2/miniconda3/bin/conda" shell.bash hook)"
 conda init
 
 conda config --add channels defaults
-conda config --set solver classic
-
 conda config --set ssl_verify false
 pip config set global.trusted-host 'pypi.python.org pypi.org files.pythonhosted.org'
 
-conda deactivate
 conda update conda -y
 conda update --all -y
 
@@ -45,14 +42,15 @@ fi
 
 conda create -n graphcast -y
 conda activate graphcast
-
-conda install python=3.12 -y
+conda install python=3.12 requests xmltodict netcdf4 zarr -y
 
 if [ "$1" == "cuda" ]; then
-  pip install "jax[cuda12]" pysolar requests xmltodict netcdf4 zarr cdsapi
+  conda install "jax[cuda12]" -y
 elif [ "$1" == "cpu" ]; then
-  pip install "jax[cpu]" pysolar requests xmltodict netcdf4 zarr cdsapi
+  conda install "jax[cpu]" -y
 fi
+
+pip install pysolar cdsapi
 conda install -c conda-forge cfgrib -y
 conda env export | head -n -1 > environment.yml
 

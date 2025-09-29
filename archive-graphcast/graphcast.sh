@@ -15,7 +15,7 @@ fi
 
 if [ ! -f "$2/$miniconda" ]; then
   rm -rf "$2/"*
-  wget https://repo.anaconda.com/miniconda/$miniconda  -O "$2/$miniconda"
+  wget https://repo.anaconda.com/miniconda/$miniconda -O "$2/$miniconda"
 fi
 
 if [ ! -d "$2/miniconda3" ]; then
@@ -29,30 +29,36 @@ export XLA_PYTHON_CLIENT_PREALLOCATE=false
 export XLA_PYTHON_CLIENT_ALLOCATOR=platform
 
 conda config --add channels defaults
-conda config --set solver classic
+
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 
 conda config --set ssl_verify false
 pip config set global.trusted-host 'pypi.python.org pypi.org files.pythonhosted.org'
 
-conda deactivate
 conda update conda -y
 conda update --all -y
 
-if [ -d "$2/miniconda3/envs/graphcast" ]; then
-  conda env remove -n graphcast -y
+#if [ -d "$2/miniconda3/envs/graphcast" ]; then
+#  conda env remove -n graphcast -y
+#fi
+#
+#if [ -d "$2/miniconda3/envs/graphcast" ]; then
+#  rm -rf "$2/miniconda3/envs/graphcast"
+#fi
+
+if [ ! -d "$2/miniconda3/envs/graphcast" ]; then
+  conda env create -n graphcast --file environment.yml -y
+  conda activate graphcast
+  conda clean --all -y
+  pip install --upgrade "$3/graphcast.zip"
+  pip cache purge
+  conda deactivate
 fi
-
-if [ -d "$2/miniconda3/envs/graphcast" ]; then
-  rm -rf "$2/miniconda3/envs/graphcast"
-fi
-
-conda env create -n graphcast --file environment.yml -y
-conda activate graphcast
-
-conda clean --all -y
-pip install --upgrade "$3/graphcast.zip"
 
 cp "$3/.cdsapirc" "$HOME"
 
+conda activate graphcast
 python run_graphcast.py --config_path "$1"
+conda deactivate
 echo "done"
