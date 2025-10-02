@@ -1,7 +1,11 @@
+setuptools
+wheel
+build
 pysolar
 requests
 xmltodict
 netcdf4
+cfgrib
 zarr
 cdsapi
 cartopy

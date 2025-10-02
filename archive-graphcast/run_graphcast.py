@@ -13,7 +13,7 @@ import pandas as pd
 
 from decorator import log
 from sources import Ifs, Gfs
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 
 _parser = argparse.ArgumentParser()
 _parser.add_argument('--config_path', '-c', dest='config_path', type=str, help='The fully qualified path to the configuration file', required=True)
@@ -133,7 +133,7 @@ class RunGraphcast:
 		properties = {c['@key']: c['@value'] for c in config['properties']['string']}
 
 		self.output_diag_file = config['outputDiagnosticFile']
-		self.t0 = datetime.strptime(f"{config['time0']['@date']}T{config['time0']['@time']}", "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+		self.t0 = datetime.strptime(f"{config['time0']['@date']}T{config['time0']['@time']}", "%Y-%m-%dT%H:%M:%S")
 
 		self.t0_offset_timesteps = int(properties['time_zero_offset_timesteps'])
 		self.predictions = json.loads(properties['forecast_length_timesteps'])

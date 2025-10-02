@@ -93,7 +93,7 @@ class Ifs:
 			data = Ifs._query(name, request)
 			data = data.drop_vars(set(data.variables) - {'valid_time', 'latitude', 'longitude', 'lsm', 'msl', 't2m', 'time', 'tisr', 'u10', 'v10', 'z'}).rename({'valid_time': 'time'})
 			data = data.rename({'u10': '10m_u_component_of_wind', 'v10': '10m_v_component_of_wind', 't2m': '2m_temperature', 'z': 'geopotential_at_surface', 'lsm': 'land_sea_mask', 'msl': 'mean_sea_level_pressure', 'tisr': 'toa_incident_solar_radiation'})
-			data['time'] = pd.to_datetime(data['time'].values).tz_localize('UTC')
+			data['time'] = pd.to_datetime(data['time'].values)
 
 			single_levels.append(data.to_dataframe())
 
@@ -130,7 +130,7 @@ class Ifs:
 			data = Ifs._query(name, request)
 			data = data.drop_vars(set(data.variables) - {'valid_time', 'latitude', 'longitude', 'pressure_level', 'q', 't', 'u', 'v', 'w', 'z'}).rename({'valid_time': 'time'})
 			data = data.rename({'u': 'u_component_of_wind', 'v': 'v_component_of_wind', 'z': 'geopotential', 'q': 'specific_humidity', 't': 'temperature', 'w': 'vertical_velocity'})
-			data['time'] = pd.to_datetime(data['time'].values).tz_localize('UTC')
+			data['time'] = pd.to_datetime(data['time'].values)
 
 			pressure_levels.append(data.to_dataframe())
 

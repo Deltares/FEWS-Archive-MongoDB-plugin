@@ -12,7 +12,7 @@ import pandas as pd
 
 from pysolar.solar import get_altitude
 from pysolar.radiation import get_radiation_direct
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime
 from graphcast import autoregressive, casting, data_utils, graphcast, normalization, rollout
 
 from decorator import log
@@ -91,11 +91,11 @@ class Graphcast:
 
 			state = {}
 
-			then = datetime.now(tz=timezone.utc)
+			then = datetime.now()
 			logger.info(f'graphcast [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction begin')
 			run_forward_jit = jax.jit(lambda rng, inputs, targets_template, forcings: Graphcast._run_forward.apply(model.params, state, rng, model, stddev_by_level, mean_by_level, diffs_stddev_by_level, inputs, targets_template, forcings)[0])
 			chunked_prediction = rollout.chunked_prediction(run_forward_jit, rng=jax.random.PRNGKey(0), inputs=observed_inputs, targets_template=prediction_targets, forcings=prediction_forcings)
-			logger.info(f'graphcast [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction finished in {datetime.now(tz=timezone.utc) - then}')
+			logger.info(f'graphcast [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction finished in {datetime.now() - then}')
 			chunked_predictions.append(chunked_prediction)
 
 			t0 = t0 + timedelta(hours=p*timestep)
@@ -141,8 +141,8 @@ class Graphcast:
 	@staticmethod
 	def _get_solar_radiation(longitude, latitude, dt):
 		watts_to_joules = 3600
-		altitude_degrees = get_altitude(latitude, longitude, dt)
-		return watts_to_joules * get_radiation_direct(dt.replace(tzinfo=None), altitude_degrees) if altitude_degrees > 0 else 0
+		altitude_degrees = get_altitude(latitude, longitude, dt.tz_localize("UTC"))
+		return watts_to_joules * get_radiation_direct(dt, altitude_degrees) if altitude_degrees > 0 else 0
 
 	@staticmethod
 	def _get_solar_radiation_parallel(args):
@@ -163,7 +163,7 @@ class Graphcast:
 	@staticmethod
 	def _get_solar_radiation_cache(dates):
 		cache = {}
-		cache_dates = {pd.to_datetime(f.replace('solar_radiation_cache_', '').replace('.nc', ''), utc=True): f for f in os.listdir(home_path) if f.startswith('solar_radiation_cache_') and f.endswith('.nc')}
+		cache_dates = {pd.to_datetime(f.replace('solar_radiation_cache_', '').replace('.nc', '')): f for f in os.listdir(home_path) if f.startswith('solar_radiation_cache_') and f.endswith('.nc')}
 		for date in dates:
 			if date in cache_dates:
 				try:
@@ -175,9 +175,9 @@ class Graphcast:
 				Graphcast._put_solar_radiation_cache(date)
 				ds = xr.load_dataset(os.path.join(home_path, f'solar_radiation_cache_{date:%Y%m%d%H%M}.nc'))
 
-			cache[date] = ds.assign_coords(time=pd.to_datetime(ds.coords['time'].values, utc=True)).to_dataframe()
+			cache[date] = ds.assign_coords(time=pd.to_datetime(ds.coords['time'].values)).to_dataframe()
 
-		[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
+		[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < datetime.now() - timedelta(days=7)]
 		return pd.concat(cache.values())
 
 	@staticmethod

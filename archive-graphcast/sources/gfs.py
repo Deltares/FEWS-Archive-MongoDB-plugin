@@ -100,7 +100,7 @@ class Gfs:
 			data = xr.merge([data, Gfs._query(name, request).drop_vars(['step', 'valid_time', 'heightAboveGround'])])
 
 			data = data.expand_dims('time')
-			data['time'] = pd.to_datetime(data['time'].values).tz_localize('UTC')
+			data['time'] = pd.to_datetime(data['time'].values)
 
 			single_levels.append(data.to_dataframe())
 
@@ -136,7 +136,7 @@ class Gfs:
 			data['gh'] = data['gh'] * _geopotential_meters_to_geopotential
 
 			data = data.expand_dims('time')
-			data['time'] = pd.to_datetime(data['time'].values).tz_localize('UTC')
+			data['time'] = pd.to_datetime(data['time'].values)
 
 			pressure_levels.append(data.to_dataframe())
 
