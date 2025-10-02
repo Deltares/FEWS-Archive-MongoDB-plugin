@@ -5,17 +5,17 @@
 	<endDateTime date="2025-09-06" time="12:00:00"/>
 	<time0 date="2025-09-06" time="12:00:00"/>
 	<lastObservationDateTime date="2025-09-06" time="12:00:00"/>
-	<workDir>$HOME/_git/FEWS-Archive/archive-graphcast</workDir>
-	<outputDiagnosticFile>$HOME/_git/FEWS-Archive/archive-graphcast/diag.xml</outputDiagnosticFile>
+	<workDir>/root/_git/FEWS-Archive/archive-graphcast</workDir>
+	<outputDiagnosticFile>/root/_git/FEWS-Archive/archive-graphcast/diag.xml</outputDiagnosticFile>
 	<properties>
 		<string key="forecast_length_timesteps" value="[1]"/>
         <string key="time_zero_offset_timesteps" value="1"/>
 		<string key="output_levels" value="[1000, 925, 850, 700, 600, 500, 400, 300, 250, 200, 150, 100, 50]"/>
 		<string key="output_parameters" value="['u_component_of_wind','v_component_of_wind','geopotential','specific_humidity','temperature','vertical_velocity','10m_u_component_of_wind','10m_v_component_of_wind','2m_temperature','mean_sea_level_pressure','total_precipitation_6hr']"/>
 		<string key="output_bounding_box" value="[[-89.47578320629594, 38.141490214811284],[-81.05468251757173, 33.40034413045149]]"/>
-		<string key="output_folder" value="$HOME/_git/FEWS-Archive/archive-graphcast"/>
+		<string key="output_folder" value="/root/_git/FEWS-Archive/archive-graphcast"/>
 		<string key="output_filename" value="GraphCastForecast.nc"/>
-		<string key="model_path" value="$HOME/_git/FEWS-Archive/archive-graphcast/models/GraphCastOperationalIfs"/>
+		<string key="model_path" value="/root/_git/FEWS-Archive/archive-graphcast/models/GraphCastOperationalIfs"/>
         <string key="source_initialization" value="ifs"/>
         <string key="downscaled_grid_cell_size_deg" value="0.0625"/>
         <string key="downscale_method" value="cubic"/>
