@@ -3,9 +3,7 @@
 set -e
 
 # CLEANUP
-if [ -d build ]; then
-  rm -rf build
-fi
+if [ -d build ]; then rm -rf build; fi
 mkdir build
 
 # BUILD PYTHON ENVIRONMENT
@@ -15,7 +13,7 @@ build/python/bin/python -m pip install -r requirements.txt
 build/python/bin/python -m pip freeze > frozen_requirements.txt
 
 # BUILD ENVIRONMENT
-tar -czf build/htpms.tar.gz -C build .
+tar -czf graphcast.tar.gz -C build .
 
 @echo SUCCESS
 
