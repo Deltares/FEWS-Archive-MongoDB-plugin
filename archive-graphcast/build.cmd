@@ -16,6 +16,7 @@ del build\Python\python*.zip /f /q || goto ERROR
 
 build\Python\python.exe -m pip install --upgrade pip --no-warn-script-location || goto ERROR
 build\Python\python.exe -m pip install -r requirements.txt --no-warn-script-location || goto ERROR
+build\python\python.exe -m pip install --upgrade models\GraphCastOperationalIfs\graphcast.zip
 build\Python\python.exe -m pip install . --no-build-isolation --no-warn-script-location || goto ERROR
 build\Python\python.exe -m pip freeze > frozen_requirements.txt || goto ERROR
 
