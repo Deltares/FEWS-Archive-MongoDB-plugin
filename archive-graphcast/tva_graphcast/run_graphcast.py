@@ -127,7 +127,7 @@ _diag = '''<?xml version="1.0" encoding="UTF-8"?>
 
 def main():
 	logging_format = '{"time": "%(asctime)s", "level": "%(levelname)s", "name": "%(name)s", "message": "%(message)s"}'
-	logging.basicConfig(filename=os.path.join(os.path.dirname(__file__), 'tva_graphcast.log'), level=logging.INFO, filemode='w+', format=logging_format)
+	logging.basicConfig(filename='tva_graphcast.log', level=logging.INFO, filemode='w+', format=logging_format)
 	stream_handler = logging.StreamHandler()
 	stream_handler.setFormatter(logging.Formatter(logging_format))
 	stream_handler.setLevel(logging.INFO)
