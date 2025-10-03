@@ -1,9 +1,13 @@
 #!/bin/bash
 # Copyright (c) 2025 INFISYS INC
 
-#[config_path] [environment_install_base_path] [model_path]
-#./tva_graphcast.sh "~/_git/FEWS-Archive/archive-tva_graphcast/configurations/gfs_posix_config.xml" "~/_git/FEWS-Archive/archive-tva_graphcast/build" "~/_git/FEWS-Archive/archive-tva_graphcast/models/GraphCastOperationalGfs"
+# [config_path] [environment_install_base_path] [model_path]
+# ./graphcast.sh "/root/_git/FEWS-Archive/archive-tva_graphcast/configurations/gfs_posix_config.xml" "/root/_git/FEWS-Archive/archive-tva_graphcast/build" "/root/_git/FEWS-Archive/archive-tva_graphcast/models/GraphCastOperationalGfs"
+
 set -e
+
+export XLA_PYTHON_CLIENT_PREALLOCATE=false
+export XLA_PYTHON_CLIENT_ALLOCATOR=platform
 
 cp "$3/.cdsapirc" "$HOME"
 
