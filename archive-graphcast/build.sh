@@ -17,7 +17,7 @@ build/python/bin/python -m pip freeze > frozen_requirements.txt
 
 # CLEANUP
 rm -rf tva_graphcast.egg-info
-rm -rf build/bdist.win-amd64
+rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
 
 # BUILD ENVIRONMENT
