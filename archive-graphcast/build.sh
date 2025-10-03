@@ -15,5 +15,5 @@ build/python/bin/python -m pip freeze > frozen_requirements.txt
 # BUILD ENVIRONMENT
 tar -czf graphcast.tar.gz -C build .
 
-@echo SUCCESS
+echo SUCCESS
 
