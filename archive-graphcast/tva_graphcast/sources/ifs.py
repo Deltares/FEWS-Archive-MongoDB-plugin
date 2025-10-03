@@ -11,14 +11,14 @@ import pandas as pd
 
 from datetime import timedelta, datetime, timezone
 from graphcast import graphcast, checkpoint
-from decorator import retry
-from model import Graphcast
+from tva_graphcast.decorator import retry
+from tva_graphcast.model import Graphcast
 
-from decorator import log
+from tva_graphcast.decorator import log
 
-logger = logging.getLogger('graphcast')
+logger = logging.getLogger('tva_graphcast')
 
-home_path = os.path.join(os.path.expanduser('~'), 'graphcast', 'ifs')
+home_path = os.path.join(os.path.expanduser('~'), 'tva_graphcast', 'ifs')
 os.makedirs(home_path, exist_ok=True)
 
 

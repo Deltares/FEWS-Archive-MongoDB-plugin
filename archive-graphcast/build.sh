@@ -10,12 +10,16 @@ mkdir build
 tar -xzf install/cpython*.tar.gz -C build
 build/python/bin/python -m pip install --upgrade pip
 build/python/bin/python -m pip install -r requirements.txt
+build/python/bin/python -m pip install . --no-build-isolation
 build/python/bin/python -m pip freeze > frozen_requirements.txt
 
 # BUILD ENVIRONMENT
-# tar -czf graphcast.tar.gz -C build .
+# tar -czf tva_graphcast.tar.gz -C build .
 cd build && 7z a -r graphcast.7z && cd ..
 mv build/graphcast.7z graphcast.7z
 
-echo SUCCESS
+# UPDATE REPOSITORY
+git commit -a -m "Environment Build"
+git push
 
+echo SUCCESS

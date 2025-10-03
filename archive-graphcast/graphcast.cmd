@@ -10,4 +10,4 @@ copy "%~3\.cdsapirc" "%UserProfile%"
 
 "%~2\Python\python.exe" -m pip install --upgrade "%~3\graphcast.zip"
 "%~2\Python\python.exe" -m pip cache purge
-"%~2\Python\python.exe" run_graphcast.py --config_path "%~1"
+"%~2\Python\python.exe" -m tva_graphcast -config_path "%~1"

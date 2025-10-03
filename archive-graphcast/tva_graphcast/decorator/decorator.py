@@ -5,7 +5,7 @@ import functools
 import time
 from datetime import datetime, timezone
 
-logger = logging.getLogger('graphcast')
+logger = logging.getLogger('tva_graphcast')
 
 _retry_attempts = 5
 _retry_pause_seconds = 5

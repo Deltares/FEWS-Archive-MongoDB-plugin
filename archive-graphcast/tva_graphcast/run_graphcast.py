@@ -11,8 +11,8 @@ import xmltodict
 import numpy as np
 import pandas as pd
 
-from decorator import log
-from sources import Ifs, Gfs
+from tva_graphcast.decorator import log
+from tva_graphcast.sources import Ifs, Gfs
 from datetime import datetime, timedelta
 
 _parser = argparse.ArgumentParser()
@@ -123,6 +123,16 @@ _diag = '''<?xml version="1.0" encoding="UTF-8"?>
 <Diag xmlns="http://www.wldelft.nl/fews/PI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.wldelft.nl/fews/PI http://fews.wldelft.nl/schemas/version1.0/pi-schemas/pi_diag.xsd" version="1.2">
 	<line level="1" description="{description}" />
 </Diag>'''
+
+
+def main():
+	logging_format = '{"time": "%(asctime)s", "level": "%(levelname)s", "name": "%(name)s", "message": "%(message)s"}'
+	logging.basicConfig(filename=os.path.join(os.path.dirname(__file__), 'tva_graphcast.log'), level=logging.INFO, filemode='w+', format=logging_format)
+	stream_handler = logging.StreamHandler()
+	stream_handler.setFormatter(logging.Formatter(logging_format))
+	stream_handler.setLevel(logging.INFO)
+	logging.getLogger().addHandler(stream_handler)
+	RunGraphcast().main()
 
 
 class RunGraphcast:
@@ -257,10 +267,4 @@ class RunGraphcast:
 
 
 if __name__ == '__main__':
-	logging_format = '{"time": "%(asctime)s", "level": "%(levelname)s", "name": "%(name)s", "message": "%(message)s"}'
-	logging.basicConfig(filename=os.path.join(os.path.dirname(__file__), 'graphcast.log'), level=logging.INFO, filemode='w+', format=logging_format)
-	stream_handler = logging.StreamHandler()
-	stream_handler.setFormatter(logging.Formatter(logging_format))
-	stream_handler.setLevel(logging.INFO)
-	logging.getLogger().addHandler(stream_handler)
-	RunGraphcast().main()
+	main()

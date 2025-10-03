@@ -1,0 +1,48 @@
+#  Copyright (c) 2025 INFISYS / TVA
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tva_graphcast"
+version = "0.5"
+description = "TVA Graphcast"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [
+  { name = "INFISYS INC" }
+]
+dependencies = [
+  "pysolar",
+  "requests",
+  "xmltodict",
+  "netcdf4",
+  "cfgrib",
+  "zarr",
+  "cdsapi",
+  "cartopy",
+  "chex",
+  "colabtools",
+  "dask",
+  "dinosaur-dycore",
+  "dm-haiku",
+  "dm-tree",
+  "jraph",
+  "matplotlib",
+  "numpy",
+  "pandas",
+  "rtree",
+  "scipy",
+  "trimesh",
+  "typing_extensions",
+  "xarray",
+  "xarray_tensorstore",
+  "jax[cpu]",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tva_graphcast", "tva_graphcast.*"]
+exclude = []

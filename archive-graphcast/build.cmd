@@ -16,11 +16,17 @@ del build\Python\python*.zip /f /q || goto ERROR
 
 build\Python\python.exe -m pip install --upgrade pip --no-warn-script-location || goto ERROR
 build\Python\python.exe -m pip install -r requirements.txt --no-warn-script-location || goto ERROR
+build\Python\python.exe -m pip install . --no-build-isolation --no-warn-script-location || goto ERROR
 build\Python\python.exe -m pip freeze > frozen_requirements.txt || goto ERROR
 
 :: BUILD ENVIRONMENT
 cd build && ( ..\install\7za a graphcast.7z -r -mmt16 || goto ERROR ) && cd ..
 move build\graphcast.7z graphcast.7z || goto ERROR
+
+:: UPDATE REPOSITORY
+git commit -a -m "Environment Build"
+git push || goto ERROR
+
 
 @echo SUCCESS
 @goto END

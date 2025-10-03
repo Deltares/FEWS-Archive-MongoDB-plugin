@@ -1,6 +1,5 @@
 setuptools
 wheel
-build
 pysolar
 requests
 xmltodict

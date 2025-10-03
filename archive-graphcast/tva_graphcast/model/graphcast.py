@@ -15,13 +15,13 @@ from pysolar.radiation import get_radiation_direct
 from datetime import timedelta, datetime
 from graphcast import autoregressive, casting, data_utils, graphcast, normalization, rollout
 
-from decorator import log
+from tva_graphcast.decorator import log
 
-logger = logging.getLogger('graphcast')
+logger = logging.getLogger('tva_graphcast')
 
 _prediction_fields = ['u_component_of_wind', 'v_component_of_wind', 'geopotential', 'specific_humidity', 'temperature', 'vertical_velocity', '10m_u_component_of_wind', '10m_v_component_of_wind', '2m_temperature', 'mean_sea_level_pressure', 'total_precipitation_6hr']
 
-home_path = os.path.join(os.path.expanduser('~'), 'graphcast')
+home_path = os.path.join(os.path.expanduser('~'), 'tva_graphcast')
 os.makedirs(home_path, exist_ok=True)
 
 
@@ -92,10 +92,10 @@ class Graphcast:
 			state = {}
 
 			then = datetime.now()
-			logger.info(f'graphcast [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction begin')
+			logger.info(f'tva_graphcast [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction begin')
 			run_forward_jit = jax.jit(lambda rng, inputs, targets_template, forcings: Graphcast._run_forward.apply(model.params, state, rng, model, stddev_by_level, mean_by_level, diffs_stddev_by_level, inputs, targets_template, forcings)[0])
 			chunked_prediction = rollout.chunked_prediction(run_forward_jit, rng=jax.random.PRNGKey(0), inputs=observed_inputs, targets_template=prediction_targets, forcings=prediction_forcings)
-			logger.info(f'graphcast [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction finished in {datetime.now() - then}')
+			logger.info(f'tva_graphcast [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction finished in {datetime.now() - then}')
 			chunked_predictions.append(chunked_prediction)
 
 			t0 = t0 + timedelta(hours=p*timestep)
