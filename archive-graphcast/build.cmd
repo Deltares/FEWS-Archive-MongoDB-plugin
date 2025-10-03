@@ -20,6 +20,11 @@ build\python\python.exe -m pip install --upgrade models\GraphCastOperationalIfs\
 build\Python\python.exe -m pip install . --no-build-isolation --no-warn-script-location || goto ERROR
 build\Python\python.exe -m pip freeze > frozen_requirements.txt || goto ERROR
 
+:: CLEANUP
+rmdir tva_graphcast.egg-info /s /q || goto ERROR
+rmdir build\bdist.win-amd64 /s /q || goto ERROR
+rmdir build\lib /s /q || goto ERROR
+
 :: BUILD ENVIRONMENT
 cd build && ( ..\install\7za a graphcast.7z -r -mmt16 || goto ERROR ) && cd ..
 move build\graphcast.7z graphcast.7z || goto ERROR

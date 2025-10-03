@@ -14,6 +14,11 @@ build/python/bin/python -m pip install --upgrade models/GraphCastOperationalIfs/
 build/python/bin/python -m pip install . --no-build-isolation
 build/python/bin/python -m pip freeze > frozen_requirements.txt
 
+# CLEANUP
+rm -rf tva_graphcast.egg-info
+rm -rf build/bdist.win-amd64
+rm -rf build/lib
+
 # BUILD ENVIRONMENT
 # tar -czf tva_graphcast.tar.gz -C build .
 cd build && 7z a -r graphcast.7z && cd ..
