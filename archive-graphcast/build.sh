@@ -15,7 +15,7 @@ build/python/bin/python -m pip freeze > frozen_requirements.txt
 # BUILD ENVIRONMENT
 # tar -czf graphcast.tar.gz -C build .
 cd build && 7z a -r graphcast.7z && cd ..
-move build\graphcast.7z graphcast.7z
+mv build\graphcast.7z graphcast.7z
 
 echo SUCCESS
 
