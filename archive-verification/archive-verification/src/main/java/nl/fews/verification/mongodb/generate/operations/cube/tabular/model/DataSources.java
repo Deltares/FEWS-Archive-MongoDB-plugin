@@ -1,7 +1,7 @@
 package nl.fews.verification.mongodb.generate.operations.cube.tabular.model;
 
 import nl.fews.verification.mongodb.generate.interfaces.IModel;
-import nl.fews.verification.mongodb.shared.crypto.Crypto;
+import nl.fews.verification.mongodb.shared.crypto.CryptoOfb;
 import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
 
@@ -33,7 +33,7 @@ public final class DataSources implements IModel {
 		var credential = dataSource.get("credential", Document.class);
 		credential.append("path", database);
 		credential.append("Username", username);
-		credential.append("Password", Crypto.decrypt(password));
+		credential.append("Password", CryptoOfb.decrypt(password));
 		template.get("model", Document.class).append("dataSources", List.of(dataSource));
 	}
 }

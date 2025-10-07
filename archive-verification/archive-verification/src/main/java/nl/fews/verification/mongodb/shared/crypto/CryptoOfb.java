@@ -8,11 +8,10 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 @SuppressWarnings({"unused"})
-public final class Crypto {
+public final class CryptoOfb {
 	private static final String KEY = "uzyHy/GhHIfSr/uWaVWl2gqnoudfZ4rbuAxlmib54DQ=";
-    private static final String IV = "fi5iKoY0nj1fsKa+yaGn3A==";
 
-	private Crypto(){}
+	private CryptoOfb(){}
 
 	/**
 	 *
@@ -33,17 +32,6 @@ public final class Crypto {
 	}
 
 	/**
-	 * Generates a random Initialization Vector (IV) for use in encryption algorithms.
-	 *
-	 * @return The generated IV as a Base64 encoded string.
-	 */
-	public static String generateIv() {
-		byte[] iv = new byte[128/8];
-		new SecureRandom().nextBytes(iv);
-		return Base64.getEncoder().encodeToString(iv);
-	}
-
-	/**
 	 * Encrypts the given plain text using AES encryption algorithm with OFB mode and no padding.
 	 *
 	 * @param plainText The plain text to be encrypted.
@@ -53,8 +41,10 @@ public final class Crypto {
 	public static String encrypt(String plainText) {
 		try {
 			Cipher cipher = Cipher.getInstance("AES/OFB/NoPadding");
-			cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(Base64.getDecoder().decode(KEY), "AES"), new IvParameterSpec(Base64.getDecoder().decode(IV)));
-			return Base64.getEncoder().encodeToString(cipher.doFinal(plainText.getBytes()));
+			byte[] nonce = new byte[128/8];
+			new SecureRandom().nextBytes(nonce);
+			cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(Base64.getDecoder().decode(KEY), "AES"), new IvParameterSpec(nonce));
+			return String.format("%s|%s", Base64.getEncoder().encodeToString(nonce), Base64.getEncoder().encodeToString(cipher.doFinal(plainText.getBytes())));
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);
@@ -71,8 +61,9 @@ public final class Crypto {
 	public static String decrypt(String cipherText) {
 		try {
 			Cipher cipher = Cipher.getInstance("AES/OFB/NoPadding");
-			cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(Base64.getDecoder().decode(KEY), "AES"), new IvParameterSpec(Base64.getDecoder().decode(IV)));
-			return new String(cipher.doFinal(Base64.getDecoder().decode(cipherText)));
+			String[] parts = cipherText.split("\\|");
+			cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(Base64.getDecoder().decode(KEY), "AES"), new IvParameterSpec(Base64.getDecoder().decode(parts[0])));
+			return new String(cipher.doFinal(Base64.getDecoder().decode(parts[1])));
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);
