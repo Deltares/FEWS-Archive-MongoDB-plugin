@@ -27,7 +27,7 @@ rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
 
 # BUILD ENVIRONMENT
-# tar -czf tva_graphcast.tar.gz -C build .
+# tar -czf graphcast.tar.gz -C build .
 cd build && 7z a -r graphcast.zip && cd ..
 mv build/graphcast.zip graphcast.zip
 
