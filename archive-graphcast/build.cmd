@@ -32,7 +32,7 @@ rmdir build\bdist.win-amd64 /s /q || goto ERROR
 rmdir build\lib /s /q || goto ERROR
 
 :: BUILD ENVIRONMENT
-cd build && ( ..\install\7za a graphcast.7z -r -mmt16 || goto ERROR ) && cd ..
+cd build && ( ..\install\7za a graphcast.7z -r -snl || goto ERROR ) && cd ..
 move build\graphcast.7z graphcast.7z || goto ERROR
 
 :: UPDATE REPOSITORY
