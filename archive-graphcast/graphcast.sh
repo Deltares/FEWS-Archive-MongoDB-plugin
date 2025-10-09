@@ -8,7 +8,7 @@ set -e
 
 d=$( dirname "$0" )
 
-echo ""$d"
+echo "$d"
 
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
 export XLA_PYTHON_CLIENT_ALLOCATOR=platform
