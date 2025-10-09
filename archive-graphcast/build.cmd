@@ -21,7 +21,7 @@ build\Python\python.exe -m pip install . --no-build-isolation --no-warn-script-l
 build\Python\python.exe -m pip freeze > frozen_requirements.txt || goto ERROR
 
 :: ADD MODELS
-xcopy models\* build\
+xcopy /e /y models\* build\
 
 :: ADD SCRIPTS
 copy graphcast.cmd build\ /Y
@@ -38,7 +38,6 @@ move build\graphcast.7z graphcast.7z || goto ERROR
 :: UPDATE REPOSITORY
 git commit -a -m "Environment Build"
 git push || goto ERROR
-
 
 @echo SUCCESS
 @goto END
