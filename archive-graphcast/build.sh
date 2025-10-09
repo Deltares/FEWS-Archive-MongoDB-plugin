@@ -28,8 +28,8 @@ rm -rf build/lib
 
 # BUILD ENVIRONMENT
 # tar -czf tva_graphcast.tar.gz -C build .
-cd build && 7z a -r graphcast.7z && cd ..
-mv build/graphcast.7z graphcast.7z
+cd build && 7z a -r graphcast.zip && cd ..
+mv build/graphcast.zip graphcast.zip
 
 # UPDATE REPOSITORY
 git commit -a -m "Environment Build"
