@@ -18,10 +18,10 @@ docker run --rm -v "$PWD:/io" quay.io/pypa/manylinux2014_x86_64 bash -lc "
     auditwheel repair /io/wheelhouse/*.whl -w /io/wheelhouse || true
   "
 
-build/python/bin/python -m pip install --root-user-action --upgrade pip
-build/python/bin/python -m pip install --root-user-action --no-index --find-links wheelhouse -r requirements.txt
-build/python/bin/python -m pip install --root-user-action --no-index --find-links wheelhouse --upgrade models/GraphCastOperationalIfs/graphcast.zip
-build/python/bin/python -m pip install --root-user-action --no-index --find-links wheelhouse --no-build-isolation .
+build/python/bin/python -m pip install --root-user-action ignore --upgrade pip
+build/python/bin/python -m pip install --root-user-action ignore --no-index --find-links wheelhouse -r requirements.txt
+build/python/bin/python -m pip install --root-user-action ignore --no-index --find-links wheelhouse --upgrade models/GraphCastOperationalIfs/graphcast.zip
+build/python/bin/python -m pip install --root-user-action ignore --no-index --find-links wheelhouse --no-build-isolation .
 build/python/bin/python -m pip freeze > frozen_requirements.txt
 
 # ADD MODELS
