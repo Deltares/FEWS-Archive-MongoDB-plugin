@@ -1,6 +1,6 @@
 # Copyright (c) 2025 RTI International / TVA / INFISYS
 
-set -e
+set -ex
 
 # CLEANUP
 rm -rf build
@@ -24,6 +24,7 @@ pip install models/GraphCastOperationalIfs/graphcast.zip
 pip install .
 
 conda env export > frozen_environment.yml
+conda deactivate
 
 # ADD MODELS
 \cp -rf models/* build/
