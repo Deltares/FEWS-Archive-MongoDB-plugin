@@ -12,6 +12,9 @@ bash miniconda.sh -b -p build/miniconda
 rm -f miniconda.sh
 source build/miniconda/etc/profile.d/conda.sh
 
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+
 conda env create -f environment.yml
 conda activate env
 conda env create -y -n env
