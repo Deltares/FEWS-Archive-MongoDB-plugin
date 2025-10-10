@@ -7,14 +7,14 @@ rm -rf build wheelhouse
 mkdir build wheelhouse
 
 # BUILD PYTHON ENVIRONMENT
-tar -xzf install/cpython*.tar.gz -C build
+tar -xzf install/old/cpython-3.12*.tar.gz -C build
 
 docker run --rm -v "$PWD:/io" quay.io/pypa/manylinux2014_x86_64 bash -lc '
   set -e
-  /opt/python/cp313-cp313/bin/python -m pip install --upgrade pip wheel build setuptools auditwheel
-  /opt/python/cp313-cp313/bin/pip wheel --only-binary=:all: -r /io/requirements.txt -w /io/wheelhouse
-  /opt/python/cp313-cp313/bin/pip wheel --only-binary=:all: /io/models/GraphCastOperationalIfs/graphcast.zip -w /io/wheelhouse
-  /opt/python/cp313-cp313/bin/pip wheel --only-binary=:all: /io/. -w /io/wheelhouse --no-deps --no-build-isolation
+  /opt/python/cp312-cp312/bin/python -m pip install --upgrade pip wheel build setuptools auditwheel
+  /opt/python/cp312-cp312/bin/pip wheel -r /io/requirements.txt -w /io/wheelhouse
+  /opt/python/cp312-cp312/bin/pip wheel /io/models/GraphCastOperationalIfs/graphcast.zip -w /io/wheelhouse
+  /opt/python/cp312-cp312/bin/pip wheel /io/. -w /io/wheelhouse --no-deps --no-build-isolation
   auditwheel repair /io/wheelhouse/*.whl -w /io/wheelhouse || true
 
   #cp -a /usr/lib64/libstdc++.so.6.* /io/build/python/lib/
