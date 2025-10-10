@@ -3,7 +3,7 @@
 set -e
 
 # CLEANUP
-if [ -d build ]; then rm -rf build; fi
+rm -rf build
 mkdir build
 
 # BUILD PYTHON ENVIRONMENT
@@ -28,8 +28,7 @@ rm -rf build/lib
 
 # BUILD ENVIRONMENT
 # tar -czf graphcast.tar.gz -C build .
-cd build && 7z a -r -snl graphcast.zip && cd ..
-mv build/graphcast.zip graphcast.zip
+cd build && 7z a -r -snl ../graphcast.zip && cd ..
 
 # UPDATE REPOSITORY
 git commit -a -m "Environment Build"
