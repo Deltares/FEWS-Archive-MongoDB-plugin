@@ -31,8 +31,8 @@ fonttools==4.60.1
 fsspec==2025.9.0
 graphcast @ file:///root/_git/FEWS-Archive/archive-graphcast/models/GraphCastOperationalIfs/graphcast.zip#sha256=64d0c6ad379f0bdb1b49b3e9560150bdd4b3bf5af33f0aea8bf2f7817d79ec9f
 idna==3.10
-jax==0.7.2
-jaxlib==0.7.2
+jax==0.7.0
+jaxlib==0.7.0
 jmp==0.0.4
 joblib==1.5.2
 jraph==0.0.6.dev0
