@@ -29,6 +29,7 @@ dependencies:
   - typing_extensions
   - xarray
   - jax[cpu]
+  - pip
   - pip:
       - colabtools
       - xarray_tensorstore
