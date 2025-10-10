@@ -19,8 +19,11 @@ dinosaur-dycore==1.2.1
 dm-haiku==0.0.15
 dm-tree==0.1.9
 donfig==0.8.1.post1
-eccodes==2.42.0
+eccodes==2.44.0
+eccodeslib==2.44.0.1
+eckitlib==1.32.1.1
 ecmwf-datastores-client==0.4.0
+fckitlib==0.14.0.1
 findlibs==0.1.2
 flexcache==0.3
 flexparser==0.4
@@ -28,8 +31,8 @@ fonttools==4.60.1
 fsspec==2025.9.0
 graphcast @ file:///root/_git/FEWS-Archive/archive-graphcast/models/GraphCastOperationalIfs/graphcast.zip#sha256=64d0c6ad379f0bdb1b49b3e9560150bdd4b3bf5af33f0aea8bf2f7817d79ec9f
 idna==3.10
-jax==0.7.0
-jaxlib==0.7.0
+jax==0.7.2
+jaxlib==0.7.2
 jmp==0.0.4
 joblib==1.5.2
 jraph==0.0.6.dev0
