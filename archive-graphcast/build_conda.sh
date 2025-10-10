@@ -1,6 +1,6 @@
 # Copyright (c) 2025 RTI International / TVA / INFISYS
 
-set -ex
+set -e
 
 # CLEANUP
 rm -rf build
