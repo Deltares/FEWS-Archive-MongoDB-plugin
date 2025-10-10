@@ -11,7 +11,7 @@ tar -xzf install/cpython*.tar.gz -C build
 
 build/python/bin/python -m pip install --upgrade pip
 build/python/bin/python -m pip download -d wheelhouse --only-binary=:all: --platform manylinux2014_x86_64 --implementation cp --python-version 313 --abi cp313 -r requirements.txt
-build/python/bin/python -m pip install --no-index --find-links wheelhouse numpy cartopy pandas jax xarray_tensorstore jax
+build/python/bin/python -m pip install --no-index --find-links wheelhouse -r requirements.txt
 
 build/python/bin/python -m pip install -r requirements.txt
 build/python/bin/python -m pip install --upgrade models/GraphCastOperationalIfs/graphcast.zip
