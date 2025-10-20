@@ -18,6 +18,6 @@ jobs:
       with:
         java-version: 17
         distribution: corretto
-    - run: mvn -B package --file archive-verification/archive-verification/pom.xml -DskipTests
-    - run: mvn -B package --file archive-database/archive-database/pom.xml -DskipTests
+    - run: mvn -B package --file archive-verification/archive-verification/pom.xml -DskipTests -e -X
+    - run: mvn -B package --file archive-database/archive-database/pom.xml -DskipTests -e -X
     - uses: github/codeql-action/analyze@v3
