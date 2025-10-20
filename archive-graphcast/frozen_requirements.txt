@@ -1,8 +1,8 @@
 absl-py==2.3.1
-attrs==25.3.0
+attrs==25.4.0
 Cartopy==0.25.0
 cdsapi==0.7.7
-certifi==2025.8.3
+certifi==2025.10.5
 cffi==2.0.0
 cfgrib==0.9.15.1
 cftime==1.6.4.post1
@@ -20,10 +20,10 @@ dm-haiku==0.0.15
 dm-tree==0.1.9
 donfig==0.8.1.post1
 eccodes==2.44.0
-eccodeslib==2.43.0
-eckitlib==1.31.4
+eccodeslib==2.44.0.1
+eckitlib==1.32.1.1
 ecmwf-datastores-client==0.4.0
-fckitlib==0.14.0
+fckitlib==0.14.0.1
 findlibs==0.1.2
 flexcache==0.3
 flexparser==0.4
@@ -38,7 +38,7 @@ joblib==1.5.2
 jraph==0.0.6.dev0
 kiwisolver==1.4.9
 locket==1.0.0
-matplotlib==3.10.6
+matplotlib==3.10.7
 ml_dtypes==0.5.3
 multiurl==0.3.7
 netCDF4==1.7.2
@@ -50,11 +50,11 @@ pandas==2.3.3
 partd==1.4.2
 pillow==11.3.0
 Pint==0.25
-platformdirs==4.4.0
+platformdirs==4.5.0
 pycparser==2.23
 pyparsing==3.2.5
 pyproj==3.7.2
-pyshp==2.3.1
+pyshp==3.0.2.post1
 pysolar==0.13
 python-dateutil==2.9.0.post0
 pytz==2025.2
@@ -67,7 +67,7 @@ setuptools==80.9.0
 shapely==2.1.2
 six==1.17.0
 tabulate==0.9.0
-tensorstore==0.1.77
+tensorstore==0.1.78
 threadpoolctl==3.6.0
 toolz==1.0.0
 tqdm==4.67.1
@@ -79,7 +79,7 @@ tzdata==2025.2
 urllib3==2.5.0
 wheel==0.45.1
 wrapt==1.17.3
-xarray==2025.9.1
+xarray==2025.10.1
 xarray-tensorstore==0.2.0
 xmltodict==1.0.2
 zarr==3.1.3

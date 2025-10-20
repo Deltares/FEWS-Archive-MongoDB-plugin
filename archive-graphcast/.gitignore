@@ -1,5 +1,6 @@
 .idea/sonarlint
 .idea/workspace.xml
+__pycache__
 *.nc
 *.exe
 *.zip
@@ -7,4 +8,3 @@
 *.7z
 *.xml
 build
-

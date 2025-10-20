@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Run xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.wldelft.nl/fews/PI" xsi:schemaLocation="http://www.wldelft.nl/fews/PI https://fewsdocs.deltares.nl/schemas/version1.0/pi-schemas/pi_run.xsd" version="1.5">
 	<timeZone>0.0</timeZone>
-	<startDateTime date="2025-09-26" time="12:00:00"/>
-	<endDateTime date="2025-09-26" time="12:00:00"/>
-	<time0 date="2025-09-26" time="12:00:00"/>
-	<lastObservationDateTime date="2025-09-26" time="12:00:00"/>
+	<startDateTime date="2025-10-06" time="12:00:00"/>
+	<endDateTime date="2025-10-06" time="12:00:00"/>
+	<time0 date="2025-10-06" time="12:00:00"/>
+	<lastObservationDateTime date="2025-10-06" time="12:00:00"/>
 	<workDir>c:\_GIT\FEWS-Archive\archive-graphcast\</workDir>
 	<outputDiagnosticFile>c:\_GIT\FEWS-Archive\archive-graphcast\diag.xml</outputDiagnosticFile>
 	<properties>

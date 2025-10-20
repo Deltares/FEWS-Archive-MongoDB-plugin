@@ -3,17 +3,23 @@
 set -e
 
 # CLEANUP
-if [ -d build ]; then rm -rf build; fi
+rm -rf build
 mkdir build
 
 # BUILD PYTHON ENVIRONMENT
 tar -xzf install/cpython*.tar.gz -C build
 
-build/python/bin/python -m pip install --upgrade pip
-build/python/bin/python -m pip install -r requirements.txt
-build/python/bin/python -m pip install --upgrade models/GraphCastOperationalIfs/graphcast.zip
-build/python/bin/python -m pip install . --no-build-isolation
+build/python/bin/python -m pip install --root-user-action ignore --upgrade pip
+build/python/bin/python -m pip install --root-user-action ignore -r requirements.txt
+build/python/bin/python -m pip install --root-user-action ignore --upgrade models/GraphCastOperationalIfs/graphcast.zip
+build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation .
 build/python/bin/python -m pip freeze > frozen_requirements.txt
+
+# ADD MODELS
+\cp -rf models/* build/
+
+# ADD SCRIPTS
+\cp -f graphcast.sh build/
 
 # CLEANUP
 rm -rf tva_graphcast.egg-info
@@ -21,9 +27,8 @@ rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
 
 # BUILD ENVIRONMENT
-# tar -czf tva_graphcast.tar.gz -C build .
-cd build && 7z a -r graphcast.7z && cd ..
-mv build/graphcast.7z graphcast.7z
+# tar -czf graphcast.tar.gz -C build .
+cd build && 7z a -r -snl ../graphcast.zip && cd ..
 
 # UPDATE REPOSITORY
 git commit -a -m "Environment Build"

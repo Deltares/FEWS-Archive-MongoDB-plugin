@@ -16,7 +16,6 @@ dm-haiku
 dm-tree
 jraph
 matplotlib
-numpy
 pandas
 rtree
 scipy
