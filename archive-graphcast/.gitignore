@@ -1,5 +1,10 @@
-/.idea/sonarlint
-/.idea/workspace.xml
-/*.nc
-/*.exe
-/environment.yml
+.idea/sonarlint
+.idea/workspace.xml
+__pycache__
+*.nc
+*.exe
+*.zip
+*.log
+*.7z
+*.xml
+build

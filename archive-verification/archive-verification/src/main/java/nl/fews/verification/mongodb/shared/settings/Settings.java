@@ -4,7 +4,7 @@ import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
-import nl.fews.verification.mongodb.shared.crypto.Crypto;
+import nl.fews.verification.mongodb.shared.crypto.CryptoOfb;
 
 import org.bson.Document;
 import org.json.JSONObject;
@@ -98,7 +98,7 @@ public final class Settings {
 		if (dbUsername != null && !dbUsername.isEmpty() && dbAesPassword != null && !dbAesPassword.isEmpty()){
 			try{
 				var m = Pattern.compile("^(.+://)(.+)$").matcher(dbConnection);
-				return validMongoDbConnection(m.find() ? m.replaceFirst(String.format("$1%s:%s@$2", dbUsername.replace("$", "\\$"), Crypto.decrypt(dbAesPassword).replace("$", "\\$"))) : dbConnection);
+				return validMongoDbConnection(m.find() ? m.replaceFirst(String.format("$1%s:%s@$2", dbUsername.replace("$", "\\$"), CryptoOfb.decrypt(dbAesPassword).replace("$", "\\$"))) : dbConnection);
 			}
 			catch (Exception ex){
 				exceptions.add(ex);
@@ -117,14 +117,14 @@ public final class Settings {
 
 		try {
 			var m = Pattern.compile("^(.+:.+:)(.+)(@.+)$").matcher(dbConnection);
-			return validMongoDbConnection(m.find() ? m.replaceFirst(String.format("$1%s$3", Crypto.decrypt(m.group(2)).replace("$", "\\$"))) : dbConnection);
+			return validMongoDbConnection(m.find() ? m.replaceFirst(String.format("$1%s$3", CryptoOfb.decrypt(m.group(2)).replace("$", "\\$"))) : dbConnection);
 		}
 		catch (Exception ex) {
 			exceptions.add(ex);
 		}
 
 		try {
-			return validMongoDbConnection(Crypto.decrypt(dbConnection));
+			return validMongoDbConnection(CryptoOfb.decrypt(dbConnection));
 		}
 		catch (Exception ex){
 			exceptions.add(ex);
