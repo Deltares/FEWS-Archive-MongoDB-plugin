@@ -27,7 +27,7 @@ flexparser==0.4
 fonttools==4.61.1
 fsspec==2025.12.0
 google-crc32c==1.8.0
-graphcast @ file:///C:/_GIT/FEWS-Archive/archive-graphcast/models/GraphCastOperationalIfs/graphcast.zip#sha256=64d0c6ad379f0bdb1b49b3e9560150bdd4b3bf5af33f0aea8bf2f7817d79ec9f
+graphcast @ file:///C:/_GIT/FEWS-Archive/archive-graphcast/models/GraphCastOperationalIfs/graphcast.zip#sha256=63a6fe352511ec3df0d4f35d0b2e8776b08bb90fbc472434f30dd6185d861881
 idna==3.11
 jax==0.8.2
 jaxlib==0.8.2
