@@ -21,8 +21,8 @@ public final class DataSources implements IModel {
 
 		var dataSource = template.get("model", Document.class).getList("dataSources", Document.class).get(0);
 		var database = Settings.get("databaseConnectionString", String.class);
-		var username = Settings.get("fewsArchiveDbUsername", String.class);
-		var password = Settings.get("fewsArchiveDbAesPassword", String.class);
+		var username = Settings.get("fewsVerificationDbUsername", String.class);
+		var password = Settings.get("fewsVerificationDbAesPassword", String.class);
 		var db = Arrays.stream(database.split(";")).filter(s -> s.contains("=")).map(s -> s.split("=")).collect(Collectors.toMap(s -> s[0], s -> s[1]));
 
 		var options = dataSource.get("connectionDetails", Document.class).get("address", Document.class).get("options", Document.class);

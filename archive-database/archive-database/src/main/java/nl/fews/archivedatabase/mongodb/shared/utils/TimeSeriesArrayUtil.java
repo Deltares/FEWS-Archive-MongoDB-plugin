@@ -1,5 +1,6 @@
 package nl.fews.archivedatabase.mongodb.shared.utils;
 
+import nl.fews.archivedatabase.mongodb.MongoDbArchiveDatabase;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.FewsTimeSeriesHeaderProvider;
@@ -17,8 +18,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TimeSeriesArrayUtil {
+
+	/**
+	 *
+	 */
+	private static final Logger logger = LogManager.getLogger(TimeSeriesArrayUtil.class);
+
 	/**
 	 *
 	 */
@@ -64,8 +73,8 @@ public class TimeSeriesArrayUtil {
 	 * @return Box<TimeSeriesHeader, SystemActivityDescriptor>
 	 */
 	private static Box<TimeSeriesHeader, SystemActivityDescriptor> getTimeSeriesHeader(Document result, HeaderRequest.HeaderRequestBuilder headerRequestBuilder){
+		var headerBox = new AtomicReference<Box<TimeSeriesHeader, SystemActivityDescriptor>>();
 		for (int i = 0; i < 5; i++) {
-			var headerBox = new AtomicReference<Box<TimeSeriesHeader, SystemActivityDescriptor>>();
 			var thread = ThreadUtils.newThread(() -> headerBox.set(Settings.get("headerProvider", FewsTimeSeriesHeaderProvider.class).getHeader(headerRequestBuilder.build())), "getTimeSeriesHeader");
 			thread.start();
 			try {
@@ -77,12 +86,17 @@ public class TimeSeriesArrayUtil {
 			if (h != null && h.getObject0() != null && !h.getObject0().equals(TimeSeriesHeader.NONE) && !h.getObject0().isNone()) {
 				return h;
 			}
+			else{
+				System.err.println(String.format("FewsTimeSeriesHeaderProvider.getHeader(headerRequestBuilder.build()) FAILED %s", result.toJson()));
+				System.out.println(String.format("FewsTimeSeriesHeaderProvider.getHeader(headerRequestBuilder.build()) FAILED %s", result.toJson()));
+				logger.info(String.format("FewsTimeSeriesHeaderProvider.getHeader(headerRequestBuilder.build()) FAILED %s", result.toJson()));
+			}
 			try{
 				Thread.sleep(100);
 			}
 			catch (InterruptedException e) {/*IGNORE*/}
 		}
-		throw new RuntimeException(String.format("FewsTimeSeriesHeaderProvider.getHeader(headerRequestBuilder.build()) FAILED %s", result.toJson()));
+		return headerBox.get();
 	}
 
 	/**
