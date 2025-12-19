@@ -10,7 +10,7 @@ mkdir build
 tar -xzf install/cpython*.tar.gz -C build
 
 build/python/bin/python -m pip install --root-user-action ignore --upgrade pip
-build/python/bin/python -m pip install --root-user-action ignore -r requirements.txt
+build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation --no-binary :all: -r requirements.txt
 build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation --upgrade models/GraphCastOperationalIfs/graphcast.zip
 build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation --no-binary :all: .
 build/python/bin/python -m pip freeze > frozen_requirements.txt
