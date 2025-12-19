@@ -2,7 +2,7 @@
 # Copyright (c) 2025 INFISYS INC
 
 # [config_path] [model_name]
-# ./graphcast.sh "/root/_git/FEWS-Archive/archive-tva_graphcast/configurations/gfs_posix_config.xml" "GraphCastOperationalGfs"
+# ./graphcast.sh "/root/_git/FEWS-Archive/archive-graphcast/configurations/gfs_posix_config.xml" "GraphCastOperationalGfs"
 
 set -e
 
