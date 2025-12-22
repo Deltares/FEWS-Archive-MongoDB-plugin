@@ -22,6 +22,7 @@ build/python/bin/python -m pip freeze > frozen_requirements.txt
 
 # ADD SCRIPTS
 \cp -f graphcast.sh build/
+\cp -f graphcast_fews.sh build/
 
 # CLEANUP
 rm -rf tva_graphcast.egg-info
