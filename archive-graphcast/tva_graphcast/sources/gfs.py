@@ -70,7 +70,7 @@ class Gfs:
 
 	@staticmethod
 	def _put_data_cache(name, request, filename):
-		response = requests.get(f'{name}{"".join(request)}')
+		response = requests.get(f'{name}{"".join(request)}', verify=False)
 		if response.status_code != 200:
 			raise ImportError(response.text)
 		with open(filename, 'wb') as f:
