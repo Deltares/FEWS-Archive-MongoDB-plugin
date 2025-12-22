@@ -41,7 +41,7 @@ ml_dtypes==0.5.4
 multiurl==0.3.7
 netCDF4==1.7.3
 numcodecs==0.16.5
-numpy==2.3.5
+numpy==2.4.0
 opt_einsum==3.4.0
 packaging==25.0
 pandas==2.3.3
