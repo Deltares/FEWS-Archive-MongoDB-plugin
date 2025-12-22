@@ -17,6 +17,7 @@ from datetime import datetime, timedelta
 
 _parser = argparse.ArgumentParser()
 _parser.add_argument('--config_path', '-c', dest='config_path', type=str, help='The fully qualified path to the configuration file', required=True)
+_parser.add_argument('--model_path', '-m', dest='model_path', type=str, help='The fully qualified path to the model folder', required=True)
 _args = _parser.parse_args()
 
 _timestep = 6
@@ -150,9 +151,9 @@ class RunGraphcast:
 		self.levels = json.loads(properties['output_levels'])
 		self.fields = json.loads(properties['output_parameters'].replace('\'', '"'))
 		self.corners = json.loads(properties['output_bounding_box'])
-		self.output_folder = os.path.normpath(os.path.expandvars(properties['output_folder']))
+		self.model_path = os.path.normpath(os.path.expanduser(os.path.expandvars(_args.model_path)))
+		self.output_folder = os.path.normpath(os.path.expanduser(os.path.expandvars(properties['output_folder'])))
 		self.output_file = os.path.join(self.output_folder, properties['output_filename'])
-		self.model_path = os.path.expandvars(properties['model_path'])
 		self.source = properties['source_initialization']
 		self.downscale = float(properties['downscaled_grid_cell_size_deg'])
 		self.downscale_method = properties['downscale_method']

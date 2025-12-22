@@ -15,7 +15,6 @@
 		<string key="output_bounding_box" value="[[-89.47578320629594, 38.141490214811284],[-81.05468251757173, 33.40034413045149]]"/>
 		<string key="output_folder" value="/root/_git/FEWS-Archive/archive-graphcast"/>
 		<string key="output_filename" value="GraphCastForecast.nc"/>
-		<string key="model_path" value="/root/_git/FEWS-Archive/archive-graphcast/models/GraphCastOperationalIfs"/>
         <string key="source_initialization" value="ifs"/>
         <string key="downscaled_grid_cell_size_deg" value="0.0625"/>
         <string key="downscale_method" value="cubic"/>
