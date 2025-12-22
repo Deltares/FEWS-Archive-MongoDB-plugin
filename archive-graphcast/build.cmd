@@ -26,6 +26,7 @@ xcopy /e /y models\* build\
 
 :: ADD SCRIPTS
 copy graphcast.cmd build\ /Y
+copy graphcast_fews.cmd build\ /Y
 
 :: CLEANUP
 rmdir tva_graphcast.egg-info /s /q || goto ERROR
