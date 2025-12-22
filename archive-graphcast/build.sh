@@ -9,10 +9,11 @@ mkdir build
 # BUILD PYTHON ENVIRONMENT
 tar -xzf install/cpython*.tar.gz -C build
 
-build/python/bin/python -m pip install --root-user-action ignore --upgrade pip
+build/python/bin/python -m pip install --root-user-action ignore pip
+build/python/bin/python -m pip install --root-user-action ignore setuptools wheel
 build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation --no-binary eccodes,eckitlib eccodes
 build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation -r requirements.txt
-build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation --upgrade models/GraphCastOperationalIfs/graphcast.zip
+build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation models/GraphCastOperationalIfs/graphcast.zip
 build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation .
 build/python/bin/python -m pip freeze > frozen_requirements.txt
 
