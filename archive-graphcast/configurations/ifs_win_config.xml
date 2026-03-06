@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Run xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.wldelft.nl/fews/PI" xsi:schemaLocation="http://www.wldelft.nl/fews/PI https://fewsdocs.deltares.nl/schemas/version1.0/pi-schemas/pi_run.xsd" version="1.5">
 	<timeZone>0.0</timeZone>
-	<startDateTime date="2025-10-06" time="12:00:00"/>
-	<endDateTime date="2025-10-06" time="12:00:00"/>
-	<time0 date="2025-10-06" time="12:00:00"/>
-	<lastObservationDateTime date="2025-10-06" time="12:00:00"/>
+	<startDateTime date="2025-12-16" time="12:00:00"/>
+	<endDateTime date="2025-12-16" time="12:00:00"/>
+	<time0 date="2025-12-16" time="12:00:00"/>
+	<lastObservationDateTime date="2025-12-16" time="12:00:00"/>
 	<workDir>c:\_GIT\FEWS-Archive\archive-graphcast\</workDir>
 	<outputDiagnosticFile>c:\_GIT\FEWS-Archive\archive-graphcast\diag.xml</outputDiagnosticFile>
 	<properties>
@@ -15,7 +15,6 @@
 		<string key="output_bounding_box" value="[[-89.47578320629594, 38.141490214811284],[-81.05468251757173, 33.40034413045149]]"/>
 		<string key="output_folder" value="c:/_GIT/FEWS-Archive/archive-graphcast"/>
 		<string key="output_filename" value="GraphCastForecast.nc"/>
-		<string key="model_path" value="c:/_GIT/FEWS-Archive/archive-graphcast/models/GraphCastOperationalIfs"/>
         <string key="source_initialization" value="ifs"/>
         <string key="downscaled_grid_cell_size_deg" value="0.0625"/>
         <string key="downscale_method" value="cubic"/>

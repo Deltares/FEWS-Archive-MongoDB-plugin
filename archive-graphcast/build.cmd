@@ -14,10 +14,11 @@ build\Python\python.exe install\get-pip.py --no-warn-script-location || goto ERR
 del build\Python\python*._pth /f /q || goto ERROR
 del build\Python\python*.zip /f /q || goto ERROR
 
-build\Python\python.exe -m pip install --upgrade pip --no-warn-script-location || goto ERROR
-build\Python\python.exe -m pip install -r requirements.txt --no-warn-script-location || goto ERROR
-build\python\python.exe -m pip install --upgrade models\GraphCastOperationalIfs\graphcast.zip || goto ERROR
-build\Python\python.exe -m pip install . --no-build-isolation --no-warn-script-location || goto ERROR
+build\Python\python.exe -m pip install --no-warn-script-location --upgrade pip || goto ERROR
+build\Python\python.exe -m pip install --no-warn-script-location setuptools wheel || goto ERROR
+build\Python\python.exe -m pip install --no-warn-script-location -r requirements.txt || goto ERROR
+build\python\python.exe -m pip install --no-warn-script-location --no-build-isolation models\GraphCastOperationalIfs\graphcast.zip || goto ERROR
+build\Python\python.exe -m pip install --no-warn-script-location --no-build-isolation . || goto ERROR
 build\Python\python.exe -m pip freeze > frozen_requirements.txt || goto ERROR
 
 :: ADD MODELS
@@ -25,6 +26,7 @@ xcopy /e /y models\* build\
 
 :: ADD SCRIPTS
 copy graphcast.cmd build\ /Y
+copy graphcast_fews.cmd build\ /Y
 
 :: CLEANUP
 rmdir tva_graphcast.egg-info /s /q || goto ERROR

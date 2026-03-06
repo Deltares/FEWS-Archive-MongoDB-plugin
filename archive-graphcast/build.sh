@@ -10,8 +10,10 @@ mkdir build
 tar -xzf install/cpython*.tar.gz -C build
 
 build/python/bin/python -m pip install --root-user-action ignore --upgrade pip
-build/python/bin/python -m pip install --root-user-action ignore -r requirements.txt
-build/python/bin/python -m pip install --root-user-action ignore --upgrade models/GraphCastOperationalIfs/graphcast.zip
+build/python/bin/python -m pip install --root-user-action ignore setuptools wheel
+build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation --no-binary eccodes,eckitlib eccodes
+build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation -r requirements.txt
+build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation models/GraphCastOperationalIfs/graphcast.zip
 build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation .
 build/python/bin/python -m pip freeze > frozen_requirements.txt
 
@@ -20,6 +22,7 @@ build/python/bin/python -m pip freeze > frozen_requirements.txt
 
 # ADD SCRIPTS
 \cp -f graphcast.sh build/
+\cp -f graphcast_fews.sh build/
 
 # CLEANUP
 rm -rf tva_graphcast.egg-info
