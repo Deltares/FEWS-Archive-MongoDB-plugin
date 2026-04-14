@@ -157,7 +157,7 @@ class Graphcast:
 		dates = data[data['toa_incident_solar_radiation'].isna()].index.get_level_values('time').unique().tolist()
 		if dates:
 			solar_radiation = Graphcast._get_solar_radiation_cache(dates)
-			data.update(solar_radiation)
+			data = data.join(solar_radiation, on=['time', 'lat', 'lon'])
 		return data
 
 	@staticmethod
@@ -186,8 +186,6 @@ class Graphcast:
 		with mp.Pool(mp.cpu_count()) as p:
 			results = p.map(Graphcast._get_solar_radiation_parallel, [(date, lat) for lat in latitudes])
 		solar_radiation_cache = pd.DataFrame([c for dt in results for c in dt]).set_index(keys=['time', 'lat', 'lon'])
-		solar_radiation_cache['batch'] = 0
-		solar_radiation_cache = solar_radiation_cache.set_index('batch', append=True)
 		solar_radiation_cache.to_xarray().to_netcdf(os.path.join(home_path, f'solar_radiation_cache_{date:%Y%m%d%H%M}.nc'), format='NETCDF4')
 
 	@staticmethod
