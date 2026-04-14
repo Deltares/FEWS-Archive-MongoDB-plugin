@@ -11,7 +11,6 @@ chex==0.1.91
 click==8.3.2
 cloudpickle==3.1.2
 colabtools==0.0.1
-colorama==0.4.6
 contourpy==1.3.3
 cycler==0.12.1
 dask==2026.3.0
@@ -27,7 +26,7 @@ flexparser==0.4
 fonttools==4.62.1
 fsspec==2026.3.0
 google-crc32c==1.8.0
-graphcast @ file:///C:/_GIT/FEWS-Archive/archive-graphcast/models/GraphCastOperationalIfs/graphcast.zip#sha256=63a6fe352511ec3df0d4f35d0b2e8776b08bb90fbc472434f30dd6185d861881
+graphcast @ file:///root/_git/FEWS-Archive/archive-graphcast/models/GraphCastOperationalIfs/graphcast.zip#sha256=63a6fe352511ec3df0d4f35d0b2e8776b08bb90fbc472434f30dd6185d861881
 idna==3.11
 jax==0.9.2
 jaxlib==0.9.2
@@ -71,9 +70,8 @@ toolz==1.1.0
 tqdm==4.67.3
 tree-math==0.2.1
 trimesh==4.11.5
-tva_graphcast @ file:///C:/_GIT/FEWS-Archive/archive-graphcast
+tva_graphcast @ file:///root/_git/FEWS-Archive/archive-graphcast
 typing_extensions==4.15.0
-tzdata==2026.1
 urllib3==2.6.3
 wheel==0.46.3
 wrapt==2.1.2
