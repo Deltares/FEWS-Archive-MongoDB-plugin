@@ -32,9 +32,10 @@ copy graphcast_fews.cmd build\ /Y
 rmdir tva_graphcast.egg-info /s /q || goto ERROR
 rmdir build\bdist.win-amd64 /s /q || goto ERROR
 rmdir build\lib /s /q || goto ERROR
+if exist graphcast.7z del graphcast.7z /f /q
 
 :: BUILD ENVIRONMENT
-cd build && ( ..\install\7za a ..\graphcast.7z -r -snl || goto ERROR ) && cd ..
+pushd build && ( ..\install\7za a ..\graphcast.7z -r -snl || goto ERROR ) && popd
 
 :: UPDATE REPOSITORY
 git commit -a -m "Environment Build"
