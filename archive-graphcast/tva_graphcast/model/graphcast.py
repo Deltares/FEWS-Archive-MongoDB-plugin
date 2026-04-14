@@ -157,10 +157,10 @@ class Graphcast:
 		dates = data[data['toa_incident_solar_radiation'].isna()].index.get_level_values('time').unique().tolist()
 		if dates:
 			solar_radiation = Graphcast._get_solar_radiation_cache(dates)
-			if 'batch' in data.index.names:
-				solar_radiation['batch'] = 0
-				solar_radiation = solar_radiation.set_index('batch', append=True)
+			extra = [n for n in data.index.names if n not in solar_radiation.index.names]
+			data = data.reset_index(level=extra)
 			data.update(solar_radiation)
+			data.set_index(extra, append=True)
 		return data
 
 	@staticmethod
@@ -180,7 +180,7 @@ class Graphcast:
 
 			cache[date] = ds.assign_coords(time=pd.to_datetime(ds.coords['time'].values)).to_dataframe()
 
-		[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < datetime.now() - timedelta(days=7)]
+		[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < min(dates) - timedelta(days=7)]
 		return pd.concat(cache.values())
 
 	@staticmethod
