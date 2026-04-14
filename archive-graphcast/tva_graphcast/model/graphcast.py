@@ -185,7 +185,10 @@ class Graphcast:
 		latitudes = [lat / 4 for lat in range(-90 * 4, 90 * 4 + 1, 1)]
 		with mp.Pool(mp.cpu_count()) as p:
 			results = p.map(Graphcast._get_solar_radiation_parallel, [(date, lat) for lat in latitudes])
-		pd.DataFrame([c for dt in results for c in dt]).set_index(keys=['time', 'lat', 'lon']).to_xarray().to_netcdf(os.path.join(home_path, f'solar_radiation_cache_{date:%Y%m%d%H%M}.nc'), format='NETCDF4')
+		solar_radiation_cache = pd.DataFrame([c for dt in results for c in dt]).set_index(keys=['time', 'lat', 'lon'])
+		solar_radiation_cache['batch'] = 0
+		solar_radiation_cache = solar_radiation_cache.set_index('batch', append=True)
+		solar_radiation_cache.to_xarray().to_netcdf(os.path.join(home_path, f'solar_radiation_cache_{date:%Y%m%d%H%M}.nc'), format='NETCDF4')
 
 	@staticmethod
 	def _modify_coordinates(data):
