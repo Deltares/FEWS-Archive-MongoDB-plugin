@@ -3,7 +3,7 @@ requests
 xmltodict
 netcdf4
 cfgrib
-eccodeslib
+eccodeslib; sys_platform != 'win32'
 zarr
 cdsapi
 cartopy
