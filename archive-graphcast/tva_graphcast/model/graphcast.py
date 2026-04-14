@@ -160,7 +160,7 @@ class Graphcast:
 			extra = [n for n in data.index.names if n not in solar_radiation.index.names]
 			data = data.reset_index(level=extra)
 			data.update(solar_radiation)
-			data.set_index(extra, append=True)
+			data = data.set_index(extra, append=True)
 		return data
 
 	@staticmethod
