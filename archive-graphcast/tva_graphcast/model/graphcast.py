@@ -157,7 +157,10 @@ class Graphcast:
 		dates = data[data['toa_incident_solar_radiation'].isna()].index.get_level_values('time').unique().tolist()
 		if dates:
 			solar_radiation = Graphcast._get_solar_radiation_cache(dates)
-			data = data.join(solar_radiation, on=['time', 'lat', 'lon'])
+			if 'batch' in data.index.names:
+				solar_radiation['batch'] = 0
+				solar_radiation = solar_radiation.set_index('batch', append=True)
+			data.update(solar_radiation)
 		return data
 
 	@staticmethod
