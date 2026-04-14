@@ -3,6 +3,7 @@ requests
 xmltodict
 netcdf4
 cfgrib
+ecodeslib
 zarr
 cdsapi
 cartopy
