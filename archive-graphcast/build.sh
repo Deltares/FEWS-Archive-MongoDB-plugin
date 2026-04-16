@@ -24,6 +24,9 @@ build/python/bin/python -m pip freeze > frozen_requirements.txt
 \cp -f graphcast.sh build/
 \cp -f graphcast_fews.sh build/
 
+# ADD ECCODES (From Conda)
+
+
 # CLEANUP
 rm -rf tva_graphcast.egg-info
 rm -rf build/bdist.linux-x86_64
