@@ -25,17 +25,18 @@ build/python/bin/python -m pip freeze > frozen_requirements.txt
 \cp -f graphcast_fews.sh build/
 
 # ADD ECCODES (From Conda)
-#mkdir -p build/eccodes/eccodeslib
-#unzip install/eccodes* -d build/eccodes
-#tar -xf build/eccodes/pkg-eccodes* -C build/eccodes/eccodeslib
-#\cp -rf build/eccodes/eccodeslib build/python/lib/python*/site-packages/
+mkdir -p build/eccodeslib/ecodes
+unzip install/eccodes* -d build/eccodeslib && tar -xf build/eccodes/pkg-eccodes* -C build/eccodeslib/eccodes
+unzip install/jasper* -d build/eccodeslib && tar -xf build/eccodes/pkg-jasper* -C build/eccodeslib/eccodes
+unzip install/libjpeg* -d build/eccodeslib && tar -xf build/eccodes/pkg-libjpeg* -C build/eccodeslib/eccodes
+mv build/eccodeslib/eccodes build
 
 # CLEANUP
 rm -rf build/eccodes
 rm -rf tva_graphcast.egg-info
 rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
-rm -f graphcast.*
+rm -f graphcast.zip && rm -f graphcast.tar.gz
 
 # BUILD ENVIRONMENT
 # tar -czf graphcast.tar.gz -C build .
