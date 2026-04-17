@@ -25,7 +25,7 @@ build/python/bin/python -m pip freeze > frozen_requirements.txt
 \cp -f graphcast_fews.sh build/
 
 # ADD ECCODES (From Conda)
-mkdir -p build/eccodeslib/ecodes
+mkdir -p build/eccodeslib/eccodes
 unzip install/eccodes* -d build/eccodeslib && tar -xf build/eccodes/pkg-eccodes* -C build/eccodeslib/eccodes
 unzip install/jasper* -d build/eccodeslib && tar -xf build/eccodes/pkg-jasper* -C build/eccodeslib/eccodes
 unzip install/libjpeg* -d build/eccodeslib && tar -xf build/eccodes/pkg-libjpeg* -C build/eccodeslib/eccodes
