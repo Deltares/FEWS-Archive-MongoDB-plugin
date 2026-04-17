@@ -30,8 +30,8 @@ fsspec==2026.3.0
 google-crc32c==1.8.0
 graphcast @ file:///root/_git/FEWS-Archive/archive-graphcast/models/GraphCastOperationalIfs/graphcast.zip#sha256=2963024f6cf4ed5424e7791d3ac31000171c65b0146610f03d87349fa46e1828
 idna==3.11
-jax==0.9.2
-jaxlib==0.9.2
+jax==0.10.0
+jaxlib==0.10.0
 jmp==0.0.4
 joblib==1.5.3
 jraph==0.0.6.dev0
@@ -44,7 +44,7 @@ netCDF4==1.7.4
 numcodecs==0.16.5
 numpy==2.4.4
 opt_einsum==3.4.0
-packaging==26.0
+packaging==26.1
 pandas==3.0.2
 partd==1.4.2
 pillow==12.2.0
