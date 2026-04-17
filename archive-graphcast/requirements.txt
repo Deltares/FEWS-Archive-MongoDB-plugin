@@ -3,6 +3,8 @@ requests
 xmltodict
 netcdf4
 cfgrib
+pylibjpeg-libjpeg
+jasper
 zarr
 cdsapi
 cartopy
