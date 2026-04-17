@@ -28,8 +28,8 @@ build/python/bin/python -m pip freeze > frozen_requirements.txt
 mkdir -p build/eccodes/eccodes
 unzip install/eccodes* -d build/eccodes
 tar -xf build/eccodes/pkg-eccodes* -C build/eccodes/eccodes
-rm -rf build/python/lib/python*/site-packages/eccodes*
-mv build/eccodes/eccodes build/python/lib/python*/site-packages/
+# rm -rf build/python/lib/python*/site-packages/eccodes*
+\cp -rf build/eccodes/eccodes build/python/lib/python*/site-packages/
 
 # CLEANUP
 rm -rf build/eccodes
