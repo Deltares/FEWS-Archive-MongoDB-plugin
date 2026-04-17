@@ -36,10 +36,10 @@ rm -rf build/eccodes
 rm -rf tva_graphcast.egg-info
 rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
+rm -f graphcast.*
 
 # BUILD ENVIRONMENT
 # tar -czf graphcast.tar.gz -C build .
-rm -f graphcast.zip
 cd build && 7z a -r -snl ../graphcast.zip && cd ..
 
 # UPDATE REPOSITORY
