@@ -26,9 +26,9 @@ build/python/bin/python -m pip freeze > frozen_requirements.txt
 
 # ADD ECCODES (From Conda)
 mkdir -p build/eccodeslib/eccodes
-unzip install/eccodes* -o -d build/eccodeslib && tar -xf build/eccodeslib/pkg-eccodes* -C build/eccodeslib/eccodes
-unzip install/jasper* -o -d build/eccodeslib && tar -xf build/eccodeslib/pkg-jasper* -C build/eccodeslib/eccodes
-unzip install/libjpeg* -o -d build/eccodeslib && tar -xf build/eccodeslib/pkg-libjpeg* -C build/eccodeslib/eccodes
+unzip -o install/eccodes* -d build/eccodeslib && tar -xf build/eccodeslib/pkg-eccodes* -C build/eccodeslib/eccodes
+unzip -o install/jasper* -d build/eccodeslib && tar -xf build/eccodeslib/pkg-jasper* -C build/eccodeslib/eccodes
+unzip -o install/libjpeg* -d build/eccodeslib && tar -xf build/eccodeslib/pkg-libjpeg* -C build/eccodeslib/eccodes
 mv build/eccodeslib/eccodes build
 
 # CLEANUP
