@@ -39,6 +39,7 @@ rm -rf build/lib
 
 # BUILD ENVIRONMENT
 # tar -czf graphcast.tar.gz -C build .
+rm -f graphcast.zip
 cd build && 7z a -r -snl ../graphcast.zip && cd ..
 
 # UPDATE REPOSITORY
