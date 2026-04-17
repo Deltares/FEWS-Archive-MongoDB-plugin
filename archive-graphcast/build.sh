@@ -32,7 +32,7 @@ unzip install/libjpeg* -d build/eccodeslib && tar -xf build/eccodes/pkg-libjpeg*
 mv build/eccodeslib/eccodes build
 
 # CLEANUP
-rm -rf build/eccodes
+rm -rf build/eccodeslib
 rm -rf tva_graphcast.egg-info
 rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
