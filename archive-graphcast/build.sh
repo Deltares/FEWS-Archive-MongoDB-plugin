@@ -29,6 +29,7 @@ mkdir -p build/eccodeslib/eccodes
 unzip -o install/eccodes* -d build/eccodeslib && tar -xf build/eccodeslib/pkg-eccodes* -C build/eccodeslib/eccodes
 unzip -o install/jasper* -d build/eccodeslib && tar -xf build/eccodeslib/pkg-jasper* -C build/eccodeslib/eccodes
 unzip -o install/libjpeg* -d build/eccodeslib && tar -xf build/eccodeslib/pkg-libjpeg* -C build/eccodeslib/eccodes
+unzip -o install/libaec* -d build/eccodeslib && tar -xf build/eccodeslib/pkg-libaec* -C build/eccodeslib/eccodes
 mv build/eccodeslib/eccodes build
 
 # CLEANUP
