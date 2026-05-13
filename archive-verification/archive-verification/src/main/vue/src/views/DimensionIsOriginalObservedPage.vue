@@ -6,7 +6,7 @@ import { ref, computed } from "vue";
 const { result, loading, error, refetch } = useQuery(gql`query dimensionIsOriginalObservedN {dimensionIsOriginalObservedN {_id, isOriginalObserved}}`)
 const selected = ref({})
 const success = ref(null)
-const sorted = computed(() => result?.value?.dimensionIsOriginalObservedN ? result.value.dimensionIsOriginalObservedN.slice().sort((a, b) => a.isOriginalObserved.localeCompare(b.isOriginalObserved)) : [])
+const sorted = computed(() => result?.value?.dimensionIsOriginalObservedN ? result.value.dimensionIsOriginalObservedN.slice().sort((a, b) => `${a.isOriginalObserved}`.localeCompare(`${b.isOriginalObserved}`)) : [])
 
 const createMutation = useMutation(gql`mutation createDimensionIsOriginalObserved($isOriginalObserved: Boolean!) {createDimensionIsOriginalObserved(isOriginalObserved: $isOriginalObserved)}`)
 const updateMutation = useMutation(gql`mutation updateDimensionIsOriginalObserved($_id: ID!, $isOriginalObserved: Boolean!) {updateDimensionIsOriginalObserved(_id: $_id, isOriginalObserved: $isOriginalObserved)}`)

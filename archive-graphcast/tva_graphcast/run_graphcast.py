@@ -17,6 +17,7 @@ from datetime import datetime, timedelta
 
 _parser = argparse.ArgumentParser()
 _parser.add_argument('--config_path', '-c', dest='config_path', type=str, help='The fully qualified path to the configuration file', required=True)
+_parser.add_argument('--model_path', '-m', dest='model_path', type=str, help='The fully qualified path to the model folder', required=True)
 _args = _parser.parse_args()
 
 _timestep = 6
@@ -150,10 +151,9 @@ class RunGraphcast:
 		self.levels = json.loads(properties['output_levels'])
 		self.fields = json.loads(properties['output_parameters'].replace('\'', '"'))
 		self.corners = json.loads(properties['output_bounding_box'])
-		self.output_folder = os.path.normpath(os.path.expandvars(properties['output_folder']))
+		self.model_path = os.path.normpath(os.path.expanduser(os.path.expandvars(_args.model_path)))
+		self.output_folder = os.path.normpath(os.path.expanduser(os.path.expandvars(properties['output_folder'])))
 		self.output_file = os.path.join(self.output_folder, properties['output_filename'])
-		self.model_path = os.path.expandvars(properties['model_path'])
-		self.source = properties['source_initialization']
 		self.downscale = float(properties['downscaled_grid_cell_size_deg'])
 		self.downscale_method = properties['downscale_method']
 
@@ -162,12 +162,12 @@ class RunGraphcast:
 
 		try:
 			t0 = self.t0 + timedelta(hours=self.t0_offset_timesteps * _timestep)
-			if self.source == 'ifs':
+			if os.path.basename(self.model_path) == 'GraphCastOperationalIfs':
 				results = Ifs.model(t0, self.predictions, self.model_path, _timestep, _observed_timesteps)
-			elif self.source == 'gfs':
+			elif os.path.basename(self.model_path) == 'GraphCastOperationalGfs':
 				results = Gfs.model(t0, self.predictions, self.model_path, _timestep, _observed_timesteps)
 			else:
-				raise ValueError(f'source_initialization: {self.source}')
+				raise ValueError(f'model_path: {os.path.basename(self.model_path)}')
 
 			results = RunGraphcast._ensure_lat_lon(results)
 			results = RunGraphcast._trim(results, self.levels, self.fields)

@@ -10,8 +10,10 @@ mkdir build
 tar -xzf install/cpython*.tar.gz -C build
 
 build/python/bin/python -m pip install --root-user-action ignore --upgrade pip
-build/python/bin/python -m pip install --root-user-action ignore -r requirements.txt
-build/python/bin/python -m pip install --root-user-action ignore --upgrade models/GraphCastOperationalIfs/graphcast.zip
+build/python/bin/python -m pip install --root-user-action ignore setuptools wheel
+build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation --no-binary eccodes,eckitlib eccodes
+build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation -r requirements.txt
+build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation models/GraphCastOperationalIfs/graphcast.zip
 build/python/bin/python -m pip install --root-user-action ignore --no-build-isolation .
 build/python/bin/python -m pip freeze > frozen_requirements.txt
 
@@ -20,11 +22,22 @@ build/python/bin/python -m pip freeze > frozen_requirements.txt
 
 # ADD SCRIPTS
 \cp -f graphcast.sh build/
+\cp -f graphcast_fews.sh build/
+
+# ADD ECCODES (From Conda)
+mkdir -p build/eccodeslib/eccodes
+unzip -o install/eccodes* -d build/eccodeslib && tar -xf build/eccodeslib/pkg-eccodes* -C build/eccodeslib/eccodes
+unzip -o install/jasper* -d build/eccodeslib && tar -xf build/eccodeslib/pkg-jasper* -C build/eccodeslib/eccodes
+unzip -o install/libjpeg* -d build/eccodeslib && tar -xf build/eccodeslib/pkg-libjpeg* -C build/eccodeslib/eccodes
+unzip -o install/libaec* -d build/eccodeslib && tar -xf build/eccodeslib/pkg-libaec* -C build/eccodeslib/eccodes
+mv build/eccodeslib/eccodes build
 
 # CLEANUP
+rm -rf build/eccodeslib
 rm -rf tva_graphcast.egg-info
 rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
+rm -f graphcast.zip && rm -f graphcast.tar.gz
 
 # BUILD ENVIRONMENT
 # tar -czf graphcast.tar.gz -C build .
