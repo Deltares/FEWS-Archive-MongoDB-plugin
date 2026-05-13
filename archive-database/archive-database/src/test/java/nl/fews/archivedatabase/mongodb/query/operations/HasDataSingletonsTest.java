@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Testcontainers
 class HasDataSingletonsTest {
 	@Container
-	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:7.0"));
+	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
 
 
 	@BeforeEach
@@ -35,7 +35,7 @@ class HasDataSingletonsTest {
 	}
 
 	@Test
-	void hasData() throws Exception{
+	void xhasData() throws Exception{
 		Map<File, Date> entries = MetaDataUtil.getExistingMetaDataFilesFs().entrySet().stream().filter(s -> s.getKey().toString().contains("simulated") && s.getKey().toString().contains("scalar")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 		Insert.insertMetaDatas(entries, Map.of());
 		boolean hasData = HasDataSingletons.hasData(

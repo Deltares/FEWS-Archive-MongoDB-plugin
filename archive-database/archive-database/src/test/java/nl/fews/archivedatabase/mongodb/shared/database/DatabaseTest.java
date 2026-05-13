@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class DatabaseTest {
 
 	@Container
-	public static MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:7.0"));
+	public static MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
 
 	@BeforeAll
 	static void setUp() {
