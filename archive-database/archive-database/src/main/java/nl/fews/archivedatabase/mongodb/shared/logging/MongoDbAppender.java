@@ -40,7 +40,7 @@ public class MongoDbAppender extends AbstractAppender {
 	/**
 	 *
 	 */
-	private static final JsonLayout jsonLayout =  JsonLayout.createDefaultLayout();
+	private static final JsonLayout jsonLayout = JsonLayout.createDefaultLayout();
 
 	/**
 	 *
