@@ -99,6 +99,7 @@ public final class Database {
 	public static synchronized void close(){
 		for (var mongoClient: mongoClients.values())
 			mongoClient.close();
+		mongoClients.clear();
 		Database.mongoClient = null;
 		Database.database = null;
 		Database.connectionString = null;
