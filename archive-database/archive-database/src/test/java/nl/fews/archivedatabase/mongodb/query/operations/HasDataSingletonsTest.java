@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Testcontainers
 class HasDataSingletonsTest {
 	@Container
-	private MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
+	final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
 
 
 	@BeforeEach

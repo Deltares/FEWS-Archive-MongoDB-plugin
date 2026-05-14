@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class BucketScalarExternalHistoricalTest {
 
 	@Container
-	private MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
+	final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
 
 	@BeforeEach
 	public void setUp(){
