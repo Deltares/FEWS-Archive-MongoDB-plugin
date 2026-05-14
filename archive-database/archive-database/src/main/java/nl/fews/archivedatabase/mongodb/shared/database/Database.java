@@ -16,6 +16,7 @@ import org.bson.Document;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +43,11 @@ public final class Database {
 	/**
 	 *
 	 */
+	private static Map<String, MongoClient> mongoClients = new ConcurrentHashMap<>();
+
+	/**
+	 *
+	 */
 	private static String database = null;
 
 	/**
@@ -61,9 +67,8 @@ public final class Database {
 	private static synchronized MongoClient create(){
 		String connectionString = Settings.get("connectionString");
 		if (Database.mongoClient == null || Database.connectionString == null || !Database.connectionString.equals(connectionString)) {
-			if (Database.mongoClient != null)
-				Database.mongoClient.close();
-			Database.mongoClient = MongoClients.create(connectionString);
+			Database.mongoClient = mongoClients.containsKey(connectionString) ? mongoClients.get(connectionString) : MongoClients.create(connectionString);
+			mongoClients.put(Database.connectionString, Database.mongoClient);
 			Database.database = new ConnectionString(connectionString).getDatabase();
 			if(Database.connectionString == null || !Database.connectionString.equals(connectionString)){
 				ensureCollections();
@@ -80,9 +85,8 @@ public final class Database {
 	private static synchronized MongoClient createInternal(){
 		String connectionString = Settings.get("connectionString");
 		if (Database.mongoClient == null || Database.connectionString == null || !Database.connectionString.equals(connectionString)) {
-			if (Database.mongoClient != null)
-				Database.mongoClient.close();
-			Database.mongoClient = MongoClients.create(connectionString);
+			Database.mongoClient = mongoClients.containsKey(connectionString) ? mongoClients.get(connectionString) : MongoClients.create(connectionString);
+			mongoClients.put(Database.connectionString, Database.mongoClient);
 			Database.database = new ConnectionString(connectionString).getDatabase();
 			Database.connectionString = connectionString;
 		}
@@ -93,8 +97,8 @@ public final class Database {
 	 *
 	 */
 	public static synchronized void close(){
-		if(Database.mongoClient != null)
-			Database.mongoClient.close();
+		for (var mongoClient: mongoClients.values())
+			mongoClient.close();
 		Database.mongoClient = null;
 		Database.database = null;
 		Database.connectionString = null;
