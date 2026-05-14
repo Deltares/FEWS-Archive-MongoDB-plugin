@@ -8,6 +8,7 @@ import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.util.LogUtils;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import org.bson.Document;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -36,6 +37,11 @@ class MongoDbArchiveDatabaseTimeSeriesExporterTest {
 	@BeforeEach
 	public void setUp() {
 		TestSettings.setTestSettings();
+	}
+
+	@AfterEach
+	public void tearDown(){
+		Database.close();
 	}
 
     @Test
