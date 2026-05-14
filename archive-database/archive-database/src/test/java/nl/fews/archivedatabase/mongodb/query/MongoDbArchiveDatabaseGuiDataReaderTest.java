@@ -14,6 +14,7 @@ import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.ArchiveDat
 import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
 import nl.wldelft.util.Period;
 import nl.wldelft.util.timeseries.*;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -34,11 +35,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @Testcontainers
 class MongoDbArchiveDatabaseGuiDataReaderTest {
 	@Container
-	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
+	private static final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
 
 	@BeforeEach
-	public void setUpClass(){
+	public void setUp(){
 		TestSettings.setTestSettings();
+	}
+
+	@AfterEach
+	public void tearDown(){
+		Database.close();
 	}
 
 	@Test

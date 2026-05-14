@@ -20,7 +20,7 @@ import java.net.InetAddress;
 import java.util.Date;
 
 @Plugin(name = "MongoDbAppender", category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
-public class MongoDbAppender extends AbstractAppender {
+public class MongoDbAppender extends AbstractAppender implements AutoCloseable {
 
 	/**
 	 *
@@ -103,5 +103,12 @@ public class MongoDbAppender extends AbstractAppender {
 		catch (Exception ex){
 			return document;
 		}
+	}
+
+
+	@Override
+	public void close() {
+		if(mongoClient != null)
+			mongoClient.close();
 	}
 }

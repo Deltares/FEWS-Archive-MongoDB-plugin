@@ -2,6 +2,7 @@ package nl.fews.archivedatabase.mongodb.shared.utils;
 
 import nl.fews.archivedatabase.mongodb.TestUtil;
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
+import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.timeseries.TimeSeriesType;
@@ -10,6 +11,7 @@ import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -24,12 +26,17 @@ import static org.junit.jupiter.api.Assertions.*;
 class TimeSeriesArrayUtilTest {
 
 	@Container
-	public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
+	private static final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
 
 	@BeforeEach
-	public void setUpClass(){
+	public void setUp(){
 		TestSettings.setTestSettings();
 		Settings.put("connectionString", String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
+	}
+
+	@AfterEach
+	public void tearDown(){
+		Database.close();
 	}
 
 	@Test

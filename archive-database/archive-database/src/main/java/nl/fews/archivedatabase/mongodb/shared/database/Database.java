@@ -61,6 +61,8 @@ public final class Database {
 	private static synchronized MongoClient create(){
 		String connectionString = Settings.get("connectionString");
 		if (Database.mongoClient == null || Database.connectionString == null || !Database.connectionString.equals(connectionString)) {
+			if (Database.mongoClient != null)
+				Database.mongoClient.close();
 			Database.mongoClient = MongoClients.create(connectionString);
 			Database.database = new ConnectionString(connectionString).getDatabase();
 			if(Database.connectionString == null || !Database.connectionString.equals(connectionString)){
@@ -78,6 +80,8 @@ public final class Database {
 	private static synchronized MongoClient createInternal(){
 		String connectionString = Settings.get("connectionString");
 		if (Database.mongoClient == null || Database.connectionString == null || !Database.connectionString.equals(connectionString)) {
+			if (Database.mongoClient != null)
+				Database.mongoClient.close();
 			Database.mongoClient = MongoClients.create(connectionString);
 			Database.database = new ConnectionString(connectionString).getDatabase();
 			Database.connectionString = connectionString;
@@ -88,7 +92,7 @@ public final class Database {
 	/**
 	 *
 	 */
-	public static void close(){
+	public static synchronized void close(){
 		if(Database.mongoClient != null)
 			Database.mongoClient.close();
 		Database.mongoClient = null;
