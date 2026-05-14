@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PathUtilTest {
 
 	@BeforeAll
-	public static void setUpClass(){
+	static void setUp(){
 		TestSettings.setTestSettings();
 	}
 

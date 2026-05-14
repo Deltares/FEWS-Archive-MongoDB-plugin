@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class NetcdfUtilTest {
 
 	@BeforeAll
-	public static void setUpClass(){
+	static void setUp(){
 		TestSettings.setTestSettings();
 	}
 

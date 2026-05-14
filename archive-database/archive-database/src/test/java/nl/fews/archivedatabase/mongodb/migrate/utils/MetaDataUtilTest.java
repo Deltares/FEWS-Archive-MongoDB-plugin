@@ -26,13 +26,13 @@ class MetaDataUtilTest {
 	public static MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
 
 	@BeforeAll
-	public static void setUp(){
+	static void setUp(){
 		TestSettings.setTestSettings();
 		Settings.put("connectionString", String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 	}
 
 	@AfterAll
-	public static void tearDown(){
+	static void tearDown(){
 		Database.close();
 	}
 

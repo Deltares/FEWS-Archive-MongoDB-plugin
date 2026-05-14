@@ -26,7 +26,7 @@ class MongoDbOpenArchiveToArchiveDatabaseMigratorTest {
 	}
 
 	@BeforeAll
-	static void setUpClass() throws IOException {
+	static void setUp() throws IOException {
 		Path path = Paths.get("src", "test", "resources", "TestSettings.json").toAbsolutePath();
 		if (path.toFile().exists()) {
 			testSettings = new JSONObject(Files.readString(path));
