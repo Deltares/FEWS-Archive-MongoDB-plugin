@@ -5,6 +5,7 @@ import nl.fews.archivedatabase.mongodb.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.fews.archivedatabase.mongodb.shared.utils.TimeSeriesTypeUtil;
 import org.bson.Document;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -26,6 +27,11 @@ class DatabaseTest {
 	static void setUp() {
 		TestSettings.setTestSettings();
 		Settings.put("connectionString", String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
+	}
+
+	@AfterAll
+	static void tearDown() {
+		Database.close();
 	}
 
 	@Test
