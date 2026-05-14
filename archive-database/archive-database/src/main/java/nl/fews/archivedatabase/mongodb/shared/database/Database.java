@@ -68,8 +68,7 @@ public final class Database {
 		String connectionString = Settings.get("connectionString");
 		if (Database.mongoClient == null || Database.connectionString == null || !Database.connectionString.equals(connectionString)) {
 			Database.mongoClient = mongoClients.containsKey(connectionString) ? mongoClients.get(connectionString) : MongoClients.create(connectionString);
-			if (Database.connectionString != null)
-				mongoClients.put(Database.connectionString, Database.mongoClient);
+			mongoClients.put(connectionString, Database.mongoClient);
 			Database.database = new ConnectionString(connectionString).getDatabase();
 			if(Database.connectionString == null || !Database.connectionString.equals(connectionString)){
 				ensureCollections();
@@ -87,8 +86,7 @@ public final class Database {
 		String connectionString = Settings.get("connectionString");
 		if (Database.mongoClient == null || Database.connectionString == null || !Database.connectionString.equals(connectionString)) {
 			Database.mongoClient = mongoClients.containsKey(connectionString) ? mongoClients.get(connectionString) : MongoClients.create(connectionString);
-			if (Database.connectionString != null)
-				mongoClients.put(Database.connectionString, Database.mongoClient);
+			mongoClients.put(connectionString, Database.mongoClient);
 			Database.database = new ConnectionString(connectionString).getDatabase();
 			Database.connectionString = connectionString;
 		}
