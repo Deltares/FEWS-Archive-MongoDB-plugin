@@ -16,7 +16,7 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 class MongoDbAppenderTest {
 	@Container
-	private static final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
+	private MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
 
 	@BeforeEach
 	public void setUp(){
