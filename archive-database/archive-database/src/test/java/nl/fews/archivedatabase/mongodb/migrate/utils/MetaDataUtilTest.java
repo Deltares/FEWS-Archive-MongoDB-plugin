@@ -1,8 +1,10 @@
 package nl.fews.archivedatabase.mongodb.migrate.utils;
 
 import nl.fews.archivedatabase.mongodb.migrate.TestSettings;
+import nl.fews.archivedatabase.mongodb.shared.database.Database;
 import nl.fews.archivedatabase.mongodb.shared.settings.Settings;
 import nl.wldelft.archive.util.metadata.netcdf.NetcdfMetaData;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
@@ -24,9 +26,14 @@ class MetaDataUtilTest {
 	public static MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
 
 	@BeforeAll
-	public static void setUpClass(){
+	public static void setUp(){
 		TestSettings.setTestSettings();
 		Settings.put("connectionString", String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
+	}
+
+	@AfterAll
+	public static void tearDown(){
+		Database.close();
 	}
 
 	@Test
