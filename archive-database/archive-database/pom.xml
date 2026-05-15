@@ -128,25 +128,30 @@
             <version>33.6.0-jre</version>
         </dependency>
         <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>4.34.1</version>
+        </dependency>
+        <dependency>
             <groupId>castor</groupId>
             <artifactId>castor</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/castor-0.9.5p.jar</systemPath>
+            <systemPath>${project.basedir}/lib/castor-0.9.5p3.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>cdm</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/cdm-core-5.5.2p.jar</systemPath>
+            <systemPath>${project.basedir}/lib/cdm-core-5.5.2p4.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>grib</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/grib-5.5.2.jar</systemPath>
+            <systemPath>${project.basedir}/lib/grib-5.8.0p3.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>edu.ucar</groupId>
@@ -164,10 +169,10 @@
         </dependency>
         <dependency>
             <groupId>nl.deltares</groupId>
-            <artifactId>Delft_FEWS_ArchiveDatabase</artifactId>
+            <artifactId>Delft_FEWS_ArchiveIntegration</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/Delft_FEWS_ArchiveDatabase.jar</systemPath>
+            <systemPath>${project.basedir}/lib/Delft_FEWS_ArchiveIntegration.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>nl.deltares</groupId>
