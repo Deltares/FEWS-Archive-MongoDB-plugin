@@ -27,8 +27,8 @@ public final class DatabaseBridge implements nl.fews.archivedatabase.common.shar
 	}
 
 	@Override
-	public void rename(String collection, String newName){
-		db.rename(collection, newName);
+	public void rename(String table, String newName){
+		db.rename(table, newName);
 	}
 
 	@Override

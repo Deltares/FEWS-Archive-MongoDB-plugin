@@ -98,19 +98,34 @@ public final class DatabaseBridge implements nl.fews.archivedatabase.common.shar
 	}
 
 	@Override
+	public ClosableIterable<Map<String, Object>> aggregateStitchedTimeSeries(String collection, Map<String, Object> match, Map<String, Object> sort, Map<String, Object> projection) {
+		return null;
+	}
+
+	@Override
 	public ClosableIterable<Map<String, Object>> aggregateAvailableYears(String collection, Map<String, Object> match, Map<String, Object> sort, Map<String, Object> projection){
 		return db.aggregate(collection, List.of(Map.of("$match", match), Map.of("$sort", sort), Map.of("$project", projection)));
+	}
+
+	@Override
+	public ClosableIterable<Map<String, Object>> aggregateExternalForecastTimes(String collection, Map<String, Object> match, String groupId, Map<String, Object> sort, int limit) {
+		return null;
+	}
+
+	@Override
+	public ClosableIterable<Map<String, Object>> aggregateSimulatedTaskRunInfos(String collection, Map<String, Object> match, Map<String, Object> groupId, Map<String, Object> sort, int limit) {
+		return null;
+	}
+
+	@Override
+	public ClosableIterable<Map<String, Object>> aggregateUnwoundTimeSeries(String collection, Map<String, Object> match, String unwind) {
+		return db.aggregate(collection, List.of(Map.of("$match", match), Map.of("$unwind", String.format("$%s", unwind)), Map.of("$replaceRoot", Map.of("newRoot", String.format("$%s", "replaceRoot")))));
 	}
 
 	@Override
 	public ClosableIterable<Map<String, Object>> aggregateReadBuckets(String collection, Map<String, Object> match, Map<String, Object> sort){
 		match = match.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, s -> s.getValue() instanceof Map ? ((Map<?, ?>)s.getValue()).entrySet().stream().collect(Collectors.toMap(x -> String.format("$%s", x.getKey()), Map.Entry::getValue)) : s.getValue()));
 		return db.aggregate(collection, List.of(Map.of("$match", match), Map.of("$sort", sort)));
-	}
-
-	@Override
-	public ClosableIterable<Map<String, Object>> aggregate(String collection, Map<String, Object> match, String unwind, String replaceRoot){
-		return db.aggregate(collection, List.of(Map.of("$match", match), Map.of("$unwind", String.format("$%s", unwind)), Map.of("$replaceRoot", Map.of("newRoot", String.format("$%s", replaceRoot)))));
 	}
 
 	@Override
@@ -121,16 +136,11 @@ public final class DatabaseBridge implements nl.fews.archivedatabase.common.shar
 	}
 
 	@Override
-	public ClosableIterable<Map<String, Object>> aggregate(String collection, List<Map<String, Object>> pipeline){
-		return db.aggregate(collection, pipeline);
-	}
-
-	@Override
-	public ClosableIterable<Map<String, Object>> aggregate(String collection, Map<String, Object> sort, Map<String, Object> groupId, String replaceRoot, Map<String, Object> addFields){
+	public ClosableIterable<Map<String, Object>> aggregateTimeSeriesIndex(String collection, Map<String, Object> sort, Map<String, Object> groupId, Map<String, Object> addFields) {
 		return db.aggregate(collection, List.of(
 			Map.of("$sort", sort),
 			Map.of("$group", Map.of("_id", groupId.keySet().stream().collect(Collectors.toMap(s -> s, s -> String.format("$%s", groupId.get(s)))))),
-			Map.of("$replaceRoot", Map.of("newRoot", String.format("$%s", replaceRoot))),
+			Map.of("$replaceRoot", Map.of("newRoot", String.format("$%s", "replaceRoot"))),
 			Map.of("$addFields", addFields)));
 	}
 

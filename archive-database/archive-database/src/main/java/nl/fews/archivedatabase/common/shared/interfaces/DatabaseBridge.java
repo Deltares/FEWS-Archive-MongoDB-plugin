@@ -7,119 +7,119 @@ import java.util.Set;
 public interface DatabaseBridge extends Database {
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param query query
 	 */
-	void deleteOne(String collection, Map<String, Object> query);
+	void deleteOne(String table, Map<String, Object> query);
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param query query
 	 */
-	void deleteMany(String collection, Map<String, Object> query);
+	void deleteMany(String table, Map<String, Object> query);
 
 	/**
 	 *
-	 * @param collection collection
-	 * @param query query
-	 * @param document document
-	 */
-	void updateOne(String collection, Map<String, Object> query, Map<String, Object> document, boolean upsert);
-
-	/**
-	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param query query
 	 * @param document document
 	 */
-	void updateOne(String collection, Map<String, Object> query, Map<String, Object> document);
+	void updateOne(String table, Map<String, Object> query, Map<String, Object> document, boolean upsert);
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param query query
 	 * @param document document
 	 */
-	void updateMany(String collection, Map<String, Object> query, Map<String, Object> document);
+	void updateOne(String table, Map<String, Object> query, Map<String, Object> document);
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
+	 * @param query query
 	 * @param document document
 	 */
-	Object insertOne(String collection, Map<String, Object> document);
+	void updateMany(String table, Map<String, Object> query, Map<String, Object> document);
+
+	/**
+	 *
+	 * @param table table
+	 * @param document document
+	 */
+	Object insertOne(String table, Map<String, Object> document);
 
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param documents documents
 	 */
-	void insertMany(String collection, List<Map<String, Object>> documents);
+	void insertMany(String table, List<Map<String, Object>> documents);
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param field field
 	 * @param query query
 	 * @param clazz clazz
 	 * @return Set<T>
 	 * @param <T> <T>
 	 */
-	<T> Set<T> distinct(String collection, String field, Map<String, Object> query, Class<T> clazz);
+	<T> Set<T> distinct(String table, String field, Map<String, Object> query, Class<T> clazz);
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param query query
 	 * @param projection projection
 	 * @return Map<String, Object>
 	 */
-	Map<String, Object> findOne(String collection, Map<String, Object> query, Map<String, Object> projection);
+	Map<String, Object> findOne(String table, Map<String, Object> query, Map<String, Object> projection);
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param query query
 	 * @return Map<String, Object>
 	 */
-	Map<String, Object> findOne(String collection, Map<String, Object> query);
+	Map<String, Object> findOne(String table, Map<String, Object> query);
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param query query
 	 * @param projection projection
 	 * @return Map<String, Object>
 	 */
-	ClosableIterable<Map<String, Object>> find(String collection, Map<String, Object> query, Map<String, Object> projection);
+	ClosableIterable<Map<String, Object>> find(String table, Map<String, Object> query, Map<String, Object> projection);
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param query query
 	 * @return Map<String, Object>
 	 */
-	ClosableIterable<Map<String, Object>> find(String collection, Map<String, Object> query);
+	ClosableIterable<Map<String, Object>> find(String table, Map<String, Object> query);
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param match match
 	 * @param sort sort
 	 * @param projection projection
 	 * @return ClosableIterable<Map<String, Object>>
 	 */
-	ClosableIterable<Map<String, Object>> aggregateStitchedTimeSeries(String collection, Map<String, Object> match, Map<String, Object> sort, Map<String, Object> projection);
+	ClosableIterable<Map<String, Object>> aggregateStitchedTimeSeries(String table, Map<String, Object> match, Map<String, Object> sort, Map<String, Object> projection);
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param match match
 	 * @param sort sort
 	 * @return ClosableIterable<Map<String, Object>>
 	 */
-	ClosableIterable<Map<String, Object>> aggregateReadBuckets(String collection, Map<String, Object> match, Map<String, Object> sort);
+	ClosableIterable<Map<String, Object>> aggregateReadBuckets(String table, Map<String, Object> match, Map<String, Object> sort);
 
 	/**
 	 *
@@ -155,23 +155,23 @@ public interface DatabaseBridge extends Database {
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param match match
 	 * @param unwind unwind
 	 * @return ClosableIterable<Map<String, Object>>
 	 */
-	ClosableIterable<Map<String, Object>> aggregateUnwoundTimeSeries(String collection, Map<String, Object> match, String unwind);
+	ClosableIterable<Map<String, Object>> aggregateUnwoundTimeSeries(String table, Map<String, Object> match, String unwind);
 
 	/**
 	 *
-	 * @param collection collection
+	 * @param table table
 	 * @param sort sort
 	 * @param groupId groupId
 	 * @param first first
 	 * @param hint hint
 	 * @return ClosableIterable<Map<String, Object>>
 	 */
-	ClosableIterable<Map<String, Object>> aggregateTimeSeriesGroups(String collection, Map<String, Object> sort, Map<String, Object> groupId, Map<String, Object> first, Map<String, Object> hint);
+	ClosableIterable<Map<String, Object>> aggregateTimeSeriesGroups(String table, Map<String, Object> sort, Map<String, Object> groupId, Map<String, Object> first, Map<String, Object> hint);
 
 	/**
 	 *
