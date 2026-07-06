@@ -115,23 +115,22 @@ public final class DatabaseBridge implements nl.fews.archivedatabase.common.shar
 	}
 
 	@Override
-	public ClosableIterable<Map<String, Object>> aggregateReadBuckets(String table, Map<String, Object> match, Map<String, Object> sort){
-		var query = Sql.render(Sql.ctx().
-				select().
-				from(Sql.table(table)).
-				where(Sql.condition(match)).
-				orderBy(Sql.sortFields(sort)));
-		return db.select(query.sql(), query.params());
-	}
-
-	//TODO: In Progress
-	@Override
 	public ClosableIterable<Map<String, Object>> aggregateAvailableYears(String table, Map<String, Object> match, Map<String, Object> sort, Map<String, Object> groupId){
 		var query = Sql.render(Sql.ctx().
 				select(Sql.aliasedFields(groupId)).
 				from(Sql.table(table)).
 				where(Sql.condition(match)).
 				groupBy(Sql.groupFields(groupId)).
+				orderBy(Sql.sortFields(sort)));
+		return db.select(query.sql(), query.params());
+	}
+
+	@Override
+	public ClosableIterable<Map<String, Object>> aggregateReadBuckets(String table, Map<String, Object> match, Map<String, Object> sort){
+		var query = Sql.render(Sql.ctx().
+				select().
+				from(Sql.table(table)).
+				where(Sql.condition(match)).
 				orderBy(Sql.sortFields(sort)));
 		return db.select(query.sql(), query.params());
 	}

@@ -42,7 +42,7 @@ public abstract class SummarizeBase implements Summarize {
 		Map<String, Object> result = fields.isEmpty() ?
 			database.aggregateOneMultiFieldGroupCount(collection, match, Map.of("count", 1)) :
 			database.aggregateOneMultiFieldGroupCount(collection, match,  group, Map.of("count", 1));
-		return result != null ? (int)result.get("count") : 0;
+		return result != null ? ((Number)result.get("count")).intValue() : 0;
 	}
 
 	/**

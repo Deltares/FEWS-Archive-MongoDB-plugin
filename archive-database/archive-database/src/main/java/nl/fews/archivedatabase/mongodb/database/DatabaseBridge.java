@@ -79,69 +79,95 @@ public final class DatabaseBridge implements nl.fews.archivedatabase.common.shar
 
 	@Override
 	public Map<String, Object> findOne(String collection, Map<String, Object> query, Map<String, Object> projection){
-		return db.findOne(collection, query, projection);
+		return db.findOne(collection, MongoDb.match(query), projection);
 	}
 
 	@Override
 	public Map<String, Object> findOne(String collection, Map<String, Object> query){
-		return db.findOne(collection, query);
+		return db.findOne(collection, MongoDb.match(query));
 	}
 
 	@Override
 	public ClosableIterable<Map<String, Object>> find(String collection, Map<String, Object> query, Map<String, Object> projection){
-		return db.find(collection, query, projection);
+		return db.find(collection, MongoDb.match(query), projection);
 	}
 
 	@Override
 	public ClosableIterable<Map<String, Object>> find(String collection, Map<String, Object> query){
-		return db.find(collection, query);
+		return db.find(collection, MongoDb.match(query));
 	}
 
 	@Override
 	public ClosableIterable<Map<String, Object>> aggregateStitchedTimeSeries(String collection, Map<String, Object> match, Map<String, Object> sort, Map<String, Object> projection) {
-		return null;
+		return db.aggregate(collection, List.of(
+				Map.of("$match", MongoDb.match(match)),
+				Map.of("$sort", sort),
+				Map.of("$project", projection)));
 	}
 
 	@Override
-	public ClosableIterable<Map<String, Object>> aggregateAvailableYears(String collection, Map<String, Object> match, Map<String, Object> sort, Map<String, Object> projection){
-		return db.aggregate(collection, List.of(Map.of("$match", match), Map.of("$sort", sort), Map.of("$project", projection)));
+	public ClosableIterable<Map<String, Object>> aggregateAvailableYears(String collection, Map<String, Object> match, Map<String, Object> sort, Map<String, Object> groupId){
+		return db.aggregate(collection, List.of(
+				Map.of("$match", MongoDb.match(match)),
+				Map.of("$sort", sort),
+				Map.of("$group", MongoDb.group(groupId)),
+				Map.of("$project", MongoDb.project(groupId))));
 	}
 
 	@Override
 	public ClosableIterable<Map<String, Object>> aggregateExternalForecastTimes(String collection, Map<String, Object> match, String groupId, Map<String, Object> sort, int limit) {
-		return null;
+		return db.aggregate(collection, List.of(
+				Map.of("$match", MongoDb.match(match)),
+				Map.of("$group", MongoDb.group(groupId)),
+				Map.of("$project", MongoDb.project(groupId)),
+				Map.of("$sort", sort),
+				Map.of("$limit", limit)
+		));
 	}
 
 	@Override
 	public ClosableIterable<Map<String, Object>> aggregateSimulatedTaskRunInfos(String collection, Map<String, Object> match, Map<String, Object> groupId, Map<String, Object> sort, int limit) {
-		return null;
+		return db.aggregate(collection, List.of(
+				Map.of("$match", MongoDb.match(match)),
+				Map.of("$group", MongoDb.group(groupId)),
+				Map.of("$project", MongoDb.project(groupId)),
+				Map.of("$sort", sort),
+				Map.of("$limit", limit)
+		));
 	}
 
 	@Override
 	public ClosableIterable<Map<String, Object>> aggregateUnwoundTimeSeries(String collection, Map<String, Object> match, String unwind) {
-		return db.aggregate(collection, List.of(Map.of("$match", match), Map.of("$unwind", String.format("$%s", unwind)), Map.of("$replaceRoot", Map.of("newRoot", String.format("$%s", "replaceRoot")))));
+		return db.aggregate(collection, List.of(
+				Map.of("$match", MongoDb.match(match)),
+				Map.of("$unwind", MongoDb.field(unwind)),
+				Map.of("$replaceRoot", MongoDb.replaceRoot(unwind))));
 	}
 
 	@Override
 	public ClosableIterable<Map<String, Object>> aggregateReadBuckets(String collection, Map<String, Object> match, Map<String, Object> sort){
-		match = match.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, s -> s.getValue() instanceof Map ? ((Map<?, ?>)s.getValue()).entrySet().stream().collect(Collectors.toMap(x -> String.format("$%s", x.getKey()), Map.Entry::getValue)) : s.getValue()));
-		return db.aggregate(collection, List.of(Map.of("$match", match), Map.of("$sort", sort)));
+		return db.aggregate(collection, List.of(
+				Map.of("$match", MongoDb.match(match)),
+				Map.of("$sort", sort)));
 	}
 
 	@Override
 	public ClosableIterable<Map<String, Object>> aggregateTimeSeriesGroups(String collection, Map<String, Object> sort, Map<String, Object> groupId, Map<String, Object> first, Map<String, Object> hint){
-		var g = new LinkedHashMap<String, Object>(Map.of("_id", groupId));
-		g.putAll(first.keySet().stream().collect(Collectors.toMap(s -> s, s -> Map.of("$first", String.format("$%s", first.get(s))))));
-		return db.aggregate(collection, List.of(Map.of("$sort", sort), Map.of("$group", g)), hint);
+		var group = MongoDb.group(groupId);
+		first.forEach((k, v) -> group.put(k, Map.of("$first", MongoDb.field(v))));
+		return db.aggregate(collection, List.of(
+				Map.of("$sort", sort),
+				Map.of("$group", group),
+				Map.of("$project", MongoDb.project(groupId, first))), hint);
 	}
 
 	@Override
 	public ClosableIterable<Map<String, Object>> aggregateTimeSeriesIndex(String collection, Map<String, Object> sort, Map<String, Object> groupId, Map<String, Object> addFields) {
 		return db.aggregate(collection, List.of(
-			Map.of("$sort", sort),
-			Map.of("$group", Map.of("_id", groupId.keySet().stream().collect(Collectors.toMap(s -> s, s -> String.format("$%s", groupId.get(s)))))),
-			Map.of("$replaceRoot", Map.of("newRoot", String.format("$%s", "replaceRoot"))),
-			Map.of("$addFields", addFields)));
+				Map.of("$sort", sort),
+				Map.of("$group", MongoDb.group(groupId)),
+				Map.of("$replaceRoot", Map.of("newRoot", groupId.keySet().stream().collect(Collectors.toMap(s -> s, s -> String.format("$_id.%s", s))))),
+				Map.of("$addFields", addFields)));
 	}
 
 	@Override
@@ -149,17 +175,19 @@ public final class DatabaseBridge implements nl.fews.archivedatabase.common.shar
 		var group = new LinkedHashMap<String, Object>();
 		group.put("_id", null);
 		sum.forEach((k, v) -> group.put(k, Map.of("$sum", v)));
-		return db.aggregateOne(collection, List.of(Map.of("$match", match), Map.of("$group", group)));
+		return db.aggregateOne(collection, List.of(
+				Map.of("$match", MongoDb.match(match)),
+				Map.of("$group", group)));
 	}
 
 	@Override
 	public Map<String, Object> aggregateOneMultiFieldGroupCount(String collection, Map<String, Object> match, Map<String, Object> groupId, Map<String, Object> sum){
-		var g1 = Map.of("_id", groupId.keySet().stream().collect(Collectors.toMap(s -> s, s -> String.format("$%s", groupId.get(s)), (a, b) -> b, LinkedHashMap::new)));
-
-		var g2 = new LinkedHashMap<String, Object>();
-		g2.put("_id", null);
-		sum.forEach((k, v) -> g2.put(k, Map.of("$sum", v)));
-
-		return db.aggregateOne(collection, List.of(Map.of("$match", match), Map.of("$group", g1), Map.of("$group", g2)));
+		var group = new LinkedHashMap<String, Object>();
+		group.put("_id", null);
+		sum.forEach((k, v) -> group.put(k, Map.of("$sum", v)));
+		return db.aggregateOne(collection, List.of(
+				Map.of("$match", MongoDb.match(match)),
+				Map.of("$group", MongoDb.group(groupId)),
+				Map.of("$group", group)));
 	}
 }

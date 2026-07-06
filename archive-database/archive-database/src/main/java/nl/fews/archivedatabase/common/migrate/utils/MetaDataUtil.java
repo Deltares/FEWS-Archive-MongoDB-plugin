@@ -160,7 +160,7 @@ public final class MetaDataUtil {
 	 */
 	public static Map<File, Date> getExistingMetaDataFilesDb () {
 		var existingMetaDataDb = new LinkedHashMap<File, Date>();
-		database.find(Collection.MigrateMetaData.toString(), Map.of(), Map.of("project", Map.of("_id", 0, "metaDataFileRelativePath", 1, "metaDataFileTime", 1))).forEach(e -> {
+		database.find(Collection.MigrateMetaData.toString(), Map.of(), Map.of("_id", 0, "metaDataFileRelativePath", 1, "metaDataFileTime", 1)).forEach(e -> {
 			var file = PathUtil.normalize(new File(Settings.get("baseDirectoryArchive", String.class), (String)e.get("metaDataFileRelativePath")));
 			existingMetaDataDb.put(file, (Date)e.get("metaDataFileTime"));
 		});

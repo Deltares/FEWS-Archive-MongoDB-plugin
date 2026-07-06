@@ -21,6 +21,32 @@ public final class Schema {
 
 	/**
 	 *
+	 */
+	private static final List<String> timeseriesFields = List.of("t", "lt", "v","dv", "f", "u", "c","fs");
+
+	/**
+	 *
+	 */
+	private static final Set<String> timeseriesValueFields = Set.of("v","dv");
+
+	/**
+	 *
+	 * @return List<String>
+	 */
+	public static List<String> getTimeseriesFields(){
+		return timeseriesFields;
+	}
+
+	/**
+	 *
+	 * @return Set<String>
+	 */
+	public static Set<String> getTimeseriesValueFields(){
+		return timeseriesValueFields;
+	}
+
+	/**
+	 *
 	 * @param collection collection
 	 * @return The array representing default indexes to be applied to the given collection.  The first entry is unique
 	 */

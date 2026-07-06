@@ -4,7 +4,6 @@ import nl.fews.archivedatabase.common.query.interfaces.Read;
 import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
 import nl.fews.archivedatabase.common.shared.interfaces.ClosableIterable;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
-import org.bson.Document;
 
 import java.util.*;
 
@@ -51,7 +50,7 @@ public final class ReadSingletons implements Read {
 
 		query.forEach((k, v) -> {
 			if((v instanceof List<?> val) && !val.isEmpty())
-				match.put(k, val.size() == 1 ? val.get(0) : new Document("in", v));
+				match.put(k, val.size() == 1 ? val.get(0) : Map.of("in", v));
 			else
 				match.put(k, v);
 		});
