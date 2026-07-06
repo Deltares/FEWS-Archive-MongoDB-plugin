@@ -100,7 +100,7 @@ public final class DatabaseBridge implements nl.fews.archivedatabase.common.shar
 		var query = Sql.render(Sql.ctx().
 				select(Sql.selectFields(db.getColumnNames(table), projection)).
 				from(Sql.table(table)).
-				where(Sql.condition(whereKeys));
+				where(Sql.condition(whereKeys)));
 		return db.select(query.sql(), query.params());
 	}
 
