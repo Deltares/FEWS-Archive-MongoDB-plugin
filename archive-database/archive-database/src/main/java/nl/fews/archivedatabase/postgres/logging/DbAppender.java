@@ -1,9 +1,9 @@
 package nl.fews.archivedatabase.postgres.logging;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.postgres.database.DatabaseUtil;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Core;
 import org.apache.logging.log4j.core.Filter;
@@ -14,29 +14,27 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.JsonLayout;
-import org.bson.Document;
+import org.json.JSONObject;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
-@Plugin(name = "MongoDbAppender", category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
+@Plugin(name = "PostgresAppender", category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
 public class DbAppender extends AbstractAppender {
 
 	/**
 	 *
 	 */
-	private final MongoClient client;
+	private final HikariDataSource dataSource;
 
 	/**
 	 *
 	 */
-	private final String collection;
-
-	/**
-	 *
-	 */
-	private final String database;
+	private final String table;
 
 	/**
 	 *
@@ -55,11 +53,19 @@ public class DbAppender extends AbstractAppender {
 	 */
 	protected DbAppender(String name, Filter filter, String connectionString) {
 		super(name, filter, JsonLayout.createDefaultLayout(), true, null);
-		ConnectionString connection = new ConnectionString(connectionString);
-        this.client = MongoClients.create(connection);
-		this.collection = Collection.MigrateLog.toString();
-        this.database = connection.getDatabase();
-		this.jsonLayout = (JsonLayout)getLayout();
+		var config = new HikariConfig();
+		config.setJdbcUrl(connectionString);
+		config.setMaximumPoolSize(32);
+		config.setMinimumIdle(2);
+		config.setPoolName("postgres-log-pool");
+		config.setConnectionTimeout(30 * 1000);
+		config.setIdleTimeout(10 * 60 * 1000);
+		config.setMaxLifetime(30 * 60 * 1000);
+
+		dataSource = new HikariDataSource(config);
+
+		this.table = Collection.MigrateLog.toString();
+        this.jsonLayout = (JsonLayout)getLayout();
 
 		String machine;
         try {
@@ -92,13 +98,23 @@ public class DbAppender extends AbstractAppender {
 	 */
 	@Override
 	public void append(LogEvent event) {
-		if(event.getLoggerName() != null && event.getLoggerName().startsWith("org.mongodb."))
+		if(event.getLoggerName() != null && event.getLoggerName().startsWith("TODO: IF NEEDED OR REMOVE"))
 			return;
-		try{
-			Document document = addExtraMessage(Document.parse(jsonLayout.toSerializable(event)));
-			document.append("date", new Date());
-			document.append("machineName", this.machine);
-			client.getDatabase(database).getCollection(collection).insertOne(document);
+
+		Map<String, Object> document = addExtraMessage(new JSONObject(jsonLayout.toSerializable(event)).toMap());
+		document.put("date", new Date());
+		document.put("machineName", this.machine);
+
+		var params = List.of(
+			new Timestamp(((Date)document.get("date")).getTime()),
+			document.getOrDefault("errorCategory", ""),
+			new JSONObject(document).toString());
+
+		var sql = String.format("INSERT INTO \"%s\" (\"date\", \"errorCategory\", \"data\") VALUES (?, ?, ?::jsonb)", table);
+
+		try (var c = dataSource.getConnection(); var ps = c.prepareStatement(sql)) {
+			DatabaseUtil.bindParams(ps, params);
+			ps.execute();
 		}
 		catch (Exception ex){
 			error(ex.getMessage(), ex);
@@ -109,9 +125,9 @@ public class DbAppender extends AbstractAppender {
 	 *
 	 * @param document document
 	 */
-	private Document addExtraMessage(Document document){
+	private Map<String, Object> addExtraMessage(Map<String, Object> document){
 		try{
-			Document extra = Document.parse(document.getString("message"));
+			Map<String, Object> extra = new JSONObject((String)document.get("message")).toMap();
 			document.putAll(extra);
 			if(!extra.containsKey("message"))
 				document.remove("message");
@@ -125,8 +141,8 @@ public class DbAppender extends AbstractAppender {
 	@Override
     public void stop() {
         super.stop();
-        if (client != null) {
-            client.close();
+        if (dataSource != null) {
+            dataSource.close();
         }
     }
 }

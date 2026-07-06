@@ -97,13 +97,12 @@ public final class DatabaseUtil {
 	 * @return boolean
 	 */
 	public static boolean databaseExists(String connectionString, String databaseName) {
-		var sql = "SELECT EXISTS (SELECT 1 FROM pg_database WHERE datname = ?)";
+		var sql = "SELECT 1 FROM pg_database WHERE datname = ?";
 
 		try (var c = DriverManager.getConnection(connectionString); var ps = c.prepareStatement(sql)) {
 			ps.setString(1, databaseName);
 			try (ResultSet rs = ps.executeQuery()) {
-				rs.next();
-				return rs.getBoolean(1);
+				return rs.next();
 			}
 		}
 		catch (SQLException e) {
