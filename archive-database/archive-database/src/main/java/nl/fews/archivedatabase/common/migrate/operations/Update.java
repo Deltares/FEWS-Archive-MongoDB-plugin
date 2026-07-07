@@ -1,7 +1,7 @@
 package nl.fews.archivedatabase.common.migrate.operations;
 
 import nl.fews.archivedatabase.common.migrate.utils.MetaDataUtil;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.database.Collection;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.fews.archivedatabase.common.shared.utils.LogUtil;
@@ -25,11 +25,6 @@ public final class Update {
 	/**
 	 *
 	 */
-	private static final DatabaseBridge database;
-
-	/**
-	 *
-	 */
 	private static final Logger logger = LogManager.getLogger(Update.class);
 
 	/**
@@ -46,15 +41,6 @@ public final class Update {
 	 *
 	 */
 	private static final Object mutex = new Object();
-
-	static{
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
 
 	/**
 	 * Static Class
@@ -108,7 +94,7 @@ public final class Update {
 	 */
 	private static void updateMetaData(File metaDataFile, Date metaDataDate) {
 		try {
-			var dbMetaData = database.findOne(Collection.MigrateMetaData.toString(), Map.of("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class))));
+			var dbMetaData = Database.instance().findOne(Collection.MigrateMetaData.toString(), Map.of("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class))));
 			if (dbMetaData != null) {
 				Delete.deleteMetaData(metaDataFile);
 				Insert.insertMetaData(metaDataFile, metaDataDate);

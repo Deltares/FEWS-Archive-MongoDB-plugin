@@ -1,10 +1,9 @@
 package nl.fews.archivedatabase.common.export.operations;
 
 import nl.fews.archivedatabase.common.export.interfaces.Synchronize;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
 import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
-import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.fews.archivedatabase.common.shared.tuple.Triplet;
 import nl.fews.archivedatabase.common.shared.utils.TimeSeriesTypeUtil;
 
@@ -20,32 +19,12 @@ public abstract class SynchronizeBase implements Synchronize {
 	/**
 	 *
 	 */
-	protected final DatabaseBridge database;
-
-	/**
-	 *
-	 */
 	private static final Map<Map<String, Object>, Object> timeSeriesIndex = new ConcurrentHashMap<>();
 
 	/**
 	 *
 	 */
 	private static final AtomicBoolean isTimeSeriesIndexInitialized = new AtomicBoolean(false);
-
-	/**
-	 *
-	 */
-	public SynchronizeBase() {
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-			if (isTimeSeriesIndexInitialized.compareAndSet(false, true)) {
-				database.find(Collection.TimeSeriesIndex.toString(), Map.of(), Map.of("_id", 0)).forEach(document -> timeSeriesIndex.put(document, "null"));
-			}
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
 
 	/**
 	 * Inserts, updates or replaces data for bucketed (observed) timeseries
@@ -73,18 +52,18 @@ public abstract class SynchronizeBase implements Synchronize {
 		Map<Map<String, Object>, Object> missingTimeSeriesIndexes = new ConcurrentHashMap<>();
 		if(!insert.isEmpty())
 		{
-			insert.parallelStream().forEach(ts -> database.insertOne(collection, ts));
+			insert.parallelStream().forEach(ts -> Database.instance().insertOne(collection, ts));
 			missingTimeSeriesIndexes.putAll(insert.stream().map(s -> getTimeSeriesIndexKey(s, collection)).filter(key -> !timeSeriesIndex.containsKey(key)).distinct().collect(Collectors.toMap(s -> s, s -> s)));
 		}
 
 		if(!replace.isEmpty()) {
-			database.deleteMany(collection, Map.of("_id", Map.of("in", replace.stream().map(s -> s.get("_id")).toList())));
-			replace.parallelStream().forEach(ts -> database.insertOne(collection, ts));
+			Database.instance().deleteMany(collection, Map.of("_id", Map.of("in", replace.stream().map(s -> s.get("_id")).toList())));
+			replace.parallelStream().forEach(ts -> Database.instance().insertOne(collection, ts));
 			missingTimeSeriesIndexes.putAll(replace.stream().map(s -> getTimeSeriesIndexKey(s, collection)).filter(key -> !timeSeriesIndex.containsKey(key)).distinct().collect(Collectors.toMap(s -> s, s -> s)));
 		}
 
 		if (!remove.isEmpty())
-			database.deleteMany(collection, Map.of("_id", Map.of("in", remove.stream().map(s -> s.get("_id")).toList())));
+			Database.instance().deleteMany(collection, Map.of("_id", Map.of("in", remove.stream().map(s -> s.get("_id")).toList())));
 
 		addMissingTimeSeriesIndexes(missingTimeSeriesIndexes);
 	}
@@ -111,7 +90,7 @@ public abstract class SynchronizeBase implements Synchronize {
 	private synchronized void addMissingTimeSeriesIndexes(Map<Map<String, Object>, Object> missingTimeSeriesIndexes){
 		missingTimeSeriesIndexes.forEach((k, v) -> {
 			try{
-				database.insertOne(Collection.TimeSeriesIndex.toString(), k);
+				Database.instance().insertOne(Collection.TimeSeriesIndex.toString(), k);
 				timeSeriesIndex.put(k, "");
 			}
 			catch (RuntimeException ex){

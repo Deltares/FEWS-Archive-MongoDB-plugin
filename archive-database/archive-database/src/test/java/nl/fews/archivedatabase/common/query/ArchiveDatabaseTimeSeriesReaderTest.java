@@ -8,7 +8,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
-class ArchiveDatabaseBridgeTimeSeriesReaderTest {
+class ArchiveDatabaseTimeSeriesReaderTest {
 	@Container
 	final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
 

@@ -1,22 +1,8 @@
-package nl.fews.archivedatabase.common.export.utils;
+package nl.fews.archivedatabase.common.export.operations;
 
-import nl.fews.archivedatabase.mongodb.TestUtil;
-import nl.fews.archivedatabase.common.export.TestSettings;
-import nl.fews.archivedatabase.common.shared.enums.BucketSize;
-import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
-import nl.fews.archivedatabase.common.shared.interfaces.TimeSeries;
-import nl.fews.archivedatabase.common.shared.timeseries.ScalarExternalHistorical;
-import nl.fews.archivedatabase.common.shared.utils.TimeSeriesTypeUtil;
-import nl.wldelft.util.timeseries.TimeSeriesArray;
-import nl.wldelft.util.timeseries.TimeSeriesArrays;
-import nl.wldelft.util.timeseries.TimeSeriesHeader;
 import org.bson.Document;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

@@ -81,9 +81,9 @@ public final class Database implements nl.fews.archivedatabase.common.shared.int
 		var tableNames = DatabaseUtil.listTableNames(connectionString);
 		Schema.getTables().forEach(table -> {
 			if(!tableNames.contains(table))
-				CompletableFuture.runAsync(() -> ensureCollection(table));
+				CompletableFuture.runAsync(() -> ensureTable(table));
 			else
-				ensureCollection(table);
+				ensureTable(table);
 		});
 	}
 
@@ -92,7 +92,7 @@ public final class Database implements nl.fews.archivedatabase.common.shared.int
 	 * @param table table
 	 */
 	@Override
-	public void ensureCollection(String table){
+	public void ensureTable(String table){
 		try (var c = dataSource.getConnection(); var ps = c.prepareStatement(Schema.getSettings())) {
 			ps.execute();
 		}

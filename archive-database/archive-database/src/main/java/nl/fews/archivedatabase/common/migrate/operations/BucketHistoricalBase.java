@@ -1,7 +1,7 @@
 package nl.fews.archivedatabase.common.migrate.operations;
 
 import nl.fews.archivedatabase.common.migrate.interfaces.BucketHistorical;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.enums.BucketSize;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.fews.archivedatabase.common.shared.utils.BucketUtil;
@@ -16,11 +16,6 @@ import java.util.concurrent.*;
 
 @SuppressWarnings("unchecked")
 public abstract class BucketHistoricalBase implements BucketHistorical {
-
-	/**
-	 *
-	 */
-	protected final DatabaseBridge database;
 
 	/**
 	 *
@@ -41,18 +36,6 @@ public abstract class BucketHistoricalBase implements BucketHistorical {
 	 *
 	 */
 	private static final Object mutex = new Object();
-
-	/**
-	 *
-	 */
-	public BucketHistoricalBase() {
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
 
 	/**
 	 *
@@ -126,9 +109,9 @@ public abstract class BucketHistoricalBase implements BucketHistorical {
 				d.remove("forecastTime");
 				d.remove("localForecastTime");
 			}
-			database.deleteMany(bucketCollection, bucketKeyDocument);
+			Database.instance().deleteMany(bucketCollection, bucketKeyDocument);
 			if(!timeSeriesDocuments.isEmpty())
-				database.insertMany(bucketCollection, timeSeriesDocuments);
+				Database.instance().insertMany(bucketCollection, timeSeriesDocuments);
 		}
 		catch (Exception ex){
 			logger.error(new JSONObject(LogUtil.getLogMessageJson(ex, Map.of("bucketKeyDocument", bucketKeyDocument))).toString(), ex);

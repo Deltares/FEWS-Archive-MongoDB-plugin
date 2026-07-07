@@ -1,6 +1,6 @@
 package nl.fews.archivedatabase.common.migrate.utils;
 
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.database.Collection;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.fews.archivedatabase.common.shared.utils.PathUtil;
@@ -28,11 +28,6 @@ public final class MetaDataUtil {
 	/**
 	 *
 	 */
-	private static final DatabaseBridge database;
-
-	/**
-	 *
-	 */
 	private static final Logger logger = LogManager.getLogger(MetaDataUtil.class);
 
 	/**
@@ -49,15 +44,6 @@ public final class MetaDataUtil {
 	 *
 	 */
 	private static final Object mutex = new Object();
-
-	static{
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
 
 	/**
 	 * Static Class
@@ -160,7 +146,7 @@ public final class MetaDataUtil {
 	 */
 	public static Map<File, Date> getExistingMetaDataFilesDb () {
 		var existingMetaDataDb = new LinkedHashMap<File, Date>();
-		database.find(Collection.MigrateMetaData.toString(), Map.of(), Map.of("_id", 0, "metaDataFileRelativePath", 1, "metaDataFileTime", 1)).forEach(e -> {
+		Database.instance().find(Collection.MigrateMetaData.toString(), Map.of(), Map.of("_id", 0, "metaDataFileRelativePath", 1, "metaDataFileTime", 1)).forEach(e -> {
 			var file = PathUtil.normalize(new File(Settings.get("baseDirectoryArchive", String.class), (String)e.get("metaDataFileRelativePath")));
 			existingMetaDataDb.put(file, (Date)e.get("metaDataFileTime"));
 		});

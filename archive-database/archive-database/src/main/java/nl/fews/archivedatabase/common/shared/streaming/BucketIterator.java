@@ -1,8 +1,7 @@
-package nl.fews.archivedatabase.common.query.utils;
+package nl.fews.archivedatabase.common.shared.streaming;
 
 import nl.fews.archivedatabase.common.shared.database.Index;
 import nl.fews.archivedatabase.common.shared.interfaces.ClosableIterator;
-import nl.fews.archivedatabase.common.shared.streaming.PeekingIterator;
 
 import java.util.Date;
 import java.util.List;

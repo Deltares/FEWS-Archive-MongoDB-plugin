@@ -1,6 +1,5 @@
 package nl.fews.archivedatabase.common.query.operations;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
-import nl.fews.archivedatabase.common.shared.settings.Settings;
+import nl.fews.archivedatabase.common.shared.database.Database;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -11,20 +10,6 @@ import java.util.Map;
  * Provides streaming capability for singleton timeseries
  */
 public final class HasDataSingletons {
-
-	/**
-	 *
-	 */
-	private static final DatabaseBridge database;
-
-	static{
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
 
 	/**
 	 * Static Class
@@ -53,6 +38,6 @@ public final class HasDataSingletons {
 			if(!v.isEmpty())
 				document.put(k, v.size() == 1 ? v.get(0) : Map.of("in", v));
 		});
-		return database.findOne(collection, document, Map.of("_id", 1)) != null;
+		return Database.instance().findOne(collection, document, Map.of("_id", 1)) != null;
 	}
 }

@@ -1,8 +1,11 @@
 package nl.fews.archivedatabase.common.shared.utils;
 
 import nl.fews.archivedatabase.common.migrate.TestSettings;
+import nl.fews.archivedatabase.common.shared.enums.BucketSize;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -23,17 +26,17 @@ class BucketUtilTest {
 		Settings.put("connectionString", String.format(Settings.get("databaseUrl", String.class), mongoDBContainer.getConnectionString()));
 	}
 
-//	@AfterEach
-//	public void tearDown(){
-//		Database.close();
-//	}
-//
-//	@Test
-//	void getBucketSize() {
-//		assertEquals(BucketSize.YEAR, BucketUtil.getBucketSize(60));
-//		assertEquals(BucketSize.YEAR, BucketUtil.getBucketSize(61));
-//		assertEquals(BucketSize.MONTH, BucketUtil.getBucketSize(59));
-//	}
+	@AfterEach
+	public void tearDown(){
+		//Database.close();
+	}
+
+	@Test
+	void getBucketSize() {
+		assertEquals(BucketSize.YEAR, BucketUtil.getBucketSize(60));
+		assertEquals(BucketSize.YEAR, BucketUtil.getBucketSize(61));
+		assertEquals(BucketSize.MONTH, BucketUtil.getBucketSize(59));
+	}
 //
 //	@Test
 //	void getBucketValue() {

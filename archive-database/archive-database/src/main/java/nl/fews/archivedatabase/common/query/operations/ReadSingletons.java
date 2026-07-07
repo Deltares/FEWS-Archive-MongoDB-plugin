@@ -1,9 +1,8 @@
 package nl.fews.archivedatabase.common.query.operations;
 
 import nl.fews.archivedatabase.common.query.interfaces.Read;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.interfaces.ClosableIterable;
-import nl.fews.archivedatabase.common.shared.settings.Settings;
 
 import java.util.*;
 
@@ -11,23 +10,6 @@ import java.util.*;
  * Provides streaming capability for singleton timeseries
  */
 public final class ReadSingletons implements Read {
-
-	/**
-	 *
-	 */
-	private final DatabaseBridge database;
-
-	/**
-	 *
-	 */
-	public ReadSingletons() {
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
 
 	/**
 	 *
@@ -54,7 +36,7 @@ public final class ReadSingletons implements Read {
 			else
 				match.put(k, v);
 		});
-		return database.find(collection, match);
+		return Database.instance().find(collection, match);
 	}
 
 	/**

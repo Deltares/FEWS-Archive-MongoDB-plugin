@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 /**
  *
  */
-@SuppressWarnings({"unused", "ConstantConditions"})
+@SuppressWarnings({"unused", "ConstantConditions", "unchecked"})
 public final class Database implements nl.fews.archivedatabase.common.shared.interfaces.Database, AutoCloseable {
 	/**
 	 *
@@ -56,7 +56,7 @@ public final class Database implements nl.fews.archivedatabase.common.shared.int
 		database = new ConnectionString(connectionString).getDatabase();
 		db = mongoClient.getDatabase(database);
 		if(Database.connectionString == null || !Database.connectionString.equals(connectionString))
-			ensureCollections();
+			ensureTables();
 		Database.connectionString = connectionString;
 	}
 
@@ -98,15 +98,15 @@ public final class Database implements nl.fews.archivedatabase.common.shared.int
 	/**
 	 *
 	 */
-	private void ensureCollections(){
+	private void ensureTables(){
 		if(!hasIndexOperations()){
 			var collections = new HashSet<String>();
 			db.listCollectionNames().forEach(collections::add);
 			Schema.getCollections().forEach(collection -> {
 				if(collections.contains(collection))
-					CompletableFuture.runAsync(() -> ensureCollection(collection));
+					CompletableFuture.runAsync(() -> ensureTable(collection));
 				else
-					ensureCollection(collection);
+					ensureTable(collection);
 			});
 		}
 	}
@@ -116,19 +116,18 @@ public final class Database implements nl.fews.archivedatabase.common.shared.int
 	 * @param collection collection
 	 */
 	@Override
-	public void ensureCollection(String collection){
+	public void ensureTable(String collection){
 		var mongoCollection = db.getCollection(collection);
 		var existingIndexes = new LinkedHashMap<String, Object>();
 		mongoCollection.listIndexes().forEach(index -> existingIndexes.put(index.get("key", Document.class).keySet().stream().sorted().collect(Collectors.joining("_")), index.get("key", Document.class)));
 
 		var indexes = new ArrayList<IndexModel>();
 		for (var d: Schema.getIndexes(collection)) {
-			var document = new Document(d);
-			var unique = Integer.valueOf(1).equals(document.getEmbedded(List.of("options", "unique"), Integer.class));
-			var key = document.keySet().stream().sorted().collect(Collectors.joining("_"));
+			var unique = Integer.valueOf(1).equals(d.containsKey("options") && ((Map<?, ?>)d.get("options")).containsKey("unique") ? ((Map<?, ?>)d.get("options")).get("unique") : 0);
+			var index = new Document(d).getList("keys", String.class).stream().collect(Collectors.toMap(k -> k, v -> 1, (a, b) -> a, Document::new));
+			var key = String.join("_", new Document(d).getList("keys", String.class));
 			if(!existingIndexes.containsKey(key))
-				indexes.add(new IndexModel(document, new IndexOptions().unique(unique)));
-		}
+				indexes.add(new IndexModel(index, new IndexOptions().unique(unique)));		}
 		if(!indexes.isEmpty())
 			mongoCollection.createIndexes(indexes);
 	}

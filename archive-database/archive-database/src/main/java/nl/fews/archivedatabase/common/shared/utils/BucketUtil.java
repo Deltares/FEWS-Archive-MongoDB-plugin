@@ -1,16 +1,16 @@
 package nl.fews.archivedatabase.common.shared.utils;
 
 import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.database.Index;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
 import nl.fews.archivedatabase.common.shared.enums.BucketSize;
-import nl.fews.archivedatabase.common.shared.settings.Settings;
 
 import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("ALL")
 public abstract class BucketUtil {
 
 	/**
@@ -49,20 +49,6 @@ public abstract class BucketUtil {
 	private static final BucketSize DEFAULT_BUCKET_SIZE = BucketSize.MONTH;
 
 	/**
-	 *
-	 */
-	private static final DatabaseBridge database;
-
-	static{
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
-
-	/**
 	 * Static class
 	 */
 	private BucketUtil(){}
@@ -73,7 +59,7 @@ public abstract class BucketUtil {
 	 * @return BucketSize
 	 */
 	public static synchronized BucketSize getNetsBucketSize(String bucketCollection, String bucketKey){
-		var result = database.findOne(Collection.BucketSize.toString(), Map.of("bucketCollection", bucketCollection, "bucketKey", bucketKey), Map.of("_id", 0,"bucketSize", 1));
+		var result = Database.instance().findOne(Collection.BucketSize.toString(), Map.of("bucketCollection", bucketCollection, "bucketKey", bucketKey), Map.of("_id", 0,"bucketSize", 1));
 		return result == null ? BucketSize.YEAR : BucketSize.valueOf((String)result.get("bucketSize"));
 	}
 
@@ -195,10 +181,10 @@ public abstract class BucketUtil {
 		var timeSeriesBuckets = TimeSeriesUtil.getTimeSeriesBuckets(timeSeries, bucketSize);
 		var timeSeriesDocuments = TimeSeriesUtil.getTimeSeriesDocuments(bucketKeyDocument, timeSeriesBuckets, bucketSize, bucketCollection);
 
-		database.deleteMany(bucketCollection, bucketKeyDocument);
+		Database.instance().deleteMany(bucketCollection, bucketKeyDocument);
 		if(!timeSeriesDocuments.isEmpty())
-			database.insertMany(bucketCollection, timeSeriesDocuments);
-		database.updateOne(Collection.BucketSize.toString(), Map.of("bucketCollection", bucketCollection, "bucketKey", bucketKey), Map.of("bucketSize", bucketSize.toString()), true);
+			Database.instance().insertMany(bucketCollection, timeSeriesDocuments);
+		Database.instance().updateOne(Collection.BucketSize.toString(), Map.of("bucketCollection", bucketCollection, "bucketKey", bucketKey), Map.of("bucketSize", bucketSize.toString()), true);
 	}
 
 	/**

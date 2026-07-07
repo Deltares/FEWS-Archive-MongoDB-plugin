@@ -1,8 +1,6 @@
 package nl.fews.archivedatabase.common.query.operations;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.database.Collection;
-
-import nl.fews.archivedatabase.common.shared.settings.Settings;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,20 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  */
 public final class Filter {
-
-	/**
-	 *
-	 */
-	private static final DatabaseBridge database;
-
-	static{
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
 
 	/**
 	 *
@@ -44,7 +28,7 @@ public final class Filter {
 			var field = e.getKey();
 			var clazz = e.getValue();
 			filters.put(field, new HashSet<>());
-			database.distinct(Collection.TimeSeriesIndex.toString(), field, Map.of("collection", collection), clazz).forEach(f -> filters.get(field).add(f));
+			Database.instance().distinct(Collection.TimeSeriesIndex.toString(), field, Map.of("collection", collection), clazz).forEach(f -> filters.get(field).add(f));
 		});
 		filters.entrySet().parallelStream().forEach(e -> {
 			var field = e.getKey();
@@ -59,7 +43,7 @@ public final class Filter {
 					if(!v.isEmpty())
 						document.put(k.replace("metaData.", ""), v.size() == 1 ? v.get(0) : Map.of("in", v));
 				});
-				filtersFound.addAll(database.distinct(Collection.TimeSeriesIndex.toString(), field, document, f.getClass()));
+				filtersFound.addAll(Database.instance().distinct(Collection.TimeSeriesIndex.toString(), field, document, f.getClass()));
 			});
 			filters.put(field, filtersFound);
 		});

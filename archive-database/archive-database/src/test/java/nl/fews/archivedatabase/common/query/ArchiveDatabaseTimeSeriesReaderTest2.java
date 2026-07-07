@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ArchiveDatabaseBridgeTimeSeriesReaderTest2 {
+class ArchiveDatabaseTimeSeriesReaderTest2 {
 
     private static JSONObject testSettings = null;
 

@@ -3,11 +3,10 @@ package nl.fews.archivedatabase.common.query;
 import nl.fews.archivedatabase.common.query.interfaces.Read;
 import nl.fews.archivedatabase.common.query.interfaces.Summarize;
 import nl.fews.archivedatabase.common.query.operations.Filter;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
 import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.database.Index;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
-import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.fews.archivedatabase.common.shared.utils.TimeSeriesTypeUtil;
 import nl.wldelft.fews.system.data.config.region.TimeSeriesValueType;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
@@ -37,23 +36,6 @@ public class ArchiveDatabaseGuiDataReader implements nl.fews.archivedatabase.int
 	private static final Object mutex = new Object();
 
 	/**
-	 *
-	 */
-	private final DatabaseBridge database;
-
-	/**
-	 * block direct instantiation; use static create() method
-	 */
-	private ArchiveDatabaseGuiDataReader(){
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
-
-	/**
 	 * Creates a new instance of this interface implementation
 	 */
 	public static ArchiveDatabaseGuiDataReader create() {
@@ -68,7 +50,6 @@ public class ArchiveDatabaseGuiDataReader implements nl.fews.archivedatabase.int
 	public void close() {
 		synchronized (mutex) {
 			ArchiveDatabaseGuiDataReader.archiveDatabaseGuiDataReader = null;
-			database.close();
 		}
 	}
 
@@ -207,7 +188,7 @@ public class ArchiveDatabaseGuiDataReader implements nl.fews.archivedatabase.int
 			var timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, fewsTimeSeriesType);
 			var collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 
-			return new HashSet<>(database.distinct(Collection.TimeSeriesIndex.toString(), "sourceId", Map.of("collection", collection), String.class));
+			return new HashSet<>(Database.instance().distinct(Collection.TimeSeriesIndex.toString(), "sourceId", Map.of("collection", collection), String.class));
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);

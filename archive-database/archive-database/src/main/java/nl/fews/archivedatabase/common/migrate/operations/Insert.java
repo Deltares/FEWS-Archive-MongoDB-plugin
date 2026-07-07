@@ -3,7 +3,7 @@ package nl.fews.archivedatabase.common.migrate.operations;
 import nl.fews.archivedatabase.common.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.common.migrate.utils.NetcdfUtil;
 import nl.fews.archivedatabase.common.migrate.utils.RunInfoUtil;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.database.Collection;
 import nl.fews.archivedatabase.common.shared.enums.BucketSize;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
@@ -37,11 +37,6 @@ public final class Insert {
 	/**
 	 *
 	 */
-	private static final DatabaseBridge database;
-
-	/**
-	 *
-	 */
 	private static final Logger logger = LogManager.getLogger(Insert.class);
 
 	/**
@@ -64,14 +59,6 @@ public final class Insert {
 	 */
 	private static final Object mutex = new Object();
 
-	static{
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
 
 	/**
 	 * Static Class
@@ -156,7 +143,7 @@ public final class Insert {
 				}
 			});
 			if(!((List<Map<String, Object>>)metaDataDocument.get("netcdfFiles")).isEmpty()) {
-				var insertedId = database.insertOne(Collection.MigrateMetaData.toString(), metaDataDocument);
+				var insertedId = Database.instance().insertOne(Collection.MigrateMetaData.toString(), metaDataDocument);
 				commitInserted(insertedId, allInsertedIds);
 			}
 		}
@@ -173,9 +160,9 @@ public final class Insert {
 	private static void commitInserted(Object metaDataInsertedId, Map<String, List<Object>> allInsertedIds){
 		allInsertedIds.forEach((collection, insertedIds) -> {
 			if(collection != null && !insertedIds.isEmpty())
-				database.updateMany(collection, Map.of("_id", Map.of("in", insertedIds)), Map.of("set", Map.of("committed", true)));
+				Database.instance().updateMany(collection, Map.of("_id", Map.of("in", insertedIds)), Map.of("set", Map.of("committed", true)));
 		});
-		database.updateOne(Collection.MigrateMetaData.toString(), Map.of("_id", metaDataInsertedId), Map.of("set", Map.of("committed", true)));
+		Database.instance().updateOne(Collection.MigrateMetaData.toString(), Map.of("_id", metaDataInsertedId), Map.of("set", Map.of("committed", true)));
 	}
 
 	/**
@@ -320,11 +307,11 @@ public final class Insert {
 	private static Pair<String,List<Object>> bulkInsertTimeseries(String collection, List<Map<String, Object>> timeSeries, File netcdfFile){
 		var insertedIds = new ArrayList<>();
 		try {
-			database.insertMany(collection, timeSeries);
+			Database.instance().insertMany(collection, timeSeries);
 			insertedIds.addAll(timeSeries.stream().map(s -> s.get("_id")).toList());
 		}
 		catch (RuntimeException ex) {
-			database.deleteMany(collection, Map.of("_id", Map.of("in", timeSeries.stream().filter(s -> s.containsKey("_id") && s.get("_id") != null).map(s -> s.get("_id")).toList())));
+			Database.instance().deleteMany(collection, Map.of("_id", Map.of("in", timeSeries.stream().filter(s -> s.containsKey("_id") && s.get("_id") != null).map(s -> s.get("_id")).toList())));
 			for (var ts : timeSeries)
 				insertedIds.addAll(Insert.singleInsertTimeseries(collection, ts, netcdfFile));
 		}
@@ -340,17 +327,17 @@ public final class Insert {
 	private static List<Object> singleInsertTimeseries(String collection, Map<String, Object> timeSeries, File netcdfFile){
 		var insertedIds = new ArrayList<>();
 		try {
-			database.insertOne(collection, timeSeries);
+			Database.instance().insertOne(collection, timeSeries);
 			insertedIds.add(timeSeries.get("_id"));
 		}
 		catch (RuntimeException wex) {
 			timeSeries.remove("timeseries");
 
 			var dupKey = wex.getMessage().isEmpty() ? new LinkedHashMap<String, Object>() : new JSONObject(wex.getMessage()).toMap();
-			var existingTimeseries = !dupKey.isEmpty() ? database.findOne(collection, dupKey, Map.of("timeseries", 0)) : null;
+			var existingTimeseries = !dupKey.isEmpty() ? Database.instance().findOne(collection, dupKey, Map.of("timeseries", 0)) : null;
 			existingTimeseries = existingTimeseries != null ? existingTimeseries : Map.of();
 
-			var existingMetaData = !existingTimeseries.isEmpty() ? database.findOne(Collection.MigrateMetaData.toString(), Map.of("netcdfFiles.timeSeriesIds", existingTimeseries.get("_id"))) : null;
+			var existingMetaData = !existingTimeseries.isEmpty() ? Database.instance().findOne(Collection.MigrateMetaData.toString(), Map.of("netcdfFiles.timeSeriesIds", existingTimeseries.get("_id"))) : null;
 			existingMetaData = existingMetaData != null ? existingMetaData : Map.of();
 
 			var message = new JSONObject(Map.of(

@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 @Testcontainers
 @SuppressWarnings({"rawtypes"})
-class ArchiveDatabaseBridgeTimeSeriesExporterTest {
+class ArchiveDatabaseTimeSeriesExporterTest {
 
 	@Container
     final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));

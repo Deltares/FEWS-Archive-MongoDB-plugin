@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @Testcontainers
-class ArchiveDatabaseBridgeGuiDataReaderTest {
+class ArchiveDatabaseGuiDataReaderTest {
 	@Container
 	final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:8.3.2"));
 

@@ -6,7 +6,7 @@ public interface Database {
 	 *
 	 * @param collection collection
 	 */
-	void ensureCollection(String collection);
+	void ensureTable(String collection);
 
 	/**
 	 *

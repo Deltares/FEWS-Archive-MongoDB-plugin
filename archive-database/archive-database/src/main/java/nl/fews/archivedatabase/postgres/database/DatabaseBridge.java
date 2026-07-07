@@ -12,8 +12,8 @@ public final class DatabaseBridge implements nl.fews.archivedatabase.common.shar
 	private final Database db = new Database();
 
 	@Override
-	public void ensureCollection(String table){
-		db.ensureCollection(table);
+	public void ensureTable(String table){
+		db.ensureTable(table);
 	}
 
 	@Override

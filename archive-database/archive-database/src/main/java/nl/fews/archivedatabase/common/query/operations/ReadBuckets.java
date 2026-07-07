@@ -1,11 +1,10 @@
 package nl.fews.archivedatabase.common.query.operations;
 
 import nl.fews.archivedatabase.common.query.interfaces.Read;
-import nl.fews.archivedatabase.common.query.utils.BucketIterator;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
+import nl.fews.archivedatabase.common.shared.database.Database;
+import nl.fews.archivedatabase.common.shared.streaming.BucketIterator;
 import nl.fews.archivedatabase.common.shared.database.Index;
 import nl.fews.archivedatabase.common.shared.interfaces.ClosableIterable;
-import nl.fews.archivedatabase.common.shared.settings.Settings;
 
 import java.util.*;
 
@@ -13,23 +12,6 @@ import java.util.*;
  * Provides streaming capability for bucketed timeseries
  */
 public final class ReadBuckets implements Read {
-
-	/**
-	 *
-	 */
-	private final DatabaseBridge database;
-
-	/**
-	 *
-	 */
-	public ReadBuckets() {
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
 
 	/**
 	 *
@@ -58,7 +40,7 @@ public final class ReadBuckets implements Read {
 		var sort = new LinkedHashMap<String, Object>();
 		Index.getKeys(collection).forEach(field -> sort.put(field, 1));
 
-		return () -> new BucketIterator(database.aggregateReadBuckets(collection, match, sort).iterator(), collection, startDate, endDate);
+		return () -> new BucketIterator(Database.instance().aggregateReadBuckets(collection, match, sort).iterator(), collection, startDate, endDate);
 	}
 
 	/**

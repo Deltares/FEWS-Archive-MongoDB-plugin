@@ -17,7 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-class OpenArchiveToArchiveDatabaseBridgeMigratorTest {
+class OpenArchiveToArchiveDatabaseMigratorTest {
 
 	private static JSONObject testSettings = null;
 

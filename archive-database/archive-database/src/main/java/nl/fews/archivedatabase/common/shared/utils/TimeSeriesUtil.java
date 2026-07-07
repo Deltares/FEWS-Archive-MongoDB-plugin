@@ -1,8 +1,7 @@
 package nl.fews.archivedatabase.common.shared.utils;
 
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.database.Index;
-import nl.fews.archivedatabase.common.shared.settings.Settings;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
 import nl.fews.archivedatabase.common.shared.enums.BucketSize;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,20 +17,6 @@ public final class TimeSeriesUtil {
 	 *
 	 */
 	private static final Logger logger = LogManager.getLogger(TimeSeriesUtil.class);
-
-	/**
-	 *
-	 */
-	private static final DatabaseBridge database;
-
-	static{
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
 
 	/**
 	 * Static Class
@@ -50,7 +35,7 @@ public final class TimeSeriesUtil {
 		var hint = bucketKeyFields.stream().collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new));
 		hint.put("metaData.timeStepMinutes", 1);
 
-		var groups = database.aggregateTimeSeriesGroups(
+		var groups = Database.instance().aggregateTimeSeriesGroups(
 			collection,
 			bucketKeyFields.stream().collect(Collectors.toMap(s -> s, s -> 1, (k, v) -> v, LinkedHashMap::new)),
 			bucketKeyFields.stream().collect(Collectors.toMap(s -> s, s -> s, (k, v) -> v, LinkedHashMap::new)),
@@ -79,7 +64,7 @@ public final class TimeSeriesUtil {
 	public static List<Map<String, Object>> getTimeSeriesDocuments(Map<String, Object> bucketKeyDocument, Map<Long, List<Map<String, Object>>> timeSeriesBuckets, BucketSize bucketSize, String collection){
 		var timeSeriesDocuments = new ArrayList<Map<String, Object>>();
 
-		var baseDocument = database.findOne(collection, bucketKeyDocument, Map.of("timeseries", 0, "_id", 0, "localStartTime", 0, "localEndTime", 0));
+		var baseDocument = Database.instance().findOne(collection, bucketKeyDocument, Map.of("timeseries", 0, "_id", 0, "localStartTime", 0, "localEndTime", 0));
 		if(baseDocument != null){
 			var baseDocumentJson = new JSONObject(baseDocument).toString();
 			timeSeriesBuckets.forEach((bucketValue, timeSeries) -> {
@@ -107,7 +92,7 @@ public final class TimeSeriesUtil {
 	public static List<Map<String, Object>> getStitchedTimeSeries(Map<String, Object> bucketKeyDocument, String collection){
 		var timeSeries = new LinkedHashMap<Date, Map<String, Object>>();
 
-		var results = database.aggregateStitchedTimeSeries(collection, bucketKeyDocument, Map.of("forecastTime", 1), Map.of("_id", 0, "timeseries", 1));
+		var results = Database.instance().aggregateStitchedTimeSeries(collection, bucketKeyDocument, Map.of("forecastTime", 1), Map.of("_id", 0, "timeseries", 1));
 		results.forEach(result -> timeSeries.putAll(((List<Map<String, Object>>)result.get("timeseries")).stream().collect(Collectors.toMap(x -> (Date)x.get("t"), x-> x))));
 		return timeSeries.values().stream().sorted(Comparator.comparing(s -> (Date)s.get("t"))).toList();
 	}
@@ -121,7 +106,7 @@ public final class TimeSeriesUtil {
 	public static List<Map<String, Object>> getUnwoundTimeSeries(Map<String, Object> bucketKeyDocument, String collection){
 		var events = new ArrayList<Map<String, Object>>();
 
-		database.aggregateUnwoundTimeSeries(collection, bucketKeyDocument, "timeseries").forEach(events::add);
+		Database.instance().aggregateUnwoundTimeSeries(collection, bucketKeyDocument, "timeseries").forEach(events::add);
 
 		var eventsDeduplicate = TimeSeriesUtil.deduplicateEvents(events);
 

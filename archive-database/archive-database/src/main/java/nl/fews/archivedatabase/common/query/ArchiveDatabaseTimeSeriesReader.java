@@ -2,8 +2,7 @@ package nl.fews.archivedatabase.common.query;
 
 import nl.fews.archivedatabase.common.query.operations.ReadBuckets;
 import nl.fews.archivedatabase.common.query.operations.ReadSingletons;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
-import nl.fews.archivedatabase.common.shared.settings.Settings;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.utils.TimeSeriesArrayUtil;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.common.shared.utils.DateUtil;
@@ -48,23 +47,6 @@ public class ArchiveDatabaseTimeSeriesReader implements nl.fews.archivedatabase.
 	private static final Object mutex = new Object();
 	
 	/**
-	 *
-	 */
-	private final DatabaseBridge database;
-	
-	/**
-	 * block direct instantiation; use static create() method
-	 */
-	private ArchiveDatabaseTimeSeriesReader(){
-		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
-		}
-		catch (Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
-
-	/**
 	 * Creates a new instance of this interface implementation
 	 */
 	public static ArchiveDatabaseTimeSeriesReader create() {
@@ -76,7 +58,7 @@ public class ArchiveDatabaseTimeSeriesReader implements nl.fews.archivedatabase.
 	public void close() {
 		synchronized (mutex) {
 			ArchiveDatabaseTimeSeriesReader.archiveDatabaseTimeSeriesReader = null;
-			database.close();
+			Database.instance().close();
 		}
 	}
 
@@ -391,8 +373,8 @@ public class ArchiveDatabaseTimeSeriesReader implements nl.fews.archivedatabase.
 				"encodedTimeStepId", encodedTimeStepId));
 
 				var years = new HashSet<Integer>();
-				database.distinct(collection, "startTime", query, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
-				database.distinct(collection, "endTime", query, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
+				Database.instance().distinct(collection, "startTime", query, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
+				Database.instance().distinct(collection, "endTime", query, Date.class).forEach(s -> years.add(DateUtil.getLocalDateTime(s).getYear()));
 
 				if(!years.isEmpty()){
 					var yearQueries = new ArrayList<Map<String, Object>>();
@@ -404,7 +386,7 @@ public class ArchiveDatabaseTimeSeriesReader implements nl.fews.archivedatabase.
 					))));
 					query.put("or", yearQueries);
 
-					database.aggregateAvailableYears(collection,
+					Database.instance().aggregateAvailableYears(collection,
 							query,
 							Map.of("startTime", 1, "endTime", 1),
 							Map.of("startTime", "startTime", "endTime", "endTime")).forEach(result -> {
@@ -429,7 +411,7 @@ public class ArchiveDatabaseTimeSeriesReader implements nl.fews.archivedatabase.
 		var timeSeriesArrays = new ArrayList<TimeSeriesArray<FewsTimeSeriesHeader>>();
 		var systemActivityDescriptors = new ArrayList<SystemActivityDescriptor>();
 
-		database.find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType)), Map.of("taskRunId", taskRunId)).forEach(result -> {
+		Database.instance().find(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType)), Map.of("taskRunId", taskRunId)).forEach(result -> {
 			var timeSeriesHeader = TimeSeriesArrayUtil.getTimeSeriesHeader(TimeSeriesValueType.SCALAR, timeSeriesType, result);
 			systemActivityDescriptors.add(timeSeriesHeader.getObject1());
 			TimeSeriesArray<FewsTimeSeriesHeader> timeSeriesArray = TimeSeriesArrayUtil.getTimeSeriesArray(timeSeriesHeader.getObject0(), (List<Map<String, Object>>)result.get("timeseries"));
@@ -456,7 +438,7 @@ public class ArchiveDatabaseTimeSeriesReader implements nl.fews.archivedatabase.
 
 		var ensembleMembers = new HashSet<String>();
 		var collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType));
-		database.distinct(collection, "ensembleMemberId", Map.of(
+		Database.instance().distinct(collection, "ensembleMemberId", Map.of(
 		"locationId", locationId,
 		"parameterId", parameterId,
 		"moduleInstanceId", Map.of("in", new ArrayList<>(moduleInstanceIds)),
@@ -489,7 +471,7 @@ public class ArchiveDatabaseTimeSeriesReader implements nl.fews.archivedatabase.
 		if(collectionKeys.contains("ensembleId"))
 			query.put("ensembleId", ensembleId);
 
-		return database.distinct(collection, "moduleInstanceId", query, String.class);
+		return Database.instance().distinct(collection, "moduleInstanceId", query, String.class);
 	}
 
 	/**
@@ -511,14 +493,14 @@ public class ArchiveDatabaseTimeSeriesReader implements nl.fews.archivedatabase.
 
 		var simulatedTaskRunInfos = new ArrayList<SimulatedTaskRunInfo>();
 
-		database.aggregateSimulatedTaskRunInfos(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL),
+		Database.instance().aggregateSimulatedTaskRunInfos(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL),
 			Map.of("locationId", locationId, "parameterId", parameterId, "moduleInstanceId", moduleInstanceId, "ensembleId", ensembleId, "encodedTimeStepId", encodedTimeStepId, "qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().toList()).toString(), "forecastTime", Map.of("gte", period.getStartDate(), "lte", period.getEndDate())),
 			Map.of("workflowId", "runInfo.workflowId", "taskRunId", "taskRunId", "forecastTime", "forecastTime", "dispatchTime", "runInfo.dispatchTime"),
 			Map.of("forecastTime", -1, "taskRunId", 1, "workflowId", 1, "dispatchTime", 1),
 			forecastCount).forEach(result ->
 			simulatedTaskRunInfos.add(new SimulatedTaskRunInfo((String)result.get("workflowId"), (String)result.get("taskRunId"), ((Date)result.get("forecastTime")).getTime(), ((Date)result.get("dispatchTime")).getTime())));
 
-		database.aggregateSimulatedTaskRunInfos(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING),
+		Database.instance().aggregateSimulatedTaskRunInfos(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_FORECASTING),
 			Map.of("locationId", locationId, "parameterId", parameterId, "moduleInstanceId", moduleInstanceId, "ensembleId", ensembleId, "encodedTimeStepId", encodedTimeStepId, "qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().toList()).toString(), "forecastTime", Map.of("gte", period.getStartDate(), "lte", period.getEndDate())),
 			Map.of("workflowId", "runInfo.workflowId", "taskRunId", "taskRunId", "forecastTime", "forecastTime", "dispatchTime", "runInfo.dispatchTime"),
 			Map.of("forecastTime", -1, "taskRunId", 1, "workflowId", 1, "dispatchTime", 1),
@@ -548,7 +530,7 @@ public class ArchiveDatabaseTimeSeriesReader implements nl.fews.archivedatabase.
 		var longListBuilder = new LongListBuilder();
 
 		var collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, timeSeriesType));
-		database.aggregateExternalForecastTimes(collection,
+		Database.instance().aggregateExternalForecastTimes(collection,
 			Map.of("locationId", locationId, "parameterId", parameterId, "moduleInstanceId", moduleInstanceId, "ensembleId", ensembleId, "qualifierId", new JSONArray(Arrays.stream(qualifiers).sorted().toList()).toString(), "forecastTime", Map.of("gte", period.getStartDate(), "lte", period.getEndDate())),
 			"forecastTime",
 			Map.of("forecastTime", -1),

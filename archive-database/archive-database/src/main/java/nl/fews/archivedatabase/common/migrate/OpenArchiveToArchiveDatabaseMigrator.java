@@ -2,8 +2,8 @@ package nl.fews.archivedatabase.common.migrate;
 
 import nl.fews.archivedatabase.common.migrate.operations.*;
 import nl.fews.archivedatabase.common.migrate.utils.MetaDataUtil;
-import nl.fews.archivedatabase.common.shared.interfaces.DatabaseBridge;
 import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.fews.archivedatabase.common.shared.utils.TimeSeriesTypeUtil;
@@ -30,11 +30,6 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 		Settings.put("metadataFileName", "metaData.xml");
 		Settings.put("runInfoFileName", "runInfo.xml");
 	}
-
-	/**
-	 *
-	 */
-	private final DatabaseBridge database;
 
 	/**
 	 *
@@ -68,7 +63,6 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 	public void close() {
 		synchronized (mutex){
 			OpenArchiveToArchiveDatabaseMigrator.openArchiveToArchiveDatabaseMigrator = null;
-			database.close();
 		}
 	}
 
@@ -77,7 +71,6 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 	 */
 	private OpenArchiveToArchiveDatabaseMigrator(){
 		try{
-			database = (DatabaseBridge)Class.forName(String.format(Settings.DATABASE_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase())).getConstructor().newInstance();
 			attachAppender();
 		}
 		catch (Exception ex){
@@ -199,8 +192,8 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 	 *
 	 */
 	public void replaceScalarExternalHistoricalWithBucketedCollection(){
-		database.replace(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET), TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
-		database.updateMany(Collection.BucketSize.toString(), Map.of("bucketCollection", "ExternalHistoricalScalarTimeSeriesBucket"), Map.of("set", Map.of("bucketCollection", "ExternalHistoricalScalarTimeSeries")));
+		Database.instance().replace(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET), TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
+		Database.instance().updateMany(Collection.BucketSize.toString(), Map.of("bucketCollection", "ExternalHistoricalScalarTimeSeriesBucket"), Map.of("set", Map.of("bucketCollection", "ExternalHistoricalScalarTimeSeries")));
 	}
 
 	/**
@@ -210,8 +203,8 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 		var singletonCollection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL);
 		var bucketCollection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET);
 
-		database.drop(bucketCollection);
-		database.ensureCollection(bucketCollection);
+		Database.instance().drop(bucketCollection);
+		Database.instance().ensureTable(bucketCollection);
 		var bucketScalarExternalHistorical = new BucketScalarExternalHistorical();
 		bucketScalarExternalHistorical.bucketGroups(singletonCollection, bucketCollection);
 	}
@@ -223,8 +216,8 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 		var singletonCollection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL);
 		var bucketCollection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED);
 
-		database.drop(bucketCollection);
-		database.ensureCollection(bucketCollection);
+		Database.instance().drop(bucketCollection);
+		Database.instance().ensureTable(bucketCollection);
 		var bucketScalarSimulatedHistorical = new BucketScalarSimulatedHistorical();
 		bucketScalarSimulatedHistorical.bucketGroups(singletonCollection, bucketCollection);
 	}
@@ -273,18 +266,18 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 	 *
 	 */
 	public void updateTimeSeriesIndex(){
-		database.ensureCollection(Collection.TimeSeriesIndex.toString());
+		Database.instance().ensureTable(Collection.TimeSeriesIndex.toString());
 		List.of(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, TimeSeriesType.SCALAR_EXTERNAL_FORECASTING, TimeSeriesType.SCALAR_SIMULATED_FORECASTING, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED).forEach(timeSeriesType -> {
 			var collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 			var results = new ArrayList<Map<String, Object>>();
-			database.aggregateTimeSeriesIndex(collection,
+			Database.instance().aggregateTimeSeriesIndex(collection,
 				Map.of("moduleInstanceId", 1, "parameterId", 1, "encodedTimeStepId", 1, "metaData.areaId", 1, "metaData.sourceId", 1),
 				Map.of("moduleInstanceId", "moduleInstanceId", "parameterId", "parameterId", "encodedTimeStepId", "encodedTimeStepId", "areaId", "metaData.areaId", "sourceId", "metaData.sourceId"),
 				Map.of("collection", collection)
 			).forEach(results::add);
-			database.deleteMany(Collection.TimeSeriesIndex.toString(), Map.of("collection", collection));
+			Database.instance().deleteMany(Collection.TimeSeriesIndex.toString(), Map.of("collection", collection));
 			if(!results.isEmpty())
-				database.insertMany(Collection.TimeSeriesIndex.toString(), results);
+				Database.instance().insertMany(Collection.TimeSeriesIndex.toString(), results);
 		});
 	}
 }
