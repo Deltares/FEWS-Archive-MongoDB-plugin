@@ -3,10 +3,10 @@ package nl.fews.archivedatabase.common.query.operations;
 import nl.fews.archivedatabase.common.query.interfaces.Summarize;
 import nl.fews.archivedatabase.common.shared.database.Database;
 
+import java.util.stream.Collectors;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -34,6 +34,6 @@ public abstract class SummarizeBase implements Summarize {
 	 * @return int
 	 */
 	protected int getSingleFieldDistinctCount(String collection, Map<String, Object> match, String field){
-		return database.distinct(collection, field, match, String.class).size();
+		return Database.instance().distinct(collection, field, match, String.class).size();
 	}
 }

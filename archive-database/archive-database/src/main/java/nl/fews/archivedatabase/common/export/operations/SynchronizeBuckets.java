@@ -1,6 +1,7 @@
 package nl.fews.archivedatabase.common.export.operations;
 
 import nl.fews.archivedatabase.common.export.interfaces.Synchronize;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.database.Index;
 import nl.fews.archivedatabase.common.shared.enums.BucketSize;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
@@ -71,7 +72,7 @@ public final class SynchronizeBuckets extends SynchronizeBase implements Synchro
 				var query = Index.getKeyDocument(Index.getKeys(bucketCollection), document);
 				query.put("bucketSize", bucketSize.toString());
 				query.put("bucket", bucketValue);
-				var existingDocument = database.findOne(bucketCollection, query);
+				var existingDocument = Database.instance().findOne(bucketCollection, query);
 
 				if (existingDocument == null) {
 					var d = new LinkedHashMap<>(document);

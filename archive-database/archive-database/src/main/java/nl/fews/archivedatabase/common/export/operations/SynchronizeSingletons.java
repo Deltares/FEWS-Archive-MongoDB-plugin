@@ -1,6 +1,7 @@
 package nl.fews.archivedatabase.common.export.operations;
 
 import nl.fews.archivedatabase.common.export.interfaces.Synchronize;
+import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.database.Index;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.common.shared.tuple.Triplet;
@@ -57,7 +58,7 @@ public final class SynchronizeSingletons extends SynchronizeBase implements Sync
 		var keys = Index.getKeys(collection);
 		var existingDocuments = new LinkedHashMap<String, Map<String, Object>>();
 		if(!existingQueries.isEmpty()) {
-			database.find(collection, Map.of("or", existingQueries), Map.of("timeseries", 0)).forEach(document -> {
+			Database.instance().find(collection, Map.of("or", existingQueries), Map.of("timeseries", 0)).forEach(document -> {
 				var key = Index.getKey(Index.getKeyDocument(keys, document));
 				if(((Date)((Map<String, Object>)document.get("metaData")).get("archiveTime")).compareTo((Date)((Map<String, Object>)existingDocuments.getOrDefault(key, document).get("metaData")).get("archiveTime")) >= 0)
 					existingDocuments.put(key, document);
