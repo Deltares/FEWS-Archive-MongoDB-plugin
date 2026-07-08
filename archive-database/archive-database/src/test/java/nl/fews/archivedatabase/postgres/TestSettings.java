@@ -1,7 +1,7 @@
-package nl.fews.archivedatabase.common.migrate;
+package nl.fews.archivedatabase.postgres;
 
-import nl.fews.archivedatabase.common.TestUtil;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
+import nl.fews.archivedatabase.common.TestUtil;
 import nl.wldelft.util.LogUtils;
 import org.json.JSONObject;
 
@@ -30,19 +30,16 @@ public class TestSettings {
 			Settings.put("netcdfReadThreads", 32);
 			Settings.put("folderMaxDepth", 4);
 			Settings.put("metadataFileName", "metaData.xml");
-			Settings.put("runInfoFileName", "runInfo.xml");
 			Settings.put("valueTypes", List.of("scalar"));
-			Settings.put("useBulkInsert", false);
-			Settings.put("renameFinalizedCollection", false);
+			Settings.put("runInfoFileName", "runInfo.xml");
 			Settings.put("archiveDatabaseUserName", "fews_admin");
 			Settings.put("baseDirectoryArchive", Paths.get("src", "test", "resources").toAbsolutePath().toString());
 
-			Settings.put("headerProvider", new TestUtil.HeaderProviderTestImplementation());
 			Settings.put("archiveDatabaseUnitConverter", new TestUtil.ArchiveDatabaseUnitConverterTestImplementation());
 			Settings.put("archiveDatabaseTimeConverter", new TestUtil.ArchiveDatabaseTimeConverterTestImplementation());
 			Settings.put("archiveDatabaseRegionConfigInfoProvider", new TestUtil.ArchiveDatabaseRegionConfigInfoProviderTestImplementation());
-			Settings.put("databaseType", "mongodb");
-			Settings.put("databaseUrl", "%s/FEWS_ARCHIVE_TEST");
+			Settings.put("databaseType", "Postgres");
+			Settings.put("connectionString", "%s/FEWS_ARCHIVE_TEST");
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);

@@ -2,7 +2,7 @@ package nl.fews.archivedatabase.postgres.logging;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Table;
 import nl.fews.archivedatabase.postgres.database.DatabaseUtil;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Core;
@@ -64,7 +64,7 @@ public class DbAppender extends AbstractAppender {
 
 		dataSource = new HikariDataSource(config);
 
-		this.table = Collection.MigrateLog.toString();
+		this.table = Table.MigrateLog.toString();
         this.jsonLayout = (JsonLayout)getLayout();
 
 		String machine;

@@ -1,7 +1,7 @@
 package nl.fews.archivedatabase.common.export.operations;
 
 import nl.fews.archivedatabase.common.export.interfaces.Synchronize;
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Table;
 import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.common.shared.tuple.Triplet;
@@ -90,7 +90,7 @@ public abstract class SynchronizeBase implements Synchronize {
 	private synchronized void addMissingTimeSeriesIndexes(Map<Map<String, Object>, Object> missingTimeSeriesIndexes){
 		missingTimeSeriesIndexes.forEach((k, v) -> {
 			try{
-				Database.instance().insertOne(Collection.TimeSeriesIndex.toString(), k);
+				Database.instance().insertOne(Table.TimeSeriesIndex.toString(), k);
 				timeSeriesIndex.put(k, "");
 			}
 			catch (RuntimeException ex){

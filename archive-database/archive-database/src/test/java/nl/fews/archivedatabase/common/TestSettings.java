@@ -1,7 +1,5 @@
-package nl.fews.archivedatabase.common.shared;
+package nl.fews.archivedatabase.common;
 
-import nl.fews.archivedatabase.mongodb.TestUtil;
-import nl.fews.archivedatabase.common.shared.database.Collection;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.wldelft.util.LogUtils;
 import org.json.JSONObject;

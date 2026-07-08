@@ -1,7 +1,6 @@
 package nl.fews.archivedatabase.common.export;
 
-import nl.fews.archivedatabase.mongodb.TestUtil;
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.TestUtil;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.wldelft.util.LogUtils;
 

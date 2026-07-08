@@ -4,7 +4,7 @@ import nl.fews.archivedatabase.common.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.common.migrate.utils.NetcdfUtil;
 import nl.fews.archivedatabase.common.migrate.utils.RunInfoUtil;
 import nl.fews.archivedatabase.common.shared.database.Database;
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Table;
 import nl.fews.archivedatabase.common.shared.enums.BucketSize;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.common.shared.interfaces.TimeSeries;
@@ -143,7 +143,7 @@ public final class Insert {
 				}
 			});
 			if(!((List<Map<String, Object>>)metaDataDocument.get("netcdfFiles")).isEmpty()) {
-				var insertedId = Database.instance().insertOne(Collection.MigrateMetaData.toString(), metaDataDocument);
+				var insertedId = Database.instance().insertOne(Table.MigrateMetaData.toString(), metaDataDocument);
 				commitInserted(insertedId, allInsertedIds);
 			}
 		}
@@ -162,7 +162,7 @@ public final class Insert {
 			if(collection != null && !insertedIds.isEmpty())
 				Database.instance().updateMany(collection, Map.of("_id", Map.of("in", insertedIds)), Map.of("set", Map.of("committed", true)));
 		});
-		Database.instance().updateOne(Collection.MigrateMetaData.toString(), Map.of("_id", metaDataInsertedId), Map.of("set", Map.of("committed", true)));
+		Database.instance().updateOne(Table.MigrateMetaData.toString(), Map.of("_id", metaDataInsertedId), Map.of("set", Map.of("committed", true)));
 	}
 
 	/**
@@ -337,7 +337,7 @@ public final class Insert {
 			var existingTimeseries = !dupKey.isEmpty() ? Database.instance().findOne(collection, dupKey, Map.of("timeseries", 0)) : null;
 			existingTimeseries = existingTimeseries != null ? existingTimeseries : Map.of();
 
-			var existingMetaData = !existingTimeseries.isEmpty() ? Database.instance().findOne(Collection.MigrateMetaData.toString(), Map.of("netcdfFiles.timeSeriesIds", existingTimeseries.get("_id"))) : null;
+			var existingMetaData = !existingTimeseries.isEmpty() ? Database.instance().findOne(Table.MigrateMetaData.toString(), Map.of("netcdfFiles.timeSeriesIds", existingTimeseries.get("_id"))) : null;
 			existingMetaData = existingMetaData != null ? existingMetaData : Map.of();
 
 			var message = new JSONObject(Map.of(

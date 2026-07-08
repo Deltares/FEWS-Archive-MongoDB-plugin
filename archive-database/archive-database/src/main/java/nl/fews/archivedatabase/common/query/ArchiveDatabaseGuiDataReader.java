@@ -3,7 +3,7 @@ package nl.fews.archivedatabase.common.query;
 import nl.fews.archivedatabase.common.query.interfaces.Read;
 import nl.fews.archivedatabase.common.query.interfaces.Summarize;
 import nl.fews.archivedatabase.common.query.operations.Filter;
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Table;
 import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.database.Index;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
@@ -188,7 +188,7 @@ public class ArchiveDatabaseGuiDataReader implements nl.fews.archivedatabase.int
 			var timeSeriesType = TimeSeriesTypeUtil.getTimeSeriesTypeByFewsTimeSeriesType(TimeSeriesValueType.SCALAR, fewsTimeSeriesType);
 			var collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 
-			return new HashSet<>(Database.instance().distinct(Collection.TimeSeriesIndex.toString(), "sourceId", Map.of("collection", collection), String.class));
+			return new HashSet<>(Database.instance().distinct(Table.TimeSeriesIndex.toString(), "sourceId", Map.of("collection", collection), String.class));
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);

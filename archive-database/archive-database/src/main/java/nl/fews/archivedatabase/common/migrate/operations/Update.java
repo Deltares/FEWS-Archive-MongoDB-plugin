@@ -2,7 +2,7 @@ package nl.fews.archivedatabase.common.migrate.operations;
 
 import nl.fews.archivedatabase.common.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.common.shared.database.Database;
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Table;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.fews.archivedatabase.common.shared.utils.LogUtil;
 import nl.fews.archivedatabase.common.shared.utils.PathUtil;
@@ -94,7 +94,7 @@ public final class Update {
 	 */
 	private static void updateMetaData(File metaDataFile, Date metaDataDate) {
 		try {
-			var dbMetaData = Database.instance().findOne(Collection.MigrateMetaData.toString(), Map.of("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class))));
+			var dbMetaData = Database.instance().findOne(Table.MigrateMetaData.toString(), Map.of("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class))));
 			if (dbMetaData != null) {
 				Delete.deleteMetaData(metaDataFile);
 				Insert.insertMetaData(metaDataFile, metaDataDate);

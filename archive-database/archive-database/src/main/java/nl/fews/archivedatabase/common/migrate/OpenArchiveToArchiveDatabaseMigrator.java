@@ -2,12 +2,14 @@ package nl.fews.archivedatabase.common.migrate;
 
 import nl.fews.archivedatabase.common.migrate.operations.*;
 import nl.fews.archivedatabase.common.migrate.utils.MetaDataUtil;
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Table;
 import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.fews.archivedatabase.common.shared.utils.TimeSeriesTypeUtil;
+import nl.fews.archivedatabase.mongodb.logging.DbAppender;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
+import nl.wldelft.util.LogUtils;
 import nl.wldelft.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,7 +73,10 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 	 */
 	private OpenArchiveToArchiveDatabaseMigrator(){
 		try{
-			attachAppender();
+			var appenderClass = Class.forName(String.format(DATABASE_LOGGING_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase()));
+			var method = appenderClass.getMethod("createAppender", String.class, String.class, Filter.class);
+			var appender = (Appender) method.invoke(null, "migrateLogAppender", Settings.get("connectionString", String.class), null);
+			LogUtils.addAppender(appender);
 		}
 		catch (Exception ex){
 			throw new RuntimeException(ex);
@@ -126,25 +131,6 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 		Settings.put("configRevision", configRevision == null ? "" : configRevision);
 	}
 
-	private void attachAppender() throws Exception{
-		synchronized (mutex){
-			final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
-			final Configuration configuration = loggerContext.getConfiguration();
-			final String appenderName = "databaseLogAppender";
-			Appender appender = configuration.getAppender(appenderName);
-			var coreLogger = ((org.apache.logging.log4j.core.Logger) OpenArchiveToArchiveDatabaseMigrator.logger);
-			if (appender == null && coreLogger.getAppenders().get(appenderName) == null) {
-				var appenderClass = Class.forName(String.format(DATABASE_LOGGING_NAMESPACE, Settings.get("databaseType", String.class).toLowerCase()));
-				var method = appenderClass.getMethod("createAppender", String.class, String.class, Filter.class);
-				appender = (Appender) method.invoke(null, appenderName, Settings.get("connectionString", String.class), null);
-				appender.start();
-				configuration.addAppender(appender);
-				coreLogger.addAppender(appender);
-				loggerContext.updateLoggers();
-			}
-		}
-	}
-
 	/**
 	 *
 	 * @param areaId areaId
@@ -193,7 +179,7 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 	 */
 	public void replaceScalarExternalHistoricalWithBucketedCollection(){
 		Database.instance().replace(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL_BUCKET), TimeSeriesTypeUtil.getTimeSeriesTypeCollection(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL));
-		Database.instance().updateMany(Collection.BucketSize.toString(), Map.of("bucketCollection", "ExternalHistoricalScalarTimeSeriesBucket"), Map.of("set", Map.of("bucketCollection", "ExternalHistoricalScalarTimeSeries")));
+		Database.instance().updateMany(Table.BucketSize.toString(), Map.of("bucketCollection", "ExternalHistoricalScalarTimeSeriesBucket"), Map.of("set", Map.of("bucketCollection", "ExternalHistoricalScalarTimeSeries")));
 	}
 
 	/**
@@ -266,7 +252,7 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 	 *
 	 */
 	public void updateTimeSeriesIndex(){
-		Database.instance().ensureTable(Collection.TimeSeriesIndex.toString());
+		Database.instance().ensureTable(Table.TimeSeriesIndex.toString());
 		List.of(TimeSeriesType.SCALAR_EXTERNAL_HISTORICAL, TimeSeriesType.SCALAR_EXTERNAL_FORECASTING, TimeSeriesType.SCALAR_SIMULATED_FORECASTING, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL, TimeSeriesType.SCALAR_SIMULATED_HISTORICAL_STITCHED).forEach(timeSeriesType -> {
 			var collection = TimeSeriesTypeUtil.getTimeSeriesTypeCollection(timeSeriesType);
 			var results = new ArrayList<Map<String, Object>>();
@@ -275,9 +261,9 @@ public final class OpenArchiveToArchiveDatabaseMigrator implements nl.wldelft.fe
 				Map.of("moduleInstanceId", "moduleInstanceId", "parameterId", "parameterId", "encodedTimeStepId", "encodedTimeStepId", "areaId", "metaData.areaId", "sourceId", "metaData.sourceId"),
 				Map.of("collection", collection)
 			).forEach(results::add);
-			Database.instance().deleteMany(Collection.TimeSeriesIndex.toString(), Map.of("collection", collection));
+			Database.instance().deleteMany(Table.TimeSeriesIndex.toString(), Map.of("collection", collection));
 			if(!results.isEmpty())
-				Database.instance().insertMany(Collection.TimeSeriesIndex.toString(), results);
+				Database.instance().insertMany(Table.TimeSeriesIndex.toString(), results);
 		});
 	}
 }

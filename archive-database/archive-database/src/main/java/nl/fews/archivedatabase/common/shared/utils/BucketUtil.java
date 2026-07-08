@@ -1,6 +1,6 @@
 package nl.fews.archivedatabase.common.shared.utils;
 
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Table;
 import nl.fews.archivedatabase.common.shared.database.Database;
 import nl.fews.archivedatabase.common.shared.database.Index;
 import nl.fews.archivedatabase.common.shared.enums.BucketSize;
@@ -59,7 +59,7 @@ public abstract class BucketUtil {
 	 * @return BucketSize
 	 */
 	public static synchronized BucketSize getNetsBucketSize(String bucketCollection, String bucketKey){
-		var result = Database.instance().findOne(Collection.BucketSize.toString(), Map.of("bucketCollection", bucketCollection, "bucketKey", bucketKey), Map.of("_id", 0,"bucketSize", 1));
+		var result = Database.instance().findOne(Table.BucketSize.toString(), Map.of("bucketCollection", bucketCollection, "bucketKey", bucketKey), Map.of("_id", 0,"bucketSize", 1));
 		return result == null ? BucketSize.YEAR : BucketSize.valueOf((String)result.get("bucketSize"));
 	}
 
@@ -184,7 +184,7 @@ public abstract class BucketUtil {
 		Database.instance().deleteMany(bucketCollection, bucketKeyDocument);
 		if(!timeSeriesDocuments.isEmpty())
 			Database.instance().insertMany(bucketCollection, timeSeriesDocuments);
-		Database.instance().updateOne(Collection.BucketSize.toString(), Map.of("bucketCollection", bucketCollection, "bucketKey", bucketKey), Map.of("bucketSize", bucketSize.toString()), true);
+		Database.instance().updateOne(Table.BucketSize.toString(), Map.of("bucketCollection", bucketCollection, "bucketKey", bucketKey), Map.of("bucketSize", bucketSize.toString()), true);
 	}
 
 	/**

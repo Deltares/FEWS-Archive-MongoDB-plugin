@@ -3,7 +3,7 @@ package nl.fews.archivedatabase.mongodb.logging;
 import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Table;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Core;
 import org.apache.logging.log4j.core.Filter;
@@ -57,7 +57,7 @@ public class DbAppender extends AbstractAppender {
 		super(name, filter, JsonLayout.createDefaultLayout(), true, null);
 		ConnectionString connection = new ConnectionString(connectionString);
         this.client = MongoClients.create(connection);
-		this.collection = Collection.MigrateLog.toString();
+		this.collection = Table.MigrateLog.toString();
         this.database = connection.getDatabase();
 		this.jsonLayout = (JsonLayout)getLayout();
 
@@ -79,10 +79,7 @@ public class DbAppender extends AbstractAppender {
 	 * @return MongoDbAppender
 	 */
 	@PluginFactory
-	public static DbAppender createAppender(
-			@PluginAttribute("name") String name,
-			@PluginAttribute("connectionString") String connectionString,
-			@PluginElement("Filter") Filter filter) {
+	public static DbAppender createAppender(@PluginAttribute("name") String name, @PluginAttribute("connectionString") String connectionString, @PluginElement("Filter") Filter filter) {
 		return new DbAppender(name, filter, connectionString);
 	}
 

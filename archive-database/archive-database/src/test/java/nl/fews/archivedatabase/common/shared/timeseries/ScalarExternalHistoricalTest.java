@@ -1,22 +1,11 @@
 package nl.fews.archivedatabase.common.shared.timeseries;
 
-import nl.fews.archivedatabase.mongodb.TestUtil;
-import nl.fews.archivedatabase.common.migrate.utils.MetaDataUtil;
-import nl.fews.archivedatabase.common.migrate.utils.NetcdfUtil;
-import nl.fews.archivedatabase.common.shared.TestSettings;
-import nl.fews.archivedatabase.common.shared.interfaces.TimeSeries;
-import nl.wldelft.archive.util.metadata.netcdf.NetcdfContent;
-import nl.wldelft.archive.util.metadata.timeseries.TimeSeriesRecord;
-import nl.wldelft.archive.util.runinfo.ArchiveRunInfo;
+import nl.fews.archivedatabase.common.TestUtil;
+import nl.fews.archivedatabase.common.TestSettings;
 import nl.wldelft.util.timeseries.TimeSeriesArray;
 import nl.wldelft.util.timeseries.TimeSeriesArrays;
 import nl.wldelft.util.timeseries.TimeSeriesHeader;
-import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

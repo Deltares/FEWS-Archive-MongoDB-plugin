@@ -1,7 +1,7 @@
 package nl.fews.archivedatabase.common.migrate;
 
 import nl.fews.archivedatabase.common.ArchiveDatabase;
-import nl.fews.archivedatabase.mongodb.TestUtil;
+import nl.fews.archivedatabase.common.TestUtil;
 import nl.fews.archivedatabase.mongodb.logging.DbAppender;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.OpenArchiveToArchiveDatabaseMigrationSettings;

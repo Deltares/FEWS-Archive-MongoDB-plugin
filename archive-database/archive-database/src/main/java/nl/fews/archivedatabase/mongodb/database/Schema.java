@@ -1,6 +1,6 @@
 package nl.fews.archivedatabase.mongodb.database;
 
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Table;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.common.shared.utils.TimeSeriesTypeUtil;
 import nl.fews.archivedatabase.common.shared.database.Index;
@@ -382,19 +382,19 @@ public final class Schema {
 			Map.of("keys", List.of("moduleInstanceId", "parameterId", "encodedTimeStepId", "metaData.areaId", "metaData.sourceId")),
 			Map.of("keys", List.of("committed"))
 		),
-		Collection.MigrateMetaData.toString(), List.of(
+		Table.MigrateMetaData.toString(), List.of(
 			Map.of("keys", List.of("metaDataFileRelativePath"), "options", Map.of("unique", 1)),
 			Map.of("keys", List.of("netcdfFiles.timeSeriesIds")),
 			Map.of("keys", List.of("committed"))
 		),
-		Collection.MigrateLog.toString(), List.of(
+		Table.MigrateLog.toString(), List.of(
 			Map.of("keys", List.of("date")),
 			Map.of("keys", List.of("errorCategory"))
 		),
-		Collection.BucketSize.toString(), List.of(
+		Table.BucketSize.toString(), List.of(
 			Map.of("keys", List.of("bucketCollection", "bucketKey"), "options", Map.of("unique", 1))
 		),
-		Collection.TimeSeriesIndex.toString(), List.of(
+		Table.TimeSeriesIndex.toString(), List.of(
 			Map.of("keys", List.of("collection", "moduleInstanceId", "parameterId", "encodedTimeStepId", "areaId", "sourceId"), "options", Map.of("unique", 1)),
 			Map.of("keys", List.of("collection", "moduleInstanceId")),
 			Map.of("keys", List.of("collection", "parameterId")),

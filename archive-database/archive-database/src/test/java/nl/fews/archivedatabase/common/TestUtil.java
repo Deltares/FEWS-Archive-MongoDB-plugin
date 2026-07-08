@@ -1,7 +1,9 @@
-package nl.fews.archivedatabase.mongodb;
+package nl.fews.archivedatabase.common;
 
+import nl.fews.archivedatabase.interfaces.FewsTimeSeriesHeaderProvider;
 import nl.wldelft.fews.system.data.externaldatasource.archivedatabase.*;
 import nl.wldelft.fews.system.data.runs.SystemActivityDescriptor;
+import nl.wldelft.fews.system.data.timeseries.FewsTimeSeriesHeader;
 import nl.wldelft.util.Box;
 import nl.wldelft.util.LogUtils;
 import nl.wldelft.util.TimeSpan;
@@ -22,8 +24,8 @@ public class TestUtil {
 	}
 
 	@SuppressWarnings({"unchecked"})
-	public static TimeSeriesArrays<TimeSeriesHeader> getDefaultTimeSeriesArrays() {
-		List<TimeSeriesArray<TimeSeriesHeader>> arrays = new ArrayList<>();
+	public static TimeSeriesArrays<FewsTimeSeriesHeader> getDefaultTimeSeriesArrays() {
+		List<TimeSeriesArray<FewsTimeSeriesHeader>> arrays = new ArrayList<>();
 		for (int y = 2012; y < 2013; y++) {
 			for (int h = 0; h < 10; h++) {
 				DefaultTimeSeriesHeader timeSeriesHeader = new DefaultTimeSeriesHeader();
@@ -43,9 +45,10 @@ public class TestUtil {
 				timeSeriesHeader.setTimeStep(TimeStepUtils.createEquidistant(new TimeSpan(TimeUnit.HOUR, 6), TimeZone.getTimeZone("UTC"), "timeStepLabel"));
 				timeSeriesHeader.setUnit("unit");
 
-				TimeSeriesArray<TimeSeriesHeader> timeSeriesArray = new TimeSeriesArray<>(timeSeriesHeader);
+				//var timeSeriesArray = new TimeSeriesArray<FewsTimeSeriesHeader>(timeSeriesHeader);
+				var timeSeriesArray = new TimeSeriesArray<FewsTimeSeriesHeader>((FewsTimeSeriesHeader)null);
 				timeSeriesArray.setForecastTime(timeSeriesHeader.getForecastTime());
-				String year = y + "-01-01T00:00:00Z";
+				var year = y + "-01-01T00:00:00Z";
 				timeSeriesArray.ensureTimes(LongStream.range(0, 10).map(x -> Instant.parse(year).plus(x*6, ChronoUnit.HOURS).toEpochMilli()).toArray());
 				for (int i = 0; i < 10; i++) {
 					timeSeriesArray.setValue(i,  i);
@@ -102,17 +105,18 @@ public class TestUtil {
 	/**
 	 * HeaderProviderTestImplementation
 	 */
-	public static class HeaderProviderTestImplementation implements FewsTimeSeriesHeaderProvider{
+	public static class HeaderProviderTestImplementation implements FewsTimeSeriesHeaderProvider {
 
 		@Override
-		public Box<TimeSeriesHeader, SystemActivityDescriptor> getHeader(HeaderRequest headerRequest) {
+		public Box<FewsTimeSeriesHeader, SystemActivityDescriptor> getHeader(HeaderRequest headerRequest) {
 			DefaultTimeSeriesHeader defaultTimeSeriesHeader = new DefaultTimeSeriesHeader();
 			defaultTimeSeriesHeader.setLocationId(headerRequest.getLocationId());
 			defaultTimeSeriesHeader.setParameterId(headerRequest.getParameterId());
 			defaultTimeSeriesHeader.setModuleInstanceId(headerRequest.getModuleInstanceId());
 			defaultTimeSeriesHeader.setTimeStep(headerRequest.getTimeStep());
 			defaultTimeSeriesHeader.setQualifierIds(headerRequest.getQualifiersIds());
-			return new Box<>(defaultTimeSeriesHeader, SystemActivityDescriptor.NONE);
+			//return new Box<>(defaultTimeSeriesHeader, SystemActivityDescriptor.NONE);
+			return new Box<>((FewsTimeSeriesHeader)null, SystemActivityDescriptor.NONE);
 		}
 	}
 }

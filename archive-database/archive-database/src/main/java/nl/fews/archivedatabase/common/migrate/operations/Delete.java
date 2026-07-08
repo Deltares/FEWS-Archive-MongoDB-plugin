@@ -2,7 +2,7 @@ package nl.fews.archivedatabase.common.migrate.operations;
 
 import nl.fews.archivedatabase.common.migrate.utils.MetaDataUtil;
 import nl.fews.archivedatabase.common.shared.database.Database;
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Table;
 import nl.fews.archivedatabase.common.shared.enums.TimeSeriesType;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.fews.archivedatabase.common.shared.utils.LogUtil;
@@ -86,11 +86,11 @@ public final class Delete {
 	 */
 	public static void deleteMetaData(File metaDataFile){
 		try {
-			var metaData = Database.instance().findOne(Collection.MigrateMetaData.toString(), Map.of("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class))));
+			var metaData = Database.instance().findOne(Table.MigrateMetaData.toString(), Map.of("metaDataFileRelativePath", PathUtil.toRelativePathString(metaDataFile, Settings.get("baseDirectoryArchive", String.class))));
 			if (metaData != null) {
-				Database.instance().updateOne(Collection.MigrateMetaData.toString(), Map.of("_id", metaData.get("_id")), Map.of("set", Map.of("committed", false)));
+				Database.instance().updateOne(Table.MigrateMetaData.toString(), Map.of("_id", metaData.get("_id")), Map.of("set", Map.of("committed", false)));
 				((List<Map<String, Object>>)metaData.get("netcdfFiles")).parallelStream().forEach(Delete::deleteNetcdf);
-				Database.instance().deleteOne(Collection.MigrateMetaData.toString(), Map.of("_id", metaData.get("_id")));
+				Database.instance().deleteOne(Table.MigrateMetaData.toString(), Map.of("_id", metaData.get("_id")));
 			}
 		}
 		catch (Exception ex){
@@ -115,9 +115,9 @@ public final class Delete {
 		Arrays.stream(TimeSeriesType.values()).filter(s -> TimeSeriesTypeUtil.getTimeSeriesTypeCollection(s) != null).parallel().forEach(
 				s -> Database.instance().deleteMany(TimeSeriesTypeUtil.getTimeSeriesTypeCollection(s), Map.of("committed", false)));
 
-		Database.instance().find(Collection.MigrateMetaData.toString(), Map.of("committed", false), Map.of("_id", 0, "metaDataFileRelativePath", 1)).forEach(
+		Database.instance().find(Table.MigrateMetaData.toString(), Map.of("committed", false), Map.of("_id", 0, "metaDataFileRelativePath", 1)).forEach(
 			s -> Delete.deleteMetaData(PathUtil.fromRelativePathString((String)s.get("metaDataFileRelativePath"), Settings.get("baseDirectoryArchive", String.class))));
 
-		Database.instance().deleteMany(Collection.MigrateMetaData.toString(), Map.of("committed", false));
+		Database.instance().deleteMany(Table.MigrateMetaData.toString(), Map.of("committed", false));
 	}
 }

@@ -1,7 +1,7 @@
 package nl.fews.archivedatabase.common.migrate.utils;
 
 import nl.fews.archivedatabase.common.shared.database.Database;
-import nl.fews.archivedatabase.common.shared.database.Collection;
+import nl.fews.archivedatabase.common.shared.database.Table;
 import nl.fews.archivedatabase.common.shared.settings.Settings;
 import nl.fews.archivedatabase.common.shared.utils.PathUtil;
 import nl.wldelft.archive.util.metadata.externalforecast.ExternalForecastMetaDataReader;
@@ -146,7 +146,7 @@ public final class MetaDataUtil {
 	 */
 	public static Map<File, Date> getExistingMetaDataFilesDb () {
 		var existingMetaDataDb = new LinkedHashMap<File, Date>();
-		Database.instance().find(Collection.MigrateMetaData.toString(), Map.of(), Map.of("_id", 0, "metaDataFileRelativePath", 1, "metaDataFileTime", 1)).forEach(e -> {
+		Database.instance().find(Table.MigrateMetaData.toString(), Map.of(), Map.of("_id", 0, "metaDataFileRelativePath", 1, "metaDataFileTime", 1)).forEach(e -> {
 			var file = PathUtil.normalize(new File(Settings.get("baseDirectoryArchive", String.class), (String)e.get("metaDataFileRelativePath")));
 			existingMetaDataDb.put(file, (Date)e.get("metaDataFileTime"));
 		});

@@ -21,7 +21,7 @@ public final class Database {
 
 	/**
 	 *
-	 * @return Database
+	 * @return DatabaseBridge
 	 */
 	public static DatabaseBridge instance(){
 		try {
