@@ -1,82 +1,83 @@
 <script setup>
-import { useQuery, useMutation } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
-import { ref, computed } from "vue";
+import {ref, computed, onMounted} from 'vue'
 import JsonEditorVue from 'json-editor-vue'
+import {graphql} from '@/graphql'
 
-const { result, loading, error, refetch } = useQuery(gql`query forecastN {forecastN {_id, Name, ForecastName, Collection, Filters}}`)
+const LIST = `query {forecastN {_id, Name, ForecastName, Collection, Filters}}`
+const TEST = `query ($collection: String!, $filters: JSON!) {forecastTest(collection: $collection, filters: $filters){FilterName, Success}}`
+const CREATE = `mutation ($name: String!, $forecastName: String!, $collection: String!, $filters: JSON!) {createForecast(name: $name, forecastName: $forecastName, collection: $collection, filters: $filters)}`
+const UPDATE = `mutation ($_id: ID!, $name: String!, $forecastName: String!, $collection: String!, $filters: JSON!) {updateForecast(_id: $_id, name: $name, forecastName: $forecastName, collection: $collection, filters: $filters)}`
+const DELETE = `mutation ($_id: ID!) {deleteForecast(_id: $_id)}`
+
+const items = ref([])
 const selected = ref({})
+const loading = ref(false)
+const error = ref(null)
 const success = ref(null)
 const warning = ref(null)
-const sorted = computed(() => result?.value?.forecastN ? result.value.forecastN.slice().sort((a, b) => a.Name.localeCompare(b.Name)) : [])
+const sorted = computed(() => [...items.value].sort((a, b) => a.Name.localeCompare(b.Name)))
 
-const testQuery = useQuery(gql`query forecastTest($collection: String!, $filters: JSON!) {forecastTest(collection: $collection, filters: $filters){FilterName, Success}}`, {skip: true})
-const createMutation = useMutation(gql`mutation createForecast($name: String!, $forecastName: String!, $collection: String!, $filters: JSON!) {createForecast(name: $name, forecastName: $forecastName, collection: $collection, filters: $filters)}`)
-const updateMutation = useMutation(gql`mutation updateForecast($_id: ID!, $name: String!, $forecastName: String!, $collection: String!, $filters: JSON!) {updateForecast(_id: $_id, name: $name, forecastName: $forecastName, collection: $collection, filters: $filters)}`)
-const deleteMutation = useMutation(gql`mutation deleteForecast($_id: ID!) {deleteForecast(_id: $_id)}`)
-
-async function create() {
-  const {Name, ForecastName, Collection, Filters} = selected.value
-  const result = await mutate(() => createMutation.mutate({ name: Name, forecastName: ForecastName, collection: Collection, filters: JSON.parse(Filters) }))
-  selected.value._id = result?.data ? result.data.createForecast : selected.value._id
-}
-
-async function update() {
-  const {_id, Name, ForecastName, Collection, Filters} = selected.value
-  await mutate(() => updateMutation.mutate({ _id: _id, name: Name, forecastName: ForecastName, collection: Collection, filters: JSON.parse(Filters) }))
-}
-
-async function remove() {
-  const {_id, Name} = selected.value
-  if (confirm(`Remove ${Name} [${_id}]?`)) {
-    await mutate(() => deleteMutation.mutate({_id: _id}))
-    selected.value = {}
+async function run(mutation) {
+  loading.value = true
+  error.value = null
+  success.value = null
+  warning.value = null
+  try {
+    if (mutation) success.value = JSON.stringify(await mutation())
+    items.value = (await graphql(LIST)).forecastN
   }
+  catch (e) { error.value = e }
+  finally { loading.value = false }
+}
+
+onMounted(() => run())
+
+const create = () => run(async () => {
+  const {Name, ForecastName, Collection, Filters} = selected.value
+  const data = await graphql(CREATE, {name: Name, forecastName: ForecastName, collection: Collection, filters: JSON.parse(Filters)})
+  selected.value._id = data.createForecast
+  return data
+})
+
+const update = () => run(() => {
+  const {_id, Name, ForecastName, Collection, Filters} = selected.value
+  return graphql(UPDATE, {_id, name: Name, forecastName: ForecastName, collection: Collection, filters: JSON.parse(Filters)})
+})
+
+const remove = () => {
+  const {_id, Name} = selected.value
+  if (!confirm(`Remove ${Name} [${_id}]?`)) return
+  return run(async () => {
+    const data = await graphql(DELETE, {_id})
+    selected.value = {}
+    return data
+  })
 }
 
 async function test() {
+  loading.value = true
+  error.value = null
+  success.value = null
+  warning.value = null
   try {
     const {Collection, Filters} = selected.value
-    loading.value = true
-    error.value = warning.value = success.value = null
-    const result = await testQuery.refetch({collection: Collection, filters: JSON.parse(Filters)})
-    const message = result.data["forecastTest"].map(d => JSON.stringify(d)).join("<br>")
-    const allSucceed = result.data["forecastTest"].every(d => d["Success"] === "true")
-    if(allSucceed) {success.value = {'message': message}} else {warning.value = {'message': message}}
+    const results = (await graphql(TEST, {collection: Collection, filters: JSON.parse(Filters)})).forecastTest
+    const message = results.map(d => JSON.stringify(d)).join('\n')
+    if (results.every(d => d.Success === 'true')) success.value = message
+    else warning.value = message
   }
-  catch (e){
-    error.value = e
-  }
-  finally {
-    loading.value = false
-  }
-}
-
-async function mutate(mutation){
-  try {
-    loading.value = true
-    error.value = success.value = null
-    const result = await mutation()
-    await refetch()
-    success.value = {'message': JSON.stringify(result.data)}
-    return result
-  }
-  catch (e){
-    error.value = e
-  }
-  finally {
-    loading.value = false
-  }
+  catch (e) { error.value = e }
+  finally { loading.value = false }
 }
 </script>
 
 <template>
-<v-overlay :model-value="!!loading" class="align-center justify-center"><v-progress-circular color="white" v-if="loading" indeterminate/></v-overlay>
-<v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
-<v-alert type="warning" closable :model-value="!!warning">{{ warning.message }}</v-alert>
-<v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
+<v-overlay :model-value="loading" class="align-center justify-center"><v-progress-circular color="white" indeterminate/></v-overlay>
+<v-alert type="error" closable :model-value="!!error">{{ error?.message }}</v-alert>
+<v-alert type="warning" closable :model-value="!!warning" style="white-space: pre-line">{{ warning }}</v-alert>
+<v-alert type="success" closable :model-value="!!success" style="white-space: pre-line">{{ success }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>Forecast Editor</h3></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-1"><h3 class="ma-1">Forecast Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="300px">
     <thead><tr>
       <th><v-icon>mdi-pencil-outline</v-icon></th>
@@ -93,7 +94,7 @@ async function mutate(mutation){
       <td><input type="text" class="w-100" readonly :value="JSON.stringify(s.Filters)"/></td>
     </tr></tbody>
   </v-table>
-  <div class="bg-grey-darken-2 text-center mt-6 border rounded-lg"><h4>Editing: {{selected.Name}}</h4></div>
+  <div class="bg-grey-darken-2 text-center mt-6 border rounded-lg"><h4 class="ma-1">Editing: {{selected.Name}}</h4></div>
   <div class="input">
     <div class="d-flex w-100 mt-2"><label for="i-name" class="border rounded-lg pa-2 input-label">Name</label><input id="i-name" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Name"/></div>
     <div class="d-flex w-100 mt-2"><label for="i-forecastName" class="border rounded-lg pa-2 input-label">ForecastName</label><input id="i-forecastName" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.ForecastName"/></div>
@@ -108,7 +109,3 @@ async function mutate(mutation){
   </div>
 </div>
 </template>
-
-<style scoped>
-
-</style>

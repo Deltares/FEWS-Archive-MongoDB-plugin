@@ -1,63 +1,62 @@
 <script setup>
-import { useQuery, useMutation } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
-import { ref, computed } from "vue";
+import {ref, computed, onMounted} from 'vue'
+import {graphql} from '@/graphql'
 
-const { result, loading, error, refetch } = useQuery(gql`query templateDrdlYamlN {templateDrdlYamlN {_id, Type, Name, Template}}`)
+const LIST = `query {templateDrdlYamlN {_id, Type, Name, Template}}`
+const CREATE = `mutation ($type: String!, $name: String!, $template: String!) {createTemplateDrdlYaml(type: $type, name: $name, template: $template)}`
+const UPDATE = `mutation ($_id: ID!, $type: String!, $name: String!, $template: String!) {updateTemplateDrdlYaml(_id: $_id, type: $type, name: $name, template: $template)}`
+const DELETE = `mutation ($_id: ID!) {deleteTemplateDrdlYaml(_id: $_id)}`
+
+const items = ref([])
 const selected = ref({})
+const loading = ref(false)
+const error = ref(null)
 const success = ref(null)
-const sorted = computed(() => result?.value?.templateDrdlYamlN ? result.value.templateDrdlYamlN.slice().sort((a, b) => `${a.Type}_${a.Name}`.localeCompare(`${b.Type}_${b.Name}`)) : [])
+const sorted = computed(() => [...items.value].sort((a, b) => `${a.Type}_${a.Name}`.localeCompare(`${b.Type}_${b.Name}`)))
 
-const createMutation = useMutation(gql`mutation createTemplateDrdlYaml($type: String!, $name: String!, $template: String!) {createTemplateDrdlYaml(type: $type, name: $name, template: $template)}`)
-const updateMutation = useMutation(gql`mutation updateTemplateDrdlYaml($_id: ID!, $type: String!, $name: String!, $template: String!) {updateTemplateDrdlYaml(_id: $_id, type: $type, name: $name, template: $template)}`)
-const deleteMutation = useMutation(gql`mutation deleteTemplateDrdlYaml($_id: ID!) {deleteTemplateDrdlYaml(_id: $_id)}`)
-
-async function create() {
-  const {Type, Name, Template} = selected.value
-  let name = Name || ""
-  const result = await mutate(() => createMutation.mutate({ type: Type, name: name, template: Template }))
-  selected.value._id = result?.data ? result.data.createTemplateDrdlYaml : selected.value._id
-}
-
-async function update() {
-  const {_id, Type, Name, Template} = selected.value
-  let name = Name || ""
-  await mutate(() => updateMutation.mutate({ _id: _id, type: Type, name: name, template: Template }))
-}
-
-async function remove() {
-  const {_id, Type, Name} = selected.value
-  if (confirm(`Remove ${Type}_${Name} [${_id}]?`)) {
-    await mutate(() => deleteMutation.mutate({_id: _id}))
-    selected.value = {}
-  }
-}
-
-async function mutate(mutation){
+async function run(mutation) {
+  loading.value = true
+  error.value = null
+  success.value = null
   try {
-    loading.value = true
-    error.value = null
-    success.value = null
-    const result = await mutation()
-    await refetch()
-    success.value = {'message': JSON.stringify(result.data)}
-    return result
+    if (mutation) success.value = JSON.stringify(await mutation())
+    items.value = (await graphql(LIST)).templateDrdlYamlN
   }
-  catch (e){
-    error.value = e
-  }
-  finally {
-    loading.value = false
-  }
+  catch (e) { error.value = e }
+  finally { loading.value = false }
+}
+
+onMounted(() => run())
+
+const create = () => run(async () => {
+  const {Type, Name, Template} = selected.value
+  const data = await graphql(CREATE, {type: Type, name: Name || '', template: Template})
+  selected.value._id = data.createTemplateDrdlYaml
+  return data
+})
+
+const update = () => run(() => {
+  const {_id, Type, Name, Template} = selected.value
+  return graphql(UPDATE, {_id, type: Type, name: Name || '', template: Template})
+})
+
+const remove = () => {
+  const {_id, Type, Name} = selected.value
+  if (!confirm(`Remove ${Type}_${Name} [${_id}]?`)) return
+  return run(async () => {
+    const data = await graphql(DELETE, {_id})
+    selected.value = {}
+    return data
+  })
 }
 </script>
 
 <template>
-<v-overlay :model-value="!!loading" class="align-center justify-center"><v-progress-circular color="white" v-if="loading" indeterminate/></v-overlay>
-<v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
-<v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
+<v-overlay :model-value="loading" class="align-center justify-center"><v-progress-circular color="white" indeterminate/></v-overlay>
+<v-alert type="error" closable :model-value="!!error">{{ error?.message }}</v-alert>
+<v-alert type="success" closable :model-value="!!success">{{ success }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>TemplateDrdlYaml Editor</h3></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-1"><h3 class="ma-1">TemplateDrdlYaml Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="300px">
     <thead><tr>
       <th><v-icon>mdi-pencil-outline</v-icon></th>
@@ -72,7 +71,7 @@ async function mutate(mutation){
       <td><input type="text" class="w-100" readonly :value="s.Template.replace('\n', '\\n')"/></td>
     </tr></tbody>
   </v-table>
-  <div class="bg-grey-darken-2 text-center mt-6 border rounded-lg"><h4>Editing: {{selected.Type}}</h4></div>
+  <div class="bg-grey-darken-2 text-center mt-6 border rounded-lg"><h4 class="ma-1">Editing: {{selected.Type}}</h4></div>
   <div class="input">
     <div class="d-flex w-100 mt-2"><label for="i-type" class="border rounded-lg pa-2 input-label">Type</label><input id="i-type" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Type"/></div>
     <div class="d-flex w-100 mt-2"><label for="i-name" class="border rounded-lg pa-2 input-label">Name</label><input id="i-name" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Name"/></div>
@@ -85,7 +84,3 @@ async function mutate(mutation){
   </div>
 </div>
 </template>
-
-<style scoped>
-
-</style>

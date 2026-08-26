@@ -1,17 +1,21 @@
 <script setup>
-import {ref, computed} from "vue"
+import {ref, computed, onMounted} from "vue"
 import {useRoute} from "vue-router"
-import {useQuery} from "@vue/apollo-composable";
-import gql from "graphql-tag";
+import {graphql} from "@/graphql"
 
 const drawer = ref(true)
 const rt = useRoute()
 const route = computed(() => rt?.path)
 const clock = ref(null)
-const { result: user } = useQuery(gql`query user {user {Name, Email}}`)
-const { result: version } = useQuery(gql`query version {version {Version}}`)
-const computedUser = computed(() => user?.value?.user?.Email?.split('@')[0])
-const computedVersion = computed(() => `Version: ${version?.value?.version?.Version}`)
+const user = ref(null)
+const version = ref(null)
+const computedUser = computed(() => user.value?.Email?.split('@')[0])
+const computedVersion = computed(() => `Version: ${version.value?.Version}`)
+
+onMounted(async () => {
+  user.value = (await graphql(`query {user {Name, Email}}`)).user
+  version.value = (await graphql(`query {version {Version}}`)).version
+})
 
 const dateFormat = { year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZoneName: 'short' }
 let clockTimeout = setTimeout(updateClock, 100)
@@ -30,7 +34,7 @@ function updateClock() {
   <v-app>
     <v-app-bar color="#f8f8f8" density="compact" flat class="d-flex align-center border-b border-opacity-25">
       <v-app-bar-nav-icon @click="drawer = !drawer"/>
-      <v-app-bar-title><router-link class="text-h6 link" to="/">TVA VERIFICATION</router-link></v-app-bar-title>
+      <v-app-bar-title><router-link class="link" to="/">TVA VERIFICATION</router-link></v-app-bar-title>
       <v-divider vertical/>
       <div class="pa-4" :title="computedVersion"><v-icon>mdi-update</v-icon></div><v-divider vertical/>
       <div class="pa-4" title="Location"><v-icon>mdi-map-marker-outline</v-icon>{{route}}</div><v-divider vertical/>
@@ -39,7 +43,7 @@ function updateClock() {
       <div class="pr-2" title="Clock" style="font-family: monospace; font-size: 10pt; line-height: 9pt" v-html="clock"></div>
     </v-app-bar>
 
-    <v-navigation-drawer color="#f8f8f8" class="border-r border-opacity-50" rail v-model="drawer">
+    <v-navigation-drawer color="#f8f8f8" class="border-e border-opacity-50" rail v-model="drawer">
       <v-list density="compact" nav>
         <v-list-item prepend-icon="mdi-home-outline" to="/" :title.attr="'Home'"/>
         <v-list-item prepend-icon="mdi-cog-outline" to="/configurationSettings" :title.attr="'Settings'"/>
@@ -158,5 +162,13 @@ function updateClock() {
   background-color: #afc8e1;
   max-height: 400px;
   overflow: auto;
+}
+
+input[type="text"]{
+  border: none;
+}
+
+.v-table input[type="text"]{
+  background-color: transparent;
 }
 </style>

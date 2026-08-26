@@ -1,63 +1,62 @@
 <script setup>
-import { useQuery, useMutation } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
-import { ref, computed } from "vue";
+import {ref, computed, onMounted} from 'vue'
+import {graphql} from '@/graphql'
 
-const { result, loading, error, refetch } = useQuery(gql`query outputPowerQueryN {outputPowerQueryN {_id, Study, Name, Month, Expression}}`)
+const LIST = `query {outputPowerQueryN {_id, Study, Name, Month, Expression}}`
+const CREATE = `mutation ($study: String!, $name: String!, $month: String!, $expression: String!) {createOutputPowerQuery(study: $study, name: $name, month: $month, expression: $expression)}`
+const UPDATE = `mutation ($_id: ID!, $study: String!, $name: String!, $month: String!, $expression: String!) {updateOutputPowerQuery(_id: $_id, study: $study, name: $name, month: $month, expression: $expression)}`
+const DELETE = `mutation ($_id: ID!) {deleteOutputPowerQuery(_id: $_id)}`
+
+const items = ref([])
 const selected = ref({})
+const loading = ref(false)
+const error = ref(null)
 const success = ref(null)
-const sorted = computed(() => result?.value?.outputPowerQueryN ? result.value.outputPowerQueryN.slice().sort((a, b) => `${a.Study}_${a.Name}_${a.Month}`.localeCompare(`${b.Study}_${b.Name}_${b.Month}`)) : [])
+const sorted = computed(() => [...items.value].sort((a, b) => `${a.Study}_${a.Name}_${a.Month}`.localeCompare(`${b.Study}_${b.Name}_${b.Month}`)))
 
-const createMutation = useMutation(gql`mutation createOutputPowerQuery($study: String!, $name: String!, $month: String!, $expression: String!) {createOutputPowerQuery(study: $study, name: $name, month: $month, expression: $expression)}`)
-const updateMutation = useMutation(gql`mutation updateOutputPowerQuery($_id: ID!, $study: String!, $name: String!, $month: String!, $expression: String!) {updateOutputPowerQuery(_id: $_id, study: $study, name: $name, month: $month, expression: $expression)}`)
-const deleteMutation = useMutation(gql`mutation deleteOutputPowerQuery($_id: ID!) {deleteOutputPowerQuery(_id: $_id)}`)
-
-async function create() {
-  const {Study, Name, Month, Expression} = selected.value
-  let month = Month || ""
-  const result = await mutate(() => createMutation.mutate({ study: Study, name: Name, month: month, expression: Expression }))
-  selected.value._id = result?.data ? result.data.createOutputPowerQuery : selected.value._id
-}
-
-async function update() {
-  const {_id, Study, Name, Month, Expression} = selected.value
-  let month = Month || ""
-  await mutate(() => updateMutation.mutate({ _id: _id, study: Study, name: Name, month: month, expression: Expression }))
-}
-
-async function remove() {
-  const {_id, Study, Name, Month} = selected.value
-  if (confirm(`Remove ${Study}_${Name}_${Month} [${_id}]?`)) {
-    await mutate(() => deleteMutation.mutate({_id: _id}))
-    selected.value = {}
-  }
-}
-
-async function mutate(mutation){
+async function run(mutation) {
+  loading.value = true
+  error.value = null
+  success.value = null
   try {
-    loading.value = true
-    error.value = null
-    success.value = null
-    const result = await mutation()
-    await refetch()
-    success.value = {'message': JSON.stringify(result.data)}
-    return result
+    if (mutation) success.value = JSON.stringify(await mutation())
+    items.value = (await graphql(LIST)).outputPowerQueryN
   }
-  catch (e){
-    error.value = e
-  }
-  finally {
-    loading.value = false
-  }
+  catch (e) { error.value = e }
+  finally { loading.value = false }
+}
+
+onMounted(() => run())
+
+const create = () => run(async () => {
+  const {Study, Name, Month, Expression} = selected.value
+  const data = await graphql(CREATE, {study: Study, name: Name, month: Month || '', expression: Expression})
+  selected.value._id = data.createOutputPowerQuery
+  return data
+})
+
+const update = () => run(() => {
+  const {_id, Study, Name, Month, Expression} = selected.value
+  return graphql(UPDATE, {_id, study: Study, name: Name, month: Month || '', expression: Expression})
+})
+
+const remove = () => {
+  const {_id, Study, Name, Month} = selected.value
+  if (!confirm(`Remove ${Study}_${Name}_${Month} [${_id}]?`)) return
+  return run(async () => {
+    const data = await graphql(DELETE, {_id})
+    selected.value = {}
+    return data
+  })
 }
 </script>
 
 <template>
-<v-overlay :model-value="!!loading" class="align-center justify-center"><v-progress-circular color="white" v-if="loading" indeterminate/></v-overlay>
-<v-alert type="error" closable :model-value="!!error">{{ error.message }}</v-alert>
-<v-alert type="success" closable :model-value="!!success">{{ success.message }}</v-alert>
+<v-overlay :model-value="loading" class="align-center justify-center"><v-progress-circular color="white" indeterminate/></v-overlay>
+<v-alert type="error" closable :model-value="!!error">{{ error?.message }}</v-alert>
+<v-alert type="success" closable :model-value="!!success">{{ success }}</v-alert>
 <div class="pa-4 pt-2">
-  <div class="bg-blue-darken-2 rounded-lg text-center pa-2"><h3>OutputPowerQuery Editor</h3></div>
+  <div class="bg-blue-darken-2 rounded-lg text-center pa-1"><h3 class="ma-1">OutputPowerQuery Editor</h3></div>
   <v-table hover class="border rounded-lg mt-2" density="compact" fixed-header height="300px">
     <thead><tr>
       <th><v-icon>mdi-pencil-outline</v-icon></th>
@@ -74,7 +73,7 @@ async function mutate(mutation){
       <td><input type="text" class="w-100" readonly :value="s.Expression.replace('\n', '\\n')"/></td>
     </tr></tbody>
   </v-table>
-  <div class="bg-grey-darken-2 text-center mt-6 border rounded-lg"><h4>Editing: {{selected.Name}}</h4></div>
+  <div class="bg-grey-darken-2 text-center mt-6 border rounded-lg"><h4 class="ma-1">Editing: {{selected.Name}}</h4></div>
   <div class="input">
     <div class="d-flex w-100 mt-2"><label for="i-study" class="border rounded-lg pa-2 input-label">Study</label><input id="i-study" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Study"/></div>
     <div class="d-flex w-100 mt-2"><label for="i-name" class="border rounded-lg pa-2 input-label">Name</label><input id="i-name" type="text" class="border rounded-lg pa-2 flex-grow-1 ml-2 input-data" v-model="selected.Name"/></div>
@@ -88,7 +87,3 @@ async function mutate(mutation){
   </div>
 </div>
 </template>
-
-<style scoped>
-
-</style>
