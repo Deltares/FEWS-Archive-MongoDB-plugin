@@ -1,5 +1,6 @@
 package nl.fews.verification.mongodb.shared.mail;
 
+import nl.fews.verification.mongodb.shared.crypto.CryptoOfb;
 import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,11 +17,14 @@ public final class Mail{
 		try{
 			var sender = new JavaMailSenderImpl();
 			sender.setHost(Settings.get("smtpServer"));
+			sender.setPort(Settings.get("smtpPort"));
+			sender.setUsername(Settings.get("smtpUser"));
+			sender.setPassword(CryptoOfb.decrypt(Settings.get("smtpPass", String.class)));
 			var mail = new SimpleMailMessage();
-			mail.setSubject(String.format("%s %s", InetAddress.getLocalHost().getHostName().toUpperCase(), subject));
+			mail.setSubject(String.format("%s %s %s", Settings.get("fromEmailAddress"), InetAddress.getLocalHost().getHostName().toUpperCase(), subject));
         	mail.setText(message);
         	mail.setTo(Settings.get("toEmailAddresses", String.class).split(","));
-        	mail.setFrom(Settings.get("fromEmailAddress"));
+        	mail.setFrom(Settings.get("smtpUser"));
         	sender.send(mail);
 		}
 		catch (Exception ex){

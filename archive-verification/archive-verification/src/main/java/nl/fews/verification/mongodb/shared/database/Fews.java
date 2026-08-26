@@ -1,6 +1,6 @@
 package nl.fews.verification.mongodb.shared.database;
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.dataformat.xml.XmlMapper;
 import nl.fews.verification.mongodb.generate.shared.parser.Parser;
 import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;

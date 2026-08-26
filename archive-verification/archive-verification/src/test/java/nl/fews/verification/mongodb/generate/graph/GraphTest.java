@@ -35,16 +35,12 @@ class GraphTest {
 		DirectedAcyclicGraph<Object, DefaultEdge> result = Graph.getDirectedAcyclicGraph(SampleClass.class);
 
         assertEquals(1, result.vertexSet().size());
-        result.vertexSet().forEach(vertex -> {
-			assertInstanceOf(SampleClass.class, vertex);
-        });
+        result.vertexSet().forEach(vertex -> assertInstanceOf(SampleClass.class, vertex));
 
 		result = Graph.getDirectedAcyclicGraph(SampleClass.class, new Object[]{"param"});
 
         assertEquals(1, result.vertexSet().size());
-        result.vertexSet().forEach(vertex -> {
-			assertInstanceOf(SampleClass.class, vertex);
-        });
+        result.vertexSet().forEach(vertex -> assertInstanceOf(SampleClass.class, vertex));
 	}
 
 	public static class SampleClass implements IPredecessor, IExecute {

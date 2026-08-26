@@ -1,14 +1,13 @@
-package nl.fews.verification.mongodb.generate.operations.drdlyaml.degenerate;
+package nl.fews.verification.mongodb.generate.operations.view.degenerate;
 
 import nl.fews.verification.mongodb.generate.interfaces.IExecute;
 import nl.fews.verification.mongodb.generate.interfaces.IPredecessor;
+import nl.fews.verification.mongodb.generate.operations.view.Database;
 import nl.fews.verification.mongodb.generate.shared.conversion.Conversion;
 import nl.fews.verification.mongodb.shared.database.Mongo;
-import nl.fews.verification.mongodb.shared.io.IO;
 import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
 
-import java.nio.file.Path;
 import java.util.stream.StreamSupport;
 
 public final class EventDate implements IExecute, IPredecessor {
@@ -37,7 +36,7 @@ public final class EventDate implements IExecute, IPredecessor {
 		template = template.replace("{seasonalities}", seasonalities);
 		template = template.replace("{seasonalityColumns}", seasonalityColumns);
 
-		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s.drdl.yml", study, name)), template);
+		Database.insertDrdlYamlToSqlView(template);
 	}
 
 	@Override

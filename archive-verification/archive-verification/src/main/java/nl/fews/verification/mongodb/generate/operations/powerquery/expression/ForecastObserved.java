@@ -43,7 +43,7 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 		months.parallelStream().forEach(m -> {
 			var month = m.format(format);
 			var t = template.replace("{databaseConnectionString}", databaseConnectionString);
-			t = t.replace("{database}", database);
+			t = t.replace("{database}", String.format("%s.view.dw", database));
 			t = t.replace("{study}", study);
 			t = t.replace("{month}", month);
 

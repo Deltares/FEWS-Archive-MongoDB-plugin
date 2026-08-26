@@ -10,16 +10,16 @@ type ConfigurationSettings {
 	bimPath: String!
 	databaseConnectionString: String!
 	smtpServer: String!
+	smtpPort: Int!
+	smtpUser: String!
+	smtpPass: String!
 	tabularConnectionString: String!
-	drdlYamlServiceRestart: String!
 	execute: Boolean!
 	reprocessCubes: String!
 	taskInterval: String!
 	fewsArchiveDbAesPassword: String!
 	fewsArchiveDbUsername: String!
-	drdlYamlConfigPath: String!
 	fewsArchiveDbConnection: String!
-	drdlYamlServiceRestartSuccess: String!
 	dataStaleAfterSeconds: Int!
 	cubeParallelPartitions: Int!
 	cubeThreads: Int!
@@ -48,16 +48,16 @@ extend type Mutation {
 		bimPath: String!,
 		databaseConnectionString: String!,
 		smtpServer: String!,
+		smtpPort: Int!,
+		smtpUser: String!,
+		smtpPass: String!,
 		tabularConnectionString: String!,
-		drdlYamlServiceRestart: String!,
 		execute: Boolean!,
 		reprocessCubes: String!,
 		taskInterval: String!,
 		fewsArchiveDbAesPassword: String!,
 		fewsArchiveDbUsername: String!,
-		drdlYamlConfigPath: String!,
 		fewsArchiveDbConnection: String!,
-		drdlYamlServiceRestartSuccess: String!,
 		dataStaleAfterSeconds: Int!,
 		cubeParallelPartitions: Int!,
 		cubeThreads: Int!,
@@ -80,16 +80,16 @@ extend type Mutation {
 		bimPath: String!,
 		databaseConnectionString: String!,
 		smtpServer: String!,
+		smtpPort: Int!,
+		smtpUser: String!,
+		smtpPass: String!,
 		tabularConnectionString: String!,
-		drdlYamlServiceRestart: String!,
 		execute: Boolean!,
 		reprocessCubes: String!,
 		taskInterval: String!,
 		fewsArchiveDbAesPassword: String!,
 		fewsArchiveDbUsername: String!,
-		drdlYamlConfigPath: String!,
 		fewsArchiveDbConnection: String!,
-		drdlYamlServiceRestartSuccess: String!,
 		dataStaleAfterSeconds: Int!,
 		cubeParallelPartitions: Int!,
 		cubeThreads: Int!,

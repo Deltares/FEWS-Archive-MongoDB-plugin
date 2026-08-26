@@ -7,12 +7,12 @@ import nl.fews.verification.mongodb.generate.operations.deploy.Deploy;
 import nl.fews.verification.mongodb.generate.operations.integrity.Integrity;
 import nl.fews.verification.mongodb.generate.operations.missing.Missing;
 import nl.fews.verification.mongodb.generate.operations.powerquery.PowerQuery;
-import nl.fews.verification.mongodb.generate.operations.drdlyaml.DrdlYaml;
+import nl.fews.verification.mongodb.generate.operations.view.View;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Generate {
+public final class Generate {
 
 	private Generate(){}
 
@@ -23,7 +23,7 @@ public class Generate {
 			Acquire.execute();
 			Integrity.execute();
 			Missing.execute();
-			DrdlYaml.execute();
+			View.execute();
 			PowerQuery.execute();
 			Cube.execute();
 			Data.execute();

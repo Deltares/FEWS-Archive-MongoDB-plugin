@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  *
  */
-public class Conversion {
+public final class Conversion {
 	private Conversion(){}
 
 	public static String getSqlType(String bsonType){

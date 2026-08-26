@@ -8,6 +8,6 @@ export default createVuetify({
   components,
   directives,
   defaults: {
-    VBtn:{varient: 'outlined'}
+    VBtn:{variant: 'outlined'}
   }
 })

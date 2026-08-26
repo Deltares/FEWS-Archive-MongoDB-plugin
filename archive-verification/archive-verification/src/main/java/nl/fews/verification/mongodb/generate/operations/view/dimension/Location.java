@@ -1,14 +1,12 @@
-package nl.fews.verification.mongodb.generate.operations.drdlyaml.dimension;
+package nl.fews.verification.mongodb.generate.operations.view.dimension;
 
 import nl.fews.verification.mongodb.generate.interfaces.IExecute;
 import nl.fews.verification.mongodb.generate.interfaces.IPredecessor;
+import nl.fews.verification.mongodb.generate.operations.view.Database;
 import nl.fews.verification.mongodb.generate.shared.conversion.Conversion;
 import nl.fews.verification.mongodb.shared.database.Mongo;
-import nl.fews.verification.mongodb.shared.io.IO;
 import nl.fews.verification.mongodb.shared.settings.Settings;
 import org.bson.Document;
-
-import java.nio.file.Path;
 
 public final class Location implements IExecute, IPredecessor {
 
@@ -41,7 +39,7 @@ public final class Location implements IExecute, IPredecessor {
 		template = template.replace("{study}", study);
 		template = template.replace("{columns}", String.join("", columns));
 		
-		IO.writeString(Path.of(Settings.get("drdlYamlPath"), String.format("%s_%s_Dimension.drdl.yml", study, name)), template);
+		Database.insertDrdlYamlToSqlView(template);
 	}
 
 	@Override
