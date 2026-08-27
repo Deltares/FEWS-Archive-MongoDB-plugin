@@ -1,98 +1,74 @@
 <script setup>
-import {ref, computed, onMounted} from "vue"
-import {useRoute} from "vue-router"
-import {graphql} from "@/graphql"
+import {ref, computed, onMounted, onUnmounted} from 'vue'
+import {useRoute} from 'vue-router'
+import {graphql} from '@/graphql'
+import {links, groups} from '@/navigation'
 
 const drawer = ref(true)
 const rt = useRoute()
 const route = computed(() => rt?.path)
-const clock = ref(null)
+const clock = ref([])
 const user = ref(null)
 const version = ref(null)
 const computedUser = computed(() => user.value?.Email?.split('@')[0])
 const computedVersion = computed(() => `Version: ${version.value?.Version}`)
 
+const USER = `query {user {Name, Email}}`
+const VERSION = `query {version {Version}}`
+
 onMounted(async () => {
-  user.value = (await graphql(`query {user {Name, Email}}`)).user
-  version.value = (await graphql(`query {version {Version}}`)).version
+  user.value = (await graphql(USER)).user
+  version.value = (await graphql(VERSION)).version
 })
 
-const dateFormat = { year: 'numeric', month: '2-digit',day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZoneName: 'short' }
-let clockTimeout = setTimeout(updateClock, 100)
-function updateClock() {
-  let date = new Date()
-  clock.value = [
-    `${date.toLocaleDateString('en-US', {...dateFormat, timeZone: 'America/Chicago'})}`,
-    `${date.toLocaleDateString('en-US', {...dateFormat, timeZone: 'America/New_York'})}`,
-    `${date.toLocaleDateString('en-US', {...dateFormat, timeZone: 'GMT'})}`].join('<br/>')
-  clearTimeout(clockTimeout)
-  clockTimeout = setTimeout(updateClock, 100)
+const timeZones = ['America/Chicago', 'America/New_York', 'GMT']
+const dateFormat = {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: true,
+  timeZoneName: 'short',
 }
+
+function updateClock() {
+  const date = new Date()
+  clock.value = timeZones.map((timeZone) => date.toLocaleString('en-US', {...dateFormat, timeZone}))
+}
+
+updateClock()
+const clockTimer = setInterval(updateClock, 1000)
+onUnmounted(() => clearInterval(clockTimer))
 </script>
 
 <template>
   <v-app>
     <v-app-bar color="#f8f8f8" density="compact" flat class="d-flex align-center border-b border-opacity-25">
-      <v-app-bar-nav-icon @click="drawer = !drawer"/>
+      <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-app-bar-title><router-link class="link" to="/">TVA VERIFICATION</router-link></v-app-bar-title>
-      <v-divider vertical/>
-      <div class="pa-4" :title="computedVersion"><v-icon>mdi-update</v-icon></div><v-divider vertical/>
-      <div class="pa-4" title="Location"><v-icon>mdi-map-marker-outline</v-icon>{{route}}</div><v-divider vertical/>
-      <div class="pa-4" title="User"><v-icon>mdi-account-outline</v-icon>{{computedUser}}</div><v-divider vertical/>
+      <v-divider vertical />
+      <div class="pa-4" :title="computedVersion"><v-icon>mdi-update</v-icon></div>
+      <v-divider vertical />
+      <div class="pa-4" title="Location"><v-icon>mdi-map-marker-outline</v-icon>{{ route }}</div>
+      <v-divider vertical />
+      <div class="pa-4" title="User"><v-icon>mdi-account-outline</v-icon>{{ computedUser }}</div>
+      <v-divider vertical />
       <div class="pa-4" title="Clock"><v-icon>mdi-clock-outline</v-icon></div>
-      <div class="pr-2" title="Clock" style="font-family: monospace; font-size: 10pt; line-height: 9pt" v-html="clock"></div>
+      <div class="pr-2" title="Clock" style="font-family: monospace; font-size: 10pt; line-height: 9pt">
+        <div v-for="(time, i) in clock" :key="i">{{ time }}</div>
+      </div>
     </v-app-bar>
 
-    <v-navigation-drawer color="#f8f8f8" class="border-e border-opacity-50" rail v-model="drawer">
+    <v-navigation-drawer v-model="drawer" color="#f8f8f8" class="border-e border-opacity-50" rail>
       <v-list density="compact" nav>
-        <v-list-item prepend-icon="mdi-home-outline" to="/" :title.attr="'Home'"/>
-        <v-list-item prepend-icon="mdi-cog-outline" to="/configurationSettings" :title.attr="'Settings'"/>
-        <v-list-item prepend-icon="mdi-cogs" to="/configurationDescription" :title.attr="'Description'"/>
+        <v-list-item v-for="l in links" :key="l.to" :prepend-icon="l.icon" :to="l.to" :title.attr="l.label" />
         <v-divider></v-divider>
-        <v-list-item prepend-icon="mdi-check-all" :title.attr="'Verification'">
+        <v-list-item v-for="g in groups" :key="g.label" :prepend-icon="g.icon" :title.attr="g.label">
           <v-menu activator="parent" location="left" open-on-hover>
             <v-list density="compact">
-              <v-list-item to="/class">Class</v-list-item>
-              <v-list-item to="/forecast">Forecast</v-list-item>
-              <v-list-item to="/locationAttributes">LocationAttributes</v-list-item>
-              <v-list-item to="/normal">Normal</v-list-item>
-              <v-list-item to="/observed">Observed</v-list-item>
-              <v-list-item to="/seasonality">Seasonality</v-list-item>
-              <v-list-item to="/study">Study</v-list-item>
-            </v-list>
-          </v-menu>
-        </v-list-item>
-        <v-list-item prepend-icon="mdi-waves" :title.attr="'Fews'">
-          <v-menu activator="parent" location="left" open-on-hover>
-            <v-list density="compact">
-              <v-list-item to="/fewsLocations">Locations</v-list-item>
-              <v-list-item to="/fewsParameters">Parameters</v-list-item>
-              <v-list-item to="/fewsQualifiers">Qualifiers</v-list-item>
-            </v-list>
-          </v-menu>
-        </v-list-item>
-        <v-list-item prepend-icon="mdi-export" :title.attr="'Output'">
-          <v-menu activator="parent" location="left" open-on-hover>
-            <v-list density="compact">
-              <v-list-item to="/outputPowerQuery">PowerQuery</v-list-item>
-            </v-list>
-          </v-menu>
-        </v-list-item>
-        <v-list-item prepend-icon="mdi-artboard" :title.attr="'Template'">
-          <v-menu activator="parent" location="left" open-on-hover>
-            <v-list density="compact">
-              <v-list-item to="/templateCube">Cube</v-list-item>
-              <v-list-item to="/templateDrdlYaml">DrdlYaml</v-list-item>
-              <v-list-item to="/templatePowerQuery">PowerQuery</v-list-item>
-            </v-list>
-          </v-menu>
-        </v-list-item>
-        <v-list-item prepend-icon="mdi-axis-arrow" :title.attr="'Dimension'">
-          <v-menu activator="parent" location="left" open-on-hover>
-            <v-list density="compact">
-              <v-list-item to="/dimensionIsOriginalForecast">IsOriginalForecast</v-list-item>
-              <v-list-item to="/dimensionIsOriginalObserved">IsOriginalObserved</v-list-item>
-              <v-list-item to="/dimensionMeasure">Measure</v-list-item>
+              <v-list-item v-for="i in g.items" :key="i.to" :to="i.to">{{ i.label }}</v-list-item>
             </v-list>
           </v-menu>
         </v-list-item>
@@ -100,75 +76,7 @@ function updateClock() {
     </v-navigation-drawer>
 
     <v-main>
-      <router-view/>
+      <router-view />
     </v-main>
   </v-app>
 </template>
-
-<style scoped>
-
-</style>
-
-<style>
-
-.link{
-  color: #000000;
-  text-decoration: none;
-}
-
-.link:hover{
-  color: #444444;
-}
-
-.v-table tbody tr:nth-child(odd){
-  background-color: #eeeeee;
-}
-
-.v-table th{
-  background-color: #888888 !important;
-  color: white !important;
-}
-
-.v-table td{
-  white-space: nowrap;
-}
-
-.input div:nth-child(odd) .input-label{
-  background-color: #eeeeee;
-}
-
-.input div:nth-child(even) .input-label{
-  background-color: #dddddd;
-}
-
-.input div:hover{
-  .input-label{
-    background-color: #666666;
-    color: #ffffff;
-  }
-  .input-data{
-    background-color: #fafafa;
-  }
-}
-
-.input-label{
-  text-overflow: ellipsis;
-  overflow: hidden;
-  flex: 0 0 250px;
-  text-align: right;
-}
-
-.input-data{
-  background-color: #afc8e1;
-  max-height: 400px;
-  overflow: auto;
-}
-
-input[type="text"]{
-  border: none;
-}
-
-.v-table input[type="text"]{
-  background-color: transparent;
-}
-</style>

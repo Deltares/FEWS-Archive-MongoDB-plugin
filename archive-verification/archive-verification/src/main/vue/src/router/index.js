@@ -1,50 +1,28 @@
-import {createRouter, createWebHashHistory} from "vue-router";
-
-import HomePage from '../views/HomePage.vue';
-import ErrorPage from '../views/ErrorPage.vue';
-import ClassPage from '../views/ClassPage.vue';
-import ConfigurationDescriptionPage from '../views/ConfigurationDescriptionPage.vue';
-import ConfigurationSettingsPage from '../views/ConfigurationSettingsPage.vue';
-import DimensionIsOriginalForecastPage from '../views/DimensionIsOriginalForecastPage.vue';
-import DimensionIsOriginalObservedPage from '../views/DimensionIsOriginalObservedPage.vue';
-import DimensionMeasurePage from '../views/DimensionMeasurePage.vue';
-import FewsLocationsPage from '../views/FewsLocationsPage.vue';
-import FewsParametersPage from '../views/FewsParametersPage.vue';
-import FewsQualifiersPage from '../views/FewsQualifiersPage.vue';
-import ForecastPage from '../views/ForecastPage.vue';
-import LocationAttributesPage from '../views/LocationAttributesPage.vue';
-import NormalPage from '../views/NormalPage.vue';
-import ObservedPage from '../views/ObservedPage.vue';
-import OutputPowerQueryPage from '../views/OutputPowerQueryPage.vue';
-import SeasonalityPage from '../views/SeasonalityPage.vue';
-import StudyPage from '../views/StudyPage.vue';
-import TemplateCubePage from '../views/TemplateCubePage.vue';
-import TemplateDrdlYamlPage from '../views/TemplateDrdlYamlPage.vue';
-import TemplatePowerQueryPage from '../views/TemplatePowerQueryPage.vue';
+import {createRouter, createWebHashHistory} from 'vue-router'
 
 export default createRouter({
-    history: createWebHashHistory(),
-    routes:[
-        {path: '/', name: "Home", component: HomePage},
-        {path: '/error', name: "Error", component: ErrorPage},
-        {path: '/class', name: "Class", component: ClassPage},
-        {path: '/configurationDescription', name: "ConfigurationDescription", component: ConfigurationDescriptionPage},
-        {path: '/configurationSettings', name: "ConfigurationSettings", component: ConfigurationSettingsPage},
-        {path: '/dimensionIsOriginalForecast', name: "DimensionIsOriginalForecast", component: DimensionIsOriginalForecastPage},
-        {path: '/dimensionIsOriginalObserved', name: "DimensionIsOriginalObserved", component: DimensionIsOriginalObservedPage},
-        {path: '/dimensionMeasure', name: "DimensionMeasure", component: DimensionMeasurePage},
-        {path: '/fewsLocations', name: "FewsLocations", component: FewsLocationsPage},
-        {path: '/fewsParameters', name: "FewsParameters", component: FewsParametersPage},
-        {path: '/fewsQualifiers', name: "FewsQualifiers", component: FewsQualifiersPage},
-        {path: '/forecast', name: "Forecast", component: ForecastPage},
-        {path: '/locationAttributes', name: "LocationAttributes", component: LocationAttributesPage},
-        {path: '/normal', name: "Normal", component: NormalPage},
-        {path: '/observed', name: "Observed", component: ObservedPage},
-        {path: '/outputPowerQuery', name: "OutputPowerQuery", component: OutputPowerQueryPage},
-        {path: '/seasonality', name: "Seasonality", component: SeasonalityPage},
-        {path: '/study', name: "Study", component: StudyPage},
-        {path: '/templateCube', name: "TemplateCube", component: TemplateCubePage},
-        {path: '/templateDrdlYaml', name: "TemplateDrdlYaml", component: TemplateDrdlYamlPage},
-        {path: '/templatePowerQuery', name: "TemplatePowerQuery", component: TemplatePowerQueryPage}
-    ]
-});
+  history: createWebHashHistory(),
+  routes: [
+    {path: '/', name: 'Home', component: () => import('../views/HomePage.vue')},
+    {path: '/error', name: 'Error', component: () => import('../views/ErrorPage.vue')},
+    {path: '/class', name: 'Class', component: () => import('../views/ClassPage.vue')},
+    {path: '/configurationDescription', name: 'ConfigurationDescription', component: () => import('../views/ConfigurationDescriptionPage.vue')},
+    {path: '/configurationSettings', name: 'ConfigurationSettings', component: () => import('../views/ConfigurationSettingsPage.vue')},
+    {path: '/dimensionIsOriginalForecast', name: 'DimensionIsOriginalForecast', component: () => import('../views/DimensionIsOriginalForecastPage.vue')},
+    {path: '/dimensionIsOriginalObserved', name: 'DimensionIsOriginalObserved', component: () => import('../views/DimensionIsOriginalObservedPage.vue')},
+    {path: '/dimensionMeasure', name: 'DimensionMeasure', component: () => import('../views/DimensionMeasurePage.vue')},
+    {path: '/fewsLocations', name: 'FewsLocations', component: () => import('../views/FewsLocationsPage.vue')},
+    {path: '/fewsParameters', name: 'FewsParameters', component: () => import('../views/FewsParametersPage.vue')},
+    {path: '/fewsQualifiers', name: 'FewsQualifiers', component: () => import('../views/FewsQualifiersPage.vue')},
+    {path: '/forecast', name: 'Forecast', component: () => import('../views/ForecastPage.vue')},
+    {path: '/locationAttributes', name: 'LocationAttributes', component: () => import('../views/LocationAttributesPage.vue')},
+    {path: '/normal', name: 'Normal', component: () => import('../views/NormalPage.vue')},
+    {path: '/observed', name: 'Observed', component: () => import('../views/ObservedPage.vue')},
+    {path: '/outputPowerQuery', name: 'OutputPowerQuery', component: () => import('../views/OutputPowerQueryPage.vue')},
+    {path: '/seasonality', name: 'Seasonality', component: () => import('../views/SeasonalityPage.vue')},
+    {path: '/study', name: 'Study', component: () => import('../views/StudyPage.vue')},
+    {path: '/templateCube', name: 'TemplateCube', component: () => import('../views/TemplateCubePage.vue')},
+    {path: '/templateDrdlYaml', name: 'TemplateDrdlYaml', component: () => import('../views/TemplateDrdlYamlPage.vue')},
+    {path: '/templatePowerQuery', name: 'TemplatePowerQuery', component: () => import('../views/TemplatePowerQueryPage.vue')},
+  ],
+})

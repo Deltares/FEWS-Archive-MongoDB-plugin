@@ -1,21 +1,19 @@
-import { fileURLToPath, URL } from 'node:url'
-
-import { defineConfig } from 'vite'
+import {resolve} from 'node:path'
+import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path';
-import { mockGraphql } from './mock/graphql.js'
+import vuetify from 'vite-plugin-vuetify'
 
 export default defineConfig(({mode}) => ({
-  plugins: [vue(), mockGraphql()],
-  base: "./",
+  plugins: [vue(), vuetify({autoImport: true})],
+  base: './',
   build: {
-    outDir: resolve(__dirname, '../resources/static'),
+    outDir: resolve(import.meta.dirname, '../resources/static'),
     minify: mode !== 'development',
-    sourcemap: mode === 'development'
+    sourcemap: mode === 'development',
   },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  }
+      '@': resolve(import.meta.dirname, 'src'),
+    },
+  },
 }))

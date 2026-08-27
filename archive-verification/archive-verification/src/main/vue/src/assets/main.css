@@ -1,0 +1,60 @@
+.link {
+  color: #000000;
+  text-decoration: none;
+}
+
+.link:hover {
+  color: #444444;
+}
+
+.v-table tbody tr:nth-child(odd) {
+  background-color: #eeeeee;
+}
+
+.v-table th {
+  background-color: #888888 !important;
+  color: white !important;
+}
+
+.v-table td {
+  white-space: nowrap;
+}
+
+.v-table input[type='text'] {
+  background-color: transparent;
+}
+
+.input div:nth-child(odd) .input-label {
+  background-color: #eeeeee;
+}
+
+.input div:nth-child(even) .input-label {
+  background-color: #dddddd;
+}
+
+.input div:hover {
+  .input-label {
+    background-color: #666666;
+    color: #ffffff;
+  }
+  .input-data {
+    background-color: #fafafa;
+  }
+}
+
+.input-label {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  flex: 0 0 250px;
+  text-align: right;
+}
+
+.input-data {
+  background-color: #afc8e1;
+  max-height: 400px;
+  overflow: auto;
+}
+
+input[type='text'] {
+  border: none;
+}
