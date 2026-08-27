@@ -7,12 +7,12 @@ app that is **built into the Spring Boot WAR** rather than deployed separately.
 
 `pom.xml` drives this project through `exec-maven-plugin`:
 
-| Phase | Runs | If it fails |
-| --- | --- | --- |
-| `generate-resources` | `npm install` | build fails |
-| `generate-resources` | `npm run lint` | **build fails** |
-| `generate-resources` | `npm run build` → `../resources/static` | build fails |
-| `test` | `npm test` | **build fails** (skipped by `-DskipTests`) |
+| Phase                | Runs                                    | If it fails                                |
+| -------------------- | --------------------------------------- | ------------------------------------------ |
+| `generate-resources` | `npm install`                           | build fails                                |
+| `generate-resources` | `npm run lint`                          | **build fails**                            |
+| `generate-resources` | `npm run build` → `../resources/static` | build fails                                |
+| `test`               | `npm test`                              | **build fails** (skipped by `-DskipTests`) |
 
 So a lint error or a failing front-end test fails `mvn package`, the same as a Java
 compile error would. Run `npm run verify` before committing to catch both locally.
@@ -27,17 +27,17 @@ should never be edited by hand.
 
 ## Running it
 
-| Command | Does |
-| --- | --- |
-| `npm run dev` | Dev server with hot reload. **No backend** — see below |
-| `npm run dev:mock` | Dev server plus an in-memory `/graphql`, for working offline |
-| `npm run build` | Production build into `../resources/static` |
-| `npm run build:debug` | Same, unminified and with sourcemaps |
-| `npm run preview` | Serve the built output locally |
-| `npm test` | Vitest suite |
-| `npm run lint` / `lint:fix` | ESLint, check-only / autofix |
-| `npm run format` / `format:fix` | Prettier, check-only / rewrite |
-| `npm run verify` | lint + format + test, as the build runs them |
+| Command                         | Does                                                         |
+| ------------------------------- | ------------------------------------------------------------ |
+| `npm run dev`                   | Dev server with hot reload. **No backend** — see below       |
+| `npm run dev:mock`              | Dev server plus an in-memory `/graphql`, for working offline |
+| `npm run build`                 | Production build into `../resources/static`                  |
+| `npm run build:debug`           | Same, unminified and with sourcemaps                         |
+| `npm run preview`               | Serve the built output locally                               |
+| `npm test`                      | Vitest suite                                                 |
+| `npm run lint` / `lint:fix`     | ESLint, check-only / autofix                                 |
+| `npm run format` / `format:fix` | Prettier, check-only / rewrite                               |
+| `npm run verify`                | lint + format + test, as the build runs them                 |
 
 `npm run dev` has nothing answering `/graphql`, so pages show a connection error.
 Two ways to get data:
@@ -89,13 +89,13 @@ rather than inventing a new shape.
 
 **Components.**
 
-| | |
-| --- | --- |
-| `StatusBar` | loading overlay and the error / warning / success alerts |
-| `SelectTable` | the row picker; slots supply columns beyond the label |
-| `InputRow` | a label plus a field — `text`, `number`, `checkbox`, `textarea`, `select`; the slot handles anything else |
-| `PageHeader` / `SubHeader` | the blue title bar and the grey "Editing:" bar |
-| `EditorActions` | Create / Update / Delete, with a slot for extras like Test |
+|                            |                                                                                                           |
+| -------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `StatusBar`                | loading overlay and the error / warning / success alerts                                                  |
+| `SelectTable`              | the row picker; slots supply columns beyond the label                                                     |
+| `InputRow`                 | a label plus a field — `text`, `number`, `checkbox`, `textarea`, `select`; the slot handles anything else |
+| `PageHeader` / `SubHeader` | the blue title bar and the grey "Editing:" bar                                                            |
+| `EditorActions`            | Create / Update / Delete, with a slot for extras like Test                                                |
 
 `InputRow` emits a real number for `type="number"`; without it an `Int!` variable
 goes out as a string and the mutation is rejected.
