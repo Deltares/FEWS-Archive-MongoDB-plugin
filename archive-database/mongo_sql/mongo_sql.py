@@ -8,6 +8,7 @@ header = f'/*\n * Copyright (c) {datetime.now().year} INFISYS / RTI Internationa
 dt = {
 	'bson.ObjectId': 'objectId',
 	'float64': 'double',
+	'int64': 'long',
 	'bson.Decimal128': 'double',
 }
 

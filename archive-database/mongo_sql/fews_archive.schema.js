@@ -228,7 +228,7 @@ db.getCollection('__sql_schemas').insertMany(
           "bsonType": "objectId"
         },
         "Bucket": {
-          "bsonType": "int64"
+          "bsonType": "long"
         },
         "BucketSize": {
           "bsonType": "string"
@@ -316,7 +316,7 @@ db.getCollection('__sql_schemas').insertMany(
           "bsonType": "objectId"
         },
         "Bucket": {
-          "bsonType": "int64"
+          "bsonType": "long"
         },
         "BucketSize": {
           "bsonType": "string"
@@ -954,7 +954,7 @@ db.getCollection('__sql_schemas').insertMany(
           "bsonType": "objectId"
         },
         "Bucket": {
-          "bsonType": "int64"
+          "bsonType": "long"
         },
         "BucketSize": {
           "bsonType": "string"
@@ -1048,7 +1048,7 @@ db.getCollection('__sql_schemas').insertMany(
           "bsonType": "objectId"
         },
         "Bucket": {
-          "bsonType": "int64"
+          "bsonType": "long"
         },
         "BucketSize": {
           "bsonType": "string"
