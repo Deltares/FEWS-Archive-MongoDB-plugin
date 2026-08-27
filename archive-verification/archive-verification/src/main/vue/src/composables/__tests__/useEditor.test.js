@@ -1,4 +1,5 @@
 import {describe, it, expect, vi, afterEach} from 'vitest'
+import {nextTick} from 'vue'
 import {mount, flushPromises} from '@vue/test-utils'
 import {useEditor} from '../useEditor'
 
@@ -95,6 +96,66 @@ describe('useEditor', () => {
     await api.run(() => {
       throw new Error('boom')
     })
+    expect(api.loading.value).toBe(false)
+  })
+})
+
+describe('useEditor edge cases', () => {
+  // Nothing else asserts loading is true *during* a request - only that it is
+  // false afterwards. Remove `loading.value = true` and every other test passes
+  // while the overlay silently stops appearing.
+  it('holds loading true while the request is in flight', async () => {
+    let release
+    globalThis.fetch = vi.fn(
+      () =>
+        new Promise((resolve) => {
+          release = () => resolve({ok: true, status: 200, json: async () => ({data: {thingN: []}})})
+        }),
+    )
+    const api = harness('thingN')
+    await nextTick()
+    expect(api.loading.value).toBe(true)
+
+    release()
+    await flushPromises()
+    expect(api.loading.value).toBe(false)
+  })
+
+  it('yields an empty list when the response has no such collection', async () => {
+    respondWith({someOtherN: [{_id: '1'}]})
+    const api = harness('thingN')
+    await flushPromises()
+    expect(api.items.value).toEqual([])
+    expect(api.sorted.value).toEqual([])
+    expect(api.error.value).toBeNull()
+  })
+
+  // The three pages with a Test button put results in `warning`; a later save
+  // must not leave the previous run's amber alert on screen.
+  it('clears a warning on the next run', async () => {
+    respondWith({thingN: []})
+    const api = harness('thingN')
+    await flushPromises()
+
+    api.warning.value = 'two filters failed'
+    await api.run()
+    expect(api.warning.value).toBeNull()
+  })
+
+  // A mutation can succeed and the reload that follows still fail. The record was
+  // written, so success is reported, and the error explains why the list is stale.
+  it('reports both when the mutation succeeds but the reload fails', async () => {
+    let call = 0
+    globalThis.fetch = vi.fn(async () => {
+      if (++call === 1) return {ok: true, status: 200, json: async () => ({data: {thingN: []}})}
+      return {ok: false, status: 503, statusText: 'Service Unavailable'}
+    })
+    const api = harness('thingN')
+    await flushPromises()
+
+    await api.run(async () => ({createThing: '7'}))
+    expect(api.success.value).toBe('{"createThing":"7"}')
+    expect(api.error.value.message).toBe('503 Service Unavailable')
     expect(api.loading.value).toBe(false)
   })
 })

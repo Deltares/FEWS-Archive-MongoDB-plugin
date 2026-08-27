@@ -68,3 +68,24 @@ describe('SelectTable', () => {
     expect(w.findAll('td.extra').map((c) => c.text())).toEqual(['x-r_1', 'y-r_2'])
   })
 })
+
+describe('SelectTable edge cases', () => {
+  it('renders no rows for an empty list, keeping the header', () => {
+    const w = mountTable({items: []})
+    expect(w.findAll('tbody tr')).toHaveLength(0)
+    expect(w.get('thead').text()).toContain('Name')
+  })
+
+  it('checks nothing before a row has been picked', () => {
+    const radios = mountTable({modelValue: {}}).findAll('input[type="radio"]')
+    expect(radios.map((r) => r.element.checked)).toEqual([false, false])
+  })
+
+  // Rows are keyed and labelled by _id; a row without one would collide.
+  it('gives each row a distinct radio id', () => {
+    const ids = mountTable()
+      .findAll('input[type="radio"]')
+      .map((r) => r.attributes('id'))
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+})

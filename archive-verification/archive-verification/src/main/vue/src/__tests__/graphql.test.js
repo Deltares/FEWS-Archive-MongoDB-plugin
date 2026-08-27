@@ -58,3 +58,30 @@ describe('graphql', () => {
     expect(JSON.parse(calls[0].init.body)).toEqual({query: 'query {x}'})
   })
 })
+
+describe('graphql edge cases', () => {
+  // A misrouted /graphql can answer 200 with the SPA's own HTML. That must fail
+  // loudly rather than resolve to undefined and surface later as a null field.
+  it('fails when the body is not JSON', async () => {
+    globalThis.fetch = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw new SyntaxError('Unexpected token <')
+      },
+    }))
+    await expect(graphql('query {x}')).rejects.toThrow(SyntaxError)
+  })
+
+  it('checks the status before reading the body, so an error page never gets parsed', async () => {
+    const json = vi.fn()
+    globalThis.fetch = vi.fn(async () => ({ok: false, status: 401, statusText: 'Unauthorized', json}))
+    await expect(graphql('query {x}')).rejects.toThrow('401 Unauthorized')
+    expect(json).not.toHaveBeenCalled()
+  })
+
+  it('reports a single GraphQL error without a trailing separator', async () => {
+    mockFetch(200, {errors: [{message: 'only one'}]})
+    await expect(graphql('query {x}')).rejects.toThrow('only one')
+  })
+})
