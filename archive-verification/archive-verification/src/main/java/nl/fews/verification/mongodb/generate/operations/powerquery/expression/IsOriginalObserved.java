@@ -20,7 +20,7 @@ public final class IsOriginalObserved implements IExecute, IPredecessor {
 	@Override
 	public void execute(){
 		var database = Settings.get("databaseConnectionString", String.class);
-		var sql = String.format("SELECT * FROM %s.view.dw.`%s`", Settings.get("verificationDb"), String.format("%s_IsOriginalObserved", study));
+		var sql = String.format("SELECT * FROM %s.`view.dw.%s`", Settings.get("verificationDb"), String.format("%s_IsOriginalObserved", study));
 
 		var template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", "IsOriginalObserved")).getList("Template", String.class));
 		template = template.replace("{database}", database);

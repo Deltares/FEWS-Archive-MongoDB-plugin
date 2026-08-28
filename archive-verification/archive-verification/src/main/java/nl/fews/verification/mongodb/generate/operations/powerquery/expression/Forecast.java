@@ -20,7 +20,7 @@ public final class Forecast implements IExecute, IPredecessor {
 	@Override
 	public void execute(){
 		var database = Settings.get("databaseConnectionString", String.class);
-		var sql = String.format("SELECT forecastId, forecast, ensemble, ensembleMember, `index` FROM %s.view.dw.`%s`", Settings.get("verificationDb"), String.format("%s_Forecast", study));
+		var sql = String.format("SELECT forecastId, forecast, ensemble, ensembleMember, `index` FROM %s.`view.dw.%s`", Settings.get("verificationDb"), String.format("%s_Forecast", study));
 
 		var template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", "Forecast")).getList("Template", String.class));
 		template = template.replace("{database}", database);

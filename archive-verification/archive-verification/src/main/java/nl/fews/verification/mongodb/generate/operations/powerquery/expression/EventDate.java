@@ -20,7 +20,7 @@ public final class EventDate implements IExecute, IPredecessor {
 	@Override
 	public void execute(){
 		var database = Settings.get("databaseConnectionString", String.class);
-		var sql = String.format("SELECT * FROM %s.view.dw.`%s`", Settings.get("verificationDb"), String.format("%s_EventDate", study));
+		var sql = String.format("SELECT * FROM %s.`view.dw.%s`", Settings.get("verificationDb"), String.format("%s_EventDate", study));
 
 		var template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", "EventDate")).getList("Template", String.class));
 		template = template.replace("{database}", database);
