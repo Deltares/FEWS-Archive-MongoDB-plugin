@@ -22,7 +22,7 @@ public final class Location implements IExecute, IPredecessor {
 		var database = Settings.get("databaseConnectionString", String.class);
 		var table = String.format("%s_Location", study);
 		var db = Settings.get("verificationDb");
-		var sql = String.format("SELECT s.location, l.* FROM %s.`view.dw.%s_Degenerate` s INNER JOIN %s.`view.dw.%s_Dimension` l ON l.locationId=s.locationId ORDER BY location", db, table, db, table);
+		var sql = String.format("SELECT s.location, l.* FROM %s.`view.dw.%s_Degenerate` s INNER JOIN %s.`view.dw.%s_Dimension` l ON l.locationId=s.locationId ORDER BY s.location", db, table, db, table);
 
 		var template = String.join("\n", Mongo.findOne("template.PowerQuery", new Document("Name", "Location")).getList("Template", String.class));
 		template = template.replace("{database}", database);
