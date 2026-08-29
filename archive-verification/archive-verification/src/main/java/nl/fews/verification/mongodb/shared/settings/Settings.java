@@ -12,9 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -44,6 +42,8 @@ public final class Settings {
 			Settings.put("mongoArchiveDbConnection", mongoArchiveDbConnection);
 			Settings.put("archiveDb", new ConnectionString(mongoArchiveDbConnection).getDatabase());
 			logger.info(String.format("***ARCHIVE DB CONNECTED***: [%s]", mongoArchiveDbConnection.replaceAll("//(.+):(.+)@", "//$1:********@")));
+
+			Settings.put("smtpRawPass",  CryptoOfb.decrypt(Settings.get("smtpPass", String.class)));
 		}
 		catch (Exception ex){
 			logger.error(ex.getMessage(), ex);
@@ -157,7 +157,8 @@ public final class Settings {
 	}
 
 	public static String toJsonString(int indentFactor){
-		return new JSONObject(map.entrySet().stream().filter(s -> !s.getKey().toLowerCase().contains("password")).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))).toString(indentFactor);
+		var linkedHashMap = map.entrySet().stream().sorted(Map.Entry.comparingByKey()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> b, LinkedHashMap::new));
+		return new JSONObject(linkedHashMap).toString(indentFactor);
 	}
 
 	public static JSONObject fromJsonString(String json){

@@ -22,7 +22,9 @@
           "query": null
         },
         "options": {
-          "hierarchicalNavigation": true
+          "hierarchicalNavigation": true,
+          "commandTimeout": 600,
+          "connectionTimeout": 600
         },
         "credential": {
           "AuthenticationKind": "UsernamePassword",

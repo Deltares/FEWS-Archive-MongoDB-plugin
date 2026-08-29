@@ -26,7 +26,7 @@ public final class Generate {
 			View.execute();
 			PowerQuery.execute();
 			Cube.execute();
-			Data.execute();
+			//Data.execute();
 			Deploy.execute();
 		}
 		catch (Exception ex) {
