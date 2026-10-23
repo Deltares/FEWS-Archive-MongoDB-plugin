@@ -34,7 +34,7 @@ mv build/eccodeslib/eccodes build
 
 # CLEANUP
 rm -rf build/eccodeslib
-rm -rf tva_graphcast.egg-info
+rm -rf archive_forecast.egg-info
 rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
 rm -f graphcast.zip && rm -f graphcast.tar.gz

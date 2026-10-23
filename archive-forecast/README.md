@@ -6,3 +6,5 @@
 - https://console.cloud.google.com/storage/browser/dm_graphcast
 ## Sources
 - https://github.com/astral-sh/python-build-standalone/releases
+- https://github.com/NOAA-EMC/graphcast
+- https://github.com/google-deepmind/weathernext

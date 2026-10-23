@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/tva_graphcast.iml" filepath="$PROJECT_DIR$/.idea/tva_graphcast.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/archive_forecast.iml" filepath="$PROJECT_DIR$/.idea/archive_forecast.iml" />
     </modules>
   </component>
 </project>

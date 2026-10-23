@@ -19,4 +19,4 @@ if [ -f "$d/$2/.cdsapirc" ]; then cp "$d/$2/.cdsapirc" "$HOME"; fi
 
 "$d/python/bin/python" -m pip install --no-build-isolation --root-user-action ignore --upgrade "$d/$2/graphcast.zip"
 "$d/python/bin/python" -m pip cache purge
-"$d/python/bin/python" -m tva_graphcast --config_path "$1" --model_path "$d/$2"
+"$d/python/bin/python" -m archive_forecast --config_path "$1" --model_path "$d/$2"

@@ -5,9 +5,9 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "tva_graphcast"
-version = "0.5"
-description = "TVA Graphcast"
+name = "archive_forecast"
+version = "0.6"
+description = "FEWS Archive Forecast"
 readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "MIT" }
@@ -45,5 +45,5 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["tva_graphcast", "tva_graphcast.*"]
+include = ["archive_forecast", "archive_forecast.*"]
 exclude = []

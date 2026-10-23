@@ -13,4 +13,4 @@ if exist "%~dp0%~2\.cdsapirc" copy "%~dp0%~2\.cdsapirc" "%UserProfile%"
 
 "%~dp0Python\python.exe" -m pip install --no-build-isolation --upgrade "%~dp0%~2\graphcast.zip"
 "%~dp0Python\python.exe" -m pip cache purge
-"%~dp0Python\python.exe" -m tva_graphcast --config_path "%~1" --model_path "%~dp0%~2"
+"%~dp0Python\python.exe" -m archive_forecast --config_path "%~1" --model_path "%~dp0%~2"

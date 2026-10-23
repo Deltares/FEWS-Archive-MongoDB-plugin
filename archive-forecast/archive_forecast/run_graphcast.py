@@ -11,8 +11,8 @@ import xmltodict
 import numpy as np
 import pandas as pd
 
-from tva_graphcast.decorator import log
-from tva_graphcast.sources import Ifs, Gfs
+from archive_forecast.decorator import log
+from archive_forecast.sources import Ifs, Gfs
 from datetime import datetime, timedelta
 
 _parser = argparse.ArgumentParser()
@@ -128,7 +128,7 @@ _diag = '''<?xml version="1.0" encoding="UTF-8"?>
 
 def main():
 	logging_format = '{"time": "%(asctime)s", "level": "%(levelname)s", "name": "%(name)s", "message": "%(message)s"}'
-	logging.basicConfig(filename='tva_graphcast.log', level=logging.INFO, filemode='w+', format=logging_format)
+	logging.basicConfig(filename='archive_forecast.log', level=logging.INFO, filemode='w+', format=logging_format)
 	stream_handler = logging.StreamHandler()
 	stream_handler.setFormatter(logging.Formatter(logging_format))
 	stream_handler.setLevel(logging.INFO)

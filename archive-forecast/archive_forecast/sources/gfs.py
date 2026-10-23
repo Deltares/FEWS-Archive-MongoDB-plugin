@@ -11,16 +11,16 @@ import pandas as pd
 
 from datetime import timedelta, datetime, timezone
 from graphcast import graphcast, checkpoint
-from tva_graphcast.decorator import retry
-from tva_graphcast.model import Graphcast
+from archive_forecast.decorator import retry
+from archive_forecast.model import Graphcast
 
-from tva_graphcast.decorator import log
+from archive_forecast.decorator import log
 
-logger = logging.getLogger('tva_graphcast')
+logger = logging.getLogger('archive_forecast')
 
 _geopotential_meters_to_geopotential = 9.80665
 
-home_path = os.path.join(os.path.expanduser('~'), 'tva_graphcast', 'gfs')
+home_path = os.path.join(os.path.expanduser('~'), 'archive_forecast', 'gfs')
 os.makedirs(home_path, exist_ok=True)
 
 
