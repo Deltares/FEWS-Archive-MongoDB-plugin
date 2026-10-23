@@ -16,6 +16,7 @@
 		<string key="output_folder" value="/root/_git/FEWS-Archive/archive-graphcast"/>
 		<string key="output_filename" value="GraphCastForecast.nc"/>
         <string key="source_initialization" value="gfs"/>
+        <string key="provider" value="graphcast_gfs"/>
         <string key="downscaled_grid_cell_size_deg" value="0.0625"/>
         <string key="downscale_method" value="cubic"/>
 	</properties>

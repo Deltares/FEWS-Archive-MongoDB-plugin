@@ -24,22 +24,25 @@ os.makedirs(home_path, exist_ok=True)
 
 
 class Ifs:
+	timestep = 6
+	observed_timesteps = 2
+
 	@staticmethod
 	@log
-	def model(t0, predictions, model_path, timestep, observed_timesteps):
+	def forecast(t0, predictions, model_path):
 		logger.info('model load begin')
 		with open(os.path.join(model_path, 'model.npz'), 'rb') as f:
 			model = checkpoint.load(f, graphcast.CheckPoint)
 			logger.info('model load complete')
 
 		logger.info('Ifs._get_single_level download begin')
-		single_level = Ifs._get_single_level(t0, timestep, observed_timesteps)
+		single_level = Ifs._get_single_level(t0, Ifs.timestep, Ifs.observed_timesteps)
 		logger.info('Ifs._get_single_level download complete')
 		logger.info('Ifs._get_pressure_levels download begin')
-		pressure_levels = Ifs._get_pressure_levels(t0, timestep, observed_timesteps)
+		pressure_levels = Ifs._get_pressure_levels(t0, Ifs.timestep, Ifs.observed_timesteps)
 		logger.info('Ifs._get_pressure_levels download complete')
 
-		return WeatherNext.predict(model, single_level, pressure_levels, t0, timestep, predictions, model_path)
+		return WeatherNext.predict(model, single_level, pressure_levels, t0, Ifs.timestep, predictions, model_path)
 
 	@staticmethod
 	@retry
