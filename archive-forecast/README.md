@@ -31,7 +31,7 @@ One script per environment; each clears and rebuilds its environment, then commi
 
 | Script | Builds | Requirements | Frozen |
 |---|---|---|---|
-| `build_dev.cmd` / `.sh` | `build/Python` (`build/python` on POSIX): development environment, every provider, archive_forecast editable | `requirements.txt` | `frozen_requirements.txt` |
+| `env.cmd` / `.sh` | `build/Python` (`build/python` on POSIX): development environment, every provider, archive_forecast editable | `requirements_env.txt` | `frozen_requirements_env.txt` |
 | `build_graphcast_gfs.cmd` / `.sh` | `dist/graphcast_gfs` → `dist/graphcast_gfs.7z` (`.zip` on POSIX) | `requirements_graphcast_gfs.txt` | `frozen_requirements_graphcast_gfs.txt` |
 | `build_weathernext_ifs.cmd` / `.sh` | `dist/weathernext_ifs` → `dist/weathernext_ifs.7z` (`.zip` on POSIX) | `requirements_weathernext_ifs.txt` | `frozen_requirements_weathernext_ifs.txt` |
 
