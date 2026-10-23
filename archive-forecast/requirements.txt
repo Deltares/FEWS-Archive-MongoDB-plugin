@@ -1,0 +1,6 @@
+requests
+cfgrib
+cdsapi
+pysolar
+jax[cpu]
+xarray<=2026.2.0
