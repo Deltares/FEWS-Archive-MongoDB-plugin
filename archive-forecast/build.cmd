@@ -18,6 +18,7 @@ build\Python\python.exe -m pip install --no-warn-script-location --upgrade pip |
 build\Python\python.exe -m pip install --no-warn-script-location setuptools wheel || goto ERROR
 build\Python\python.exe -m pip install --no-warn-script-location -r requirements.txt || goto ERROR
 build\python\python.exe -m pip install --no-warn-script-location --no-build-isolation models\GraphCastOperationalIfs\weathernext.zip || goto ERROR
+build\python\python.exe -m pip install --no-warn-script-location --no-build-isolation models\GraphCastOperationalGfs\graphcast.zip || goto ERROR
 build\Python\python.exe -m pip install --no-warn-script-location --no-build-isolation . || goto ERROR
 build\Python\python.exe -m pip freeze > frozen_requirements.txt || goto ERROR
 

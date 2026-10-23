@@ -10,7 +10,7 @@ import xarray as xr
 import pandas as pd
 
 from datetime import timedelta, datetime, timezone
-from graphcast import graphcast, checkpoint
+from weathernext.weathernext1_graph import graphcast
 from archive_forecast.decorator import retry
 from archive_forecast.model import Graphcast
 
