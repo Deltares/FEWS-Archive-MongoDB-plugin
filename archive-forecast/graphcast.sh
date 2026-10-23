@@ -17,6 +17,6 @@ export ECCODES_DEFINITION_PATH=$d/eccodes/share/eccodes/definitions
 
 if [ -f "$d/$2/.cdsapirc" ]; then cp "$d/$2/.cdsapirc" "$HOME"; fi
 
-"$d/python/bin/python" -m pip install --no-build-isolation --root-user-action ignore --upgrade "$d/$2/graphcast.zip"
+for z in "$d/$2"/*.zip; do "$d/python/bin/python" -m pip install --no-build-isolation --root-user-action ignore --upgrade "$z"; done
 "$d/python/bin/python" -m pip cache purge
 "$d/python/bin/python" -m archive_forecast --config_path "$1" --model_path "$d/$2"

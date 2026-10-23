@@ -11,8 +11,9 @@ import pandas as pd
 
 from datetime import timedelta, datetime, timezone
 from weathernext.weathernext1_graph import graphcast
+from weathernext.utils import checkpoint
 from archive_forecast.decorator import retry
-from archive_forecast.model import Graphcast
+from archive_forecast.model.weathernext import WeatherNext
 
 from archive_forecast.decorator import log
 
@@ -38,7 +39,7 @@ class Ifs:
 		pressure_levels = Ifs._get_pressure_levels(t0, timestep, observed_timesteps)
 		logger.info('Ifs._get_pressure_levels download complete')
 
-		return Graphcast.predict(model, single_level, pressure_levels, t0, timestep, predictions, model_path)
+		return WeatherNext.predict(model, single_level, pressure_levels, t0, timestep, predictions, model_path)
 
 	@staticmethod
 	@retry

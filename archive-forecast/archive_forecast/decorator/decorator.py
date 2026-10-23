@@ -36,7 +36,7 @@ def retry(fn=None, retry_attempts=_retry_attempts):
 			try:
 				return fn(*args, **kwargs)
 			except Exception:
-				if retry_attempt == _retry_attempts:
+				if retry_attempt == retry_attempts:
 					raise
 				time.sleep(_retry_pause_seconds * retry_attempt)
 	return wrapper

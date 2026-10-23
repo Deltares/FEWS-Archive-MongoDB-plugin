@@ -13,7 +13,8 @@ import pandas as pd
 from pysolar.solar import get_altitude
 from pysolar.radiation import get_radiation_direct
 from datetime import timedelta, datetime
-from graphcast import autoregressive, casting, data_utils, graphcast, normalization, rollout
+from weathernext.utils import autoregressive, casting, data_utils, normalization, rollout
+from weathernext.weathernext1_graph import graphcast
 
 from archive_forecast.decorator import log
 
@@ -25,7 +26,7 @@ home_path = os.path.join(os.path.expanduser('~'), 'archive_forecast')
 os.makedirs(home_path, exist_ok=True)
 
 
-class Graphcast:
+class WeatherNext:
 	@staticmethod
 	@log
 	def predict(model, single_level, pressure_levels, t0, timestep, predictions, model_path, dump_input=False):
@@ -51,7 +52,7 @@ class Graphcast:
 			px += p
 
 			logger.info(f'single_level [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_solar_radiation begin')
-			single_level = Graphcast._add_solar_radiation(single_level)
+			single_level = WeatherNext._add_solar_radiation(single_level)
 			logger.info(f'single_level [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_solar_radiation complete')
 
 			logger.info(f'prediction observed_values [t0: {t0} -> predictions {px - p + 1}-{px}] merge begin')
@@ -62,46 +63,46 @@ class Graphcast:
 				xr.Dataset.from_dataframe(observed_values).to_netcdf('inputs.nc', format='NETCDF4')
 
 			logger.info(f'observed_inputs [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_progress begin')
-			observed_inputs = Graphcast._add_progress(observed_values)
+			observed_inputs = WeatherNext._add_progress(observed_values)
 			logger.info(f'observed_inputs [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_progress complete')
 
 			logger.info(f'observed_inputs [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates begin')
-			observed_inputs = Graphcast._modify_coordinates(observed_inputs.to_xarray())
+			observed_inputs = WeatherNext._modify_coordinates(observed_inputs.to_xarray())
 			logger.info(f'observed_inputs [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates complete')
 
 			logger.info(f'prediction_targets [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._get_targets begin')
-			prediction_targets = Graphcast._get_targets(observed_values, t0, timestep, p)
+			prediction_targets = WeatherNext._get_targets(observed_values, t0, timestep, p)
 			logger.info(f'prediction_targets [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._get_targets complete')
 
 			logger.info(f'prediction_targets [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates begin')
-			prediction_targets = Graphcast._modify_coordinates(prediction_targets.to_xarray())
+			prediction_targets = WeatherNext._modify_coordinates(prediction_targets.to_xarray())
 			logger.info(f'prediction_targets [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates complete')
 
 			logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_progress begin')
-			prediction_forcings = Graphcast._add_progress(prediction_targets.to_dataframe()[[]])
+			prediction_forcings = WeatherNext._add_progress(prediction_targets.to_dataframe()[[]])
 			logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_progress complete')
 
 			logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_solar_radiation begin')
-			prediction_forcings = Graphcast._add_solar_radiation(prediction_forcings)
+			prediction_forcings = WeatherNext._add_solar_radiation(prediction_forcings)
 			logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_solar_radiation complete')
 
 			logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates begin')
-			prediction_forcings = Graphcast._modify_coordinates(prediction_forcings.to_xarray())
+			prediction_forcings = WeatherNext._modify_coordinates(prediction_forcings.to_xarray())
 			logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates complete')
 
 			state = {}
 
 			then = datetime.now()
 			logger.info(f'archive_forecast [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction begin')
-			run_forward_jit = jax.jit(lambda rng, inputs, targets_template, forcings: Graphcast._run_forward.apply(model.params, state, rng, model, stddev_by_level, mean_by_level, diffs_stddev_by_level, inputs, targets_template, forcings)[0])
+			run_forward_jit = jax.jit(lambda rng, inputs, targets_template, forcings: WeatherNext._run_forward.apply(model.params, state, rng, model, stddev_by_level, mean_by_level, diffs_stddev_by_level, inputs, targets_template, forcings)[0])
 			chunked_prediction = rollout.chunked_prediction(run_forward_jit, rng=jax.random.PRNGKey(0), inputs=observed_inputs, targets_template=prediction_targets, forcings=prediction_forcings)
 			logger.info(f'archive_forecast [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction finished in {datetime.now() - then}')
 			chunked_predictions.append(chunked_prediction)
 
 			t0 = t0 + timedelta(hours=p*timestep)
 			previous_two_timesteps = [t0 - timedelta(hours=1 * timestep), t0 - timedelta(hours=2 * timestep)]
-			single_level = Graphcast._get_next_single_level(single_level, previous_two_timesteps, chunked_prediction)
-			pressure_levels = Graphcast._get_next_pressure_levels(pressure_levels, previous_two_timesteps, chunked_prediction)
+			single_level = WeatherNext._get_next_single_level(single_level, previous_two_timesteps, chunked_prediction)
+			pressure_levels = WeatherNext._get_next_pressure_levels(pressure_levels, previous_two_timesteps, chunked_prediction)
 
 		return xr.concat(chunked_predictions, dim='time')
 
@@ -148,7 +149,7 @@ class Graphcast:
 	def _get_solar_radiation_parallel(args):
 		dt, lat = args
 		longitudes = [lon / 4 for lon in range(0, 360 * 4, 1)]
-		return [{'time': dt, 'lon': lon, 'lat': lat, 'toa_incident_solar_radiation': Graphcast._get_solar_radiation(lon, lat, dt)} for lon in longitudes]
+		return [{'time': dt, 'lon': lon, 'lat': lat, 'toa_incident_solar_radiation': WeatherNext._get_solar_radiation(lon, lat, dt)} for lon in longitudes]
 
 	@staticmethod
 	def _add_solar_radiation(data):
@@ -156,7 +157,7 @@ class Graphcast:
 			data['toa_incident_solar_radiation'] = np.nan
 		dates = data[data['toa_incident_solar_radiation'].isna()].index.get_level_values('time').unique().tolist()
 		if dates:
-			solar_radiation = Graphcast._get_solar_radiation_cache(dates)
+			solar_radiation = WeatherNext._get_solar_radiation_cache(dates)
 			extra = [n for n in data.index.names if n not in solar_radiation.index.names]
 			data = data.reset_index(level=extra)
 			data.update(solar_radiation)
@@ -172,10 +173,10 @@ class Graphcast:
 				try:
 					ds = xr.load_dataset(os.path.join(home_path, cache_dates[date]))
 				except:
-					Graphcast._put_solar_radiation_cache(date)
+					WeatherNext._put_solar_radiation_cache(date)
 					ds = xr.load_dataset(os.path.join(home_path, cache_dates[date]))
 			else:
-				Graphcast._put_solar_radiation_cache(date)
+				WeatherNext._put_solar_radiation_cache(date)
 				ds = xr.load_dataset(os.path.join(home_path, f'solar_radiation_cache_{date:%Y%m%d%H%M}.nc'))
 
 			cache[date] = ds.assign_coords(time=pd.to_datetime(ds.coords['time'].values)).to_dataframe()
@@ -187,7 +188,7 @@ class Graphcast:
 	def _put_solar_radiation_cache(date):
 		latitudes = [lat / 4 for lat in range(-90 * 4, 90 * 4 + 1, 1)]
 		with mp.Pool(mp.cpu_count()) as p:
-			results = p.map(Graphcast._get_solar_radiation_parallel, [(date, lat) for lat in latitudes])
+			results = p.map(WeatherNext._get_solar_radiation_parallel, [(date, lat) for lat in latitudes])
 		solar_radiation_cache = pd.DataFrame([c for dt in results for c in dt]).set_index(keys=['time', 'lat', 'lon'])
 		solar_radiation_cache.to_xarray().to_netcdf(os.path.join(home_path, f'solar_radiation_cache_{date:%Y%m%d%H%M}.nc'), format='NETCDF4')
 

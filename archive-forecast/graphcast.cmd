@@ -11,6 +11,6 @@ set XLA_PYTHON_CLIENT_ALLOCATOR=platform
 
 if exist "%~dp0%~2\.cdsapirc" copy "%~dp0%~2\.cdsapirc" "%UserProfile%"
 
-"%~dp0Python\python.exe" -m pip install --no-build-isolation --upgrade "%~dp0%~2\graphcast.zip"
+for %%z in ("%~dp0%~2\*.zip") do "%~dp0Python\python.exe" -m pip install --no-build-isolation --upgrade "%%~z"
 "%~dp0Python\python.exe" -m pip cache purge
 "%~dp0Python\python.exe" -m archive_forecast --config_path "%~1" --model_path "%~dp0%~2"

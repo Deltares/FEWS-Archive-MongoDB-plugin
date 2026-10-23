@@ -12,7 +12,7 @@ import pandas as pd
 from datetime import timedelta, datetime, timezone
 from graphcast import graphcast, checkpoint
 from archive_forecast.decorator import retry
-from archive_forecast.model import Graphcast
+from archive_forecast.model.graphcast import Graphcast
 
 from archive_forecast.decorator import log
 
