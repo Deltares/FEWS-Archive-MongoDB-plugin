@@ -7,6 +7,6 @@
 
 set XLA_PYTHON_CLIENT_PREALLOCATE=false
 set XLA_PYTHON_CLIENT_ALLOCATOR=platform
-set CDSAPI_RC=%~dp0GraphCastOperationalIfs\.cdsapirc
+set CDSAPI_RC=%~dp0WeatherNextIfs\.cdsapirc
 
-"%~dp0Python\python.exe" -m archive_forecast --provider weathernext_ifs --assets_path "%~dp0GraphCastOperationalIfs" --config_path "%~1"
+"%~dp0Python\python.exe" -m archive_forecast --provider weathernext_ifs --assets_path "%~dp0WeatherNextIfs" --config_path "%~1"

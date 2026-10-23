@@ -25,7 +25,7 @@ flexparser==0.4
 fonttools==4.67.0
 fsspec==2026.9.0
 google-crc32c==1.9.0
-graphcast @ file:///C:/_GIT/FEWS-Archive/archive-forecast/models/GraphCastOperationalGfs/graphcast.zip#sha256=fa45960d11ea7497de662f352008ab078bb9e332f9e83156686a8fe679cfa1ce
+graphcast @ file:///C:/_GIT/FEWS-Archive/archive-forecast/models/GraphCastGfs/model.zip#sha256=fa45960d11ea7497de662f352008ab078bb9e332f9e83156686a8fe679cfa1ce
 idna==3.20
 jax==0.12.0.1
 jaxlib==0.12.0.1

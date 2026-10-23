@@ -13,16 +13,17 @@ tar -xzf install/cpython*.tar.gz -C dist/weathernext_ifs
 
 dist/weathernext_ifs/python/bin/python -m pip install --root-user-action ignore --upgrade pip
 dist/weathernext_ifs/python/bin/python -m pip install --root-user-action ignore setuptools wheel
-dist/weathernext_ifs/python/bin/python -m pip install --root-user-action ignore --no-build-isolation -r requirements_weathernext_ifs.txt
-dist/weathernext_ifs/python/bin/python -m pip install --root-user-action ignore --no-build-isolation models/GraphCastOperationalIfs/weathernext.zip
+dist/weathernext_ifs/python/bin/python -m pip install --root-user-action ignore --no-build-isolation -r models/WeatherNextIfs/requirements.txt
+dist/weathernext_ifs/python/bin/python -m pip install --root-user-action ignore --no-build-isolation models/WeatherNextIfs/model.zip
 dist/weathernext_ifs/python/bin/python -m pip install --root-user-action ignore --no-build-isolation .
-dist/weathernext_ifs/python/bin/python -m pip freeze > frozen_requirements_weathernext_ifs.txt
+dist/weathernext_ifs/python/bin/python -m pip freeze > models/WeatherNextIfs/frozen_requirements.txt
 
 # ADD MODEL
-\cp -rf models/GraphCastOperationalIfs dist/weathernext_ifs/
+mkdir -p dist/weathernext_ifs/WeatherNextIfs
+\cp -f models/WeatherNextIfs/model.npz models/WeatherNextIfs/*.nc models/WeatherNextIfs/.cdsapirc dist/weathernext_ifs/WeatherNextIfs/
 
 # ADD SCRIPTS
-\cp -f run/weathernext_ifs.sh dist/weathernext_ifs/
+\cp -f models/WeatherNextIfs/run.sh dist/weathernext_ifs/
 
 # CLEANUP
 rm -rf archive_forecast.egg-info

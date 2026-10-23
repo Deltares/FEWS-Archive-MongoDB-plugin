@@ -2,7 +2,7 @@
 @setlocal
 @set "PROMPT=>" >nul
 
-:: IFS WeatherNext bundle: dist\weathernext_ifs -> dist\weathernext_ifs.7z (weathernext.zip needs git on PATH)
+:: IFS WeatherNext bundle: dist\weathernext_ifs -> dist\weathernext_ifs.7z (model.zip needs git on PATH)
 
 :: CLEANUP
 if exist dist\weathernext_ifs rmdir "\\?\%CD%\dist\weathernext_ifs" /s /q || goto ERROR
@@ -18,16 +18,19 @@ del dist\weathernext_ifs\Python\python*.zip /f /q || goto ERROR
 
 dist\weathernext_ifs\Python\python.exe -m pip install --no-warn-script-location --upgrade pip || goto ERROR
 dist\weathernext_ifs\Python\python.exe -m pip install --no-warn-script-location setuptools wheel || goto ERROR
-dist\weathernext_ifs\Python\python.exe -m pip install --no-warn-script-location -r requirements_weathernext_ifs.txt || goto ERROR
-dist\weathernext_ifs\Python\python.exe -m pip install --no-warn-script-location --no-build-isolation models\GraphCastOperationalIfs\weathernext.zip || goto ERROR
+dist\weathernext_ifs\Python\python.exe -m pip install --no-warn-script-location -r models\WeatherNextIfs\requirements.txt || goto ERROR
+dist\weathernext_ifs\Python\python.exe -m pip install --no-warn-script-location --no-build-isolation models\WeatherNextIfs\model.zip || goto ERROR
 dist\weathernext_ifs\Python\python.exe -m pip install --no-warn-script-location --no-build-isolation . || goto ERROR
-dist\weathernext_ifs\Python\python.exe -m pip freeze > frozen_requirements_weathernext_ifs.txt || goto ERROR
+dist\weathernext_ifs\Python\python.exe -m pip freeze > models\WeatherNextIfs\frozen_requirements.txt || goto ERROR
 
 :: ADD MODEL
-xcopy /e /y /i models\GraphCastOperationalIfs dist\weathernext_ifs\GraphCastOperationalIfs || goto ERROR
+mkdir dist\weathernext_ifs\WeatherNextIfs || goto ERROR
+copy models\WeatherNextIfs\model.npz dist\weathernext_ifs\WeatherNextIfs\ /Y || goto ERROR
+copy models\WeatherNextIfs\*.nc dist\weathernext_ifs\WeatherNextIfs\ /Y || goto ERROR
+copy models\WeatherNextIfs\.cdsapirc dist\weathernext_ifs\WeatherNextIfs\ /Y || goto ERROR
 
 :: ADD SCRIPTS
-copy run\weathernext_ifs.cmd dist\weathernext_ifs\ /Y || goto ERROR
+copy models\WeatherNextIfs\run.cmd dist\weathernext_ifs\ /Y || goto ERROR
 
 :: CLEANUP
 if exist archive_forecast.egg-info rmdir archive_forecast.egg-info /s /q

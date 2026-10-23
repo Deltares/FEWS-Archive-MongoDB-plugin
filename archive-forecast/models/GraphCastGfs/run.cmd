@@ -8,4 +8,4 @@
 set XLA_PYTHON_CLIENT_PREALLOCATE=false
 set XLA_PYTHON_CLIENT_ALLOCATOR=platform
 
-"%~dp0Python\python.exe" -m archive_forecast --provider graphcast_gfs --assets_path "%~dp0GraphCastOperationalGfs" --config_path "%~1"
+"%~dp0Python\python.exe" -m archive_forecast --provider graphcast_gfs --assets_path "%~dp0GraphCastGfs" --config_path "%~1"

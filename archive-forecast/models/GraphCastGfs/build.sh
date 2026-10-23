@@ -13,16 +13,17 @@ tar -xzf install/cpython*.tar.gz -C dist/graphcast_gfs
 
 dist/graphcast_gfs/python/bin/python -m pip install --root-user-action ignore --upgrade pip
 dist/graphcast_gfs/python/bin/python -m pip install --root-user-action ignore setuptools wheel
-dist/graphcast_gfs/python/bin/python -m pip install --root-user-action ignore --no-build-isolation -r requirements_graphcast_gfs.txt
-dist/graphcast_gfs/python/bin/python -m pip install --root-user-action ignore --no-build-isolation models/GraphCastOperationalGfs/graphcast.zip
+dist/graphcast_gfs/python/bin/python -m pip install --root-user-action ignore --no-build-isolation -r models/GraphCastGfs/requirements.txt
+dist/graphcast_gfs/python/bin/python -m pip install --root-user-action ignore --no-build-isolation models/GraphCastGfs/model.zip
 dist/graphcast_gfs/python/bin/python -m pip install --root-user-action ignore --no-build-isolation .
-dist/graphcast_gfs/python/bin/python -m pip freeze > frozen_requirements_graphcast_gfs.txt
+dist/graphcast_gfs/python/bin/python -m pip freeze > models/GraphCastGfs/frozen_requirements.txt
 
 # ADD MODEL
-\cp -rf models/GraphCastOperationalGfs dist/graphcast_gfs/
+mkdir -p dist/graphcast_gfs/GraphCastGfs
+\cp -f models/GraphCastGfs/model.npz models/GraphCastGfs/*.nc dist/graphcast_gfs/GraphCastGfs/
 
 # ADD SCRIPTS
-\cp -f run/graphcast_gfs.sh dist/graphcast_gfs/
+\cp -f models/GraphCastGfs/run.sh dist/graphcast_gfs/
 
 # CLEANUP
 rm -rf archive_forecast.egg-info

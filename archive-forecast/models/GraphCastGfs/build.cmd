@@ -12,16 +12,18 @@ dist\graphcast_gfs\Python\python.exe install\get-pip.py --no-warn-script-locatio
 del dist\graphcast_gfs\Python\python*._pth /f /q || goto ERROR
 del dist\graphcast_gfs\Python\python*.zip /f /q || goto ERROR
 
-dist\graphcast_gfs\Python\python.exe -m pip install --no-warn-script-location --root-user-action --no-build-isolation ignore  --only-binary=:all: --upgrade pip || goto ERROR
-dist\graphcast_gfs\Python\python.exe -m pip install --no-warn-script-location --root-user-action --no-build-isolation ignore  --only-binary=:all: setuptools wheel || goto ERROR
-dist\graphcast_gfs\Python\python.exe -m pip install --no-warn-script-location --root-user-action --no-build-isolation ignore -r requirements_graphcast_gfs.txt || goto ERROR
-dist\graphcast_gfs\Python\python.exe -m pip install --no-warn-script-location --root-user-action --no-build-isolation ignore --no-build-isolation models\GraphCastOperationalGfs\graphcast.zip || goto ERROR
-dist\graphcast_gfs\Python\python.exe -m pip install --no-warn-script-location --root-user-action --no-build-isolation ignore --no-build-isolation . || goto ERROR
-dist\graphcast_gfs\Python\python.exe -m pip freeze > frozen_requirements_graphcast_gfs.txt || goto ERROR
+dist\graphcast_gfs\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --upgrade pip || goto ERROR
+dist\graphcast_gfs\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools wheel || goto ERROR
+dist\graphcast_gfs\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation -r models\GraphCastGfs\requirements.txt || goto ERROR
+dist\graphcast_gfs\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation models\GraphCastGfs\model.zip || goto ERROR
+dist\graphcast_gfs\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation . || goto ERROR
+dist\graphcast_gfs\Python\python.exe -m pip freeze > models\GraphCastGfs\frozen_requirements.txt || goto ERROR
 
-xcopy /e /y /i models\GraphCastOperationalGfs dist\graphcast_gfs\GraphCastOperationalGfs || goto ERROR
+mkdir dist\graphcast_gfs\GraphCastGfs || goto ERROR
+copy models\GraphCastGfs\model.npz dist\graphcast_gfs\GraphCastGfs\ /Y || goto ERROR
+copy models\GraphCastGfs\*.nc dist\graphcast_gfs\GraphCastGfs\ /Y || goto ERROR
 
-copy run\graphcast_gfs.cmd dist\graphcast_gfs\ /Y || goto ERROR
+copy models\GraphCastGfs\run.cmd dist\graphcast_gfs\ /Y || goto ERROR
 
 if exist archive_forecast.egg-info rmdir archive_forecast.egg-info /s /q
 if exist build\bdist.win-amd64 rmdir build\bdist.win-amd64 /s /q

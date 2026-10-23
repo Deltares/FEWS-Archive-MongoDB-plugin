@@ -74,7 +74,7 @@ trimesh==5.1.1
 typing_extensions==4.16.0
 tzdata==2026.5
 urllib3==2.8.0
-weathernext @ file:///C:/_GIT/FEWS-Archive/archive-forecast/models/GraphCastOperationalIfs/weathernext.zip#sha256=daacc5e3462ab6620564aa40e84d3be16ad75c465c87d794df48c0b9fa9e6c76
+weathernext @ file:///C:/_GIT/FEWS-Archive/archive-forecast/models/WeatherNextIfs/model.zip#sha256=daacc5e3462ab6620564aa40e84d3be16ad75c465c87d794df48c0b9fa9e6c76
 wheel==0.48.0
 wrapt==2.5.1
 xarray==2026.2.0

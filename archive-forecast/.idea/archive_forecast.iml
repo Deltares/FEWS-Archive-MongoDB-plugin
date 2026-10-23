@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/env/Python/Lib/site-packages" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/env" />
+      <excludeFolder url="file://$MODULE_DIR$/env/Python/Lib/site-packages/pip/_internal/operations/build" />
     </content>
     <orderEntry type="jdk" jdkName="C:\_GIT\FEWS-Archive\archive-forecast\env\Python\python.exe" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

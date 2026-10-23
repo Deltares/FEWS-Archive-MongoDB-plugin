@@ -11,4 +11,4 @@ d=$( dirname "$0" )
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
 export XLA_PYTHON_CLIENT_ALLOCATOR=platform
 
-"$d/python/bin/python" -m archive_forecast --provider graphcast_gfs --assets_path "$d/GraphCastOperationalGfs" --config_path "$1"
+"$d/python/bin/python" -m archive_forecast --provider graphcast_gfs --assets_path "$d/GraphCastGfs" --config_path "$1"
