@@ -31,9 +31,9 @@ One script per environment; each clears and rebuilds its environment, then commi
 
 | Script | Builds | Requirements | Frozen |
 |---|---|---|---|
-| `env.cmd` / `.sh` | `build/Python` (`build/python` on POSIX): development environment, every provider, archive_forecast editable | `requirements_env.txt` | `frozen_requirements_env.txt` |
-| `build_graphcast_gfs.cmd` / `.sh` | `dist/graphcast_gfs` → `dist/graphcast_gfs.7z` (`.zip` on POSIX) | `requirements_graphcast_gfs.txt` | `frozen_requirements_graphcast_gfs.txt` |
-| `build_weathernext_ifs.cmd` / `.sh` | `dist/weathernext_ifs` → `dist/weathernext_ifs.7z` (`.zip` on POSIX) | `requirements_weathernext_ifs.txt` | `frozen_requirements_weathernext_ifs.txt` |
+| `env.cmd` / `.sh` | `build/Python` (`build/python` on POSIX): development environment, every provider, archive_forecast editable | `requirements.txt` | `frozen_requirements.txt` |
+| `models/GraphCastGfs/build.cmd` / `.sh` | `dist/graphcast_gfs` → `dist/graphcast_gfs.7z` (`.zip` on POSIX) | `models/GraphCastGfs/requirements.txt` | `models/GraphCastGfs/frozen_requirements.txt` |
+| `models/WeatherNextIfs/build.cmd` / `.sh` | `dist/weathernext_ifs` → `dist/weathernext_ifs.7z` (`.zip` on POSIX) | `models/WeatherNextIfs/requirements.txt` | `models/WeatherNextIfs/frozen_requirements.txt` |
 
 ## Run
 Deployed: `dist/graphcast_gfs/graphcast_gfs.cmd <FEWS PI run file>`, `dist/weathernext_ifs/weathernext_ifs.cmd <FEWS PI run file>`
