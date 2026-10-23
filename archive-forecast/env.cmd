@@ -17,7 +17,7 @@ env\Python\python.exe -m pip install --no-warn-script-location --root-user-actio
 env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: -r requirements.txt || goto ERROR
 env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation models\WeatherNextIfs\model.zip || goto ERROR
 env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation models\GraphCastGfs\model.zip || goto ERROR
-env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation -e . || goto ERROR
+env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation . || goto ERROR
 env\Python\python.exe -m pip freeze --exclude-editable > frozen_requirements.txt || goto ERROR
 
 if exist archive_forecast.egg-info rmdir archive_forecast.egg-info /s /q

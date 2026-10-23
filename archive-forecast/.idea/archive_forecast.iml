@@ -8,7 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/env/Python" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/env/Python/Lib" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/env/Python/Lib/site-packages" isTestSource="false" />
-      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/dist" />
       <excludeFolder url="file://$MODULE_DIR$/env" />
       <excludeFolder url="file://$MODULE_DIR$/env/Python/Lib/site-packages/pip/_internal/operations/build" />
     </content>

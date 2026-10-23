@@ -1,3 +1,9 @@
+numpy
+pandas
+scipy
+netcdf4
+zarr
+xmltodict
 requests
 cfgrib
 cdsapi

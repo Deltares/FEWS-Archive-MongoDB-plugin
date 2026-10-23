@@ -1,4 +1,4 @@
-#  Copyright (c) 2025 INFISYS / TVA
+#  Copyright (c) 2026 INFISYS / TVA
 
 [build-system]
 requires = ["setuptools", "wheel"]
@@ -21,7 +21,7 @@ dependencies = [
   "scipy",
   "netcdf4",
   "zarr",
-  "xmltodict",
+  "xmltodict"
 ]
 
 [tool.setuptools.packages.find]
