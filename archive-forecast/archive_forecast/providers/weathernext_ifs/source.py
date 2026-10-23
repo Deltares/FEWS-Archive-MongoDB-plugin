@@ -12,10 +12,10 @@ import pandas as pd
 from datetime import timedelta, datetime, timezone
 from weathernext.weathernext1_graph import graphcast
 from weathernext.utils import checkpoint
-from archive_forecast.decorator import retry
-from archive_forecast.model.weathernext import WeatherNext
+from archive_forecast.core.decorator import retry
+from archive_forecast.providers.weathernext_ifs.model import WeatherNext
 
-from archive_forecast.decorator import log
+from archive_forecast.core.decorator import log
 
 logger = logging.getLogger('archive_forecast')
 

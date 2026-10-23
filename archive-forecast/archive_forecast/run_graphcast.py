@@ -7,7 +7,7 @@ import argparse
 import traceback
 import xmltodict
 
-from archive_forecast.decorator import log
+from archive_forecast.core.decorator import log
 from archive_forecast.core.fews import Fews
 from archive_forecast.core.providers import Providers
 from datetime import datetime, timedelta

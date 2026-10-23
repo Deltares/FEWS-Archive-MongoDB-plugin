@@ -15,7 +15,7 @@ from pysolar.radiation import get_radiation_direct
 from datetime import timedelta, datetime
 from graphcast import autoregressive, casting, data_utils, graphcast, normalization, rollout
 
-from archive_forecast.decorator import log
+from archive_forecast.core.decorator import log
 
 logger = logging.getLogger('archive_forecast')
 

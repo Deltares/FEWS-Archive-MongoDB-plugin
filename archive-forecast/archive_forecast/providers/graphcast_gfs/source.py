@@ -11,10 +11,10 @@ import pandas as pd
 
 from datetime import timedelta, datetime, timezone
 from graphcast import graphcast, checkpoint
-from archive_forecast.decorator import retry
-from archive_forecast.model.graphcast import Graphcast
+from archive_forecast.core.decorator import retry
+from archive_forecast.providers.graphcast_gfs.model import Graphcast
 
-from archive_forecast.decorator import log
+from archive_forecast.core.decorator import log
 
 logger = logging.getLogger('archive_forecast')
 

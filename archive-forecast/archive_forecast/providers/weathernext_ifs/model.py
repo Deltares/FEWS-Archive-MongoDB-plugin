@@ -16,7 +16,7 @@ from datetime import timedelta, datetime
 from weathernext.utils import autoregressive, casting, data_utils, normalization, rollout
 from weathernext.weathernext1_graph import graphcast
 
-from archive_forecast.decorator import log
+from archive_forecast.core.decorator import log
 
 logger = logging.getLogger('archive_forecast')
 

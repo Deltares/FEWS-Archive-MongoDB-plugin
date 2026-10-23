@@ -8,8 +8,8 @@ logger = logging.getLogger('archive_forecast')
 
 # Provider name -> 'module:Class'. Modules are imported only when selected; providers must not be loaded side by side.
 _providers = {
-	'graphcast_gfs': 'archive_forecast.sources.gfs:Gfs',
-	'weathernext_ifs': 'archive_forecast.sources.ifs:Ifs',
+	'graphcast_gfs': 'archive_forecast.providers.graphcast_gfs.source:Gfs',
+	'weathernext_ifs': 'archive_forecast.providers.weathernext_ifs.source:Ifs',
 }
 
 # Fallback for run files without a 'provider' property.

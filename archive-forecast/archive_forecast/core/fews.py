@@ -7,7 +7,7 @@ import html
 import numpy as np
 import pandas as pd
 
-from archive_forecast.decorator import log
+from archive_forecast.core.decorator import log
 
 _metadata = {
 	'variables': {
