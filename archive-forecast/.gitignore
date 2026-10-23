@@ -7,4 +7,6 @@ __pycache__
 *.log
 *.7z
 *.xml
+!configurations/*.xml
 build
+dist

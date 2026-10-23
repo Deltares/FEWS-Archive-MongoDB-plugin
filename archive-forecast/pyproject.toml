@@ -15,32 +15,13 @@ authors = [
   { name = "INFISYS INC" }
 ]
 dependencies = [
-  "graphcast",
-  "pysolar",
-  "requests",
-  "xmltodict",
-  "netcdf4",
-  "cfgrib",
-  "zarr",
-  "cdsapi",
-  "cartopy",
-  "chex",
-  "colabtools",
-  "dask",
-  "dinosaur-dycore",
-  "dm-haiku",
-  "dm-tree",
-  "jraph",
-  "matplotlib",
   "numpy",
   "pandas",
-  "rtree",
-  "scipy",
-  "trimesh",
-  "typing_extensions",
   "xarray",
-  "xarray_tensorstore",
-  "jax[cpu]",
+  "scipy",
+  "netcdf4",
+  "zarr",
+  "xmltodict",
 ]
 
 [tool.setuptools.packages.find]

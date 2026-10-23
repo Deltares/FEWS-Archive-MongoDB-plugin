@@ -12,7 +12,10 @@ import pandas as pd
 from datetime import timedelta, datetime, timezone
 from weathernext.weathernext1_graph import graphcast
 from weathernext.utils import checkpoint
+from archive_forecast.core import provider
 from archive_forecast.core.decorator import retry
+from archive_forecast.core.validation import Validate
+from archive_forecast.providers.weathernext_ifs import template
 from archive_forecast.providers.weathernext_ifs.model import WeatherNext
 
 from archive_forecast.core.decorator import log
@@ -23,26 +26,52 @@ home_path = os.path.join(os.path.expanduser('~'), 'archive_forecast', 'ifs')
 os.makedirs(home_path, exist_ok=True)
 
 
-class Ifs:
+class Ifs(provider.Provider):
+	template = template
 	timestep = 6
 	observed_timesteps = 2
+	inputs = {
+		'single_level': {
+			'dims': ['time', 'lat', 'lon', 'batch'],
+			'fields': ['10m_u_component_of_wind', '10m_v_component_of_wind', '2m_temperature', 'geopotential_at_surface', 'land_sea_mask', 'mean_sea_level_pressure', 'toa_incident_solar_radiation'],
+		},
+		'pressure_levels': {
+			'dims': ['time', 'lat', 'lon', 'level', 'batch'],
+			'fields': ['u_component_of_wind', 'v_component_of_wind', 'geopotential', 'specific_humidity', 'temperature', 'vertical_velocity'],
+		},
+	}
+	@staticmethod
+	@log
+	def read(request):
+		logger.info('Ifs._get_single_level download begin')
+		single_level = Ifs._get_single_level(request.t0, Ifs.timestep, Ifs.observed_timesteps)
+		logger.info('Ifs._get_single_level download complete')
+		Ifs._validate('single_level', single_level, request.t0)
+		logger.info('Ifs._get_pressure_levels download begin')
+		pressure_levels = Ifs._get_pressure_levels(request.t0, Ifs.timestep, Ifs.observed_timesteps)
+		logger.info('Ifs._get_pressure_levels download complete')
+		Ifs._validate('pressure_levels', pressure_levels, request.t0)
+		return single_level, pressure_levels
 
 	@staticmethod
 	@log
-	def forecast(t0, predictions, model_path):
+	def model(data, request):
+		single_level, pressure_levels = data
 		logger.info('model load begin')
-		with open(os.path.join(model_path, 'model.npz'), 'rb') as f:
+		with open(os.path.join(request.assets_path, 'model.npz'), 'rb') as f:
 			model = checkpoint.load(f, graphcast.CheckPoint)
 			logger.info('model load complete')
+		return WeatherNext.predict(model, single_level, pressure_levels, request.t0, Ifs.timestep, request.predictions, request.assets_path)
 
-		logger.info('Ifs._get_single_level download begin')
-		single_level = Ifs._get_single_level(t0, Ifs.timestep, Ifs.observed_timesteps)
-		logger.info('Ifs._get_single_level download complete')
-		logger.info('Ifs._get_pressure_levels download begin')
-		pressure_levels = Ifs._get_pressure_levels(t0, Ifs.timestep, Ifs.observed_timesteps)
-		logger.info('Ifs._get_pressure_levels download complete')
+	@staticmethod
+	@log
+	def map(data, request):
+		return data.squeeze(['batch'])
 
-		return WeatherNext.predict(model, single_level, pressure_levels, t0, Ifs.timestep, predictions, model_path)
+	@staticmethod
+	def _validate(kind, x, t0):
+		observed = [t0 - timedelta(hours=(Ifs.observed_timesteps - t) * Ifs.timestep) for t in range(Ifs.observed_timesteps)]
+		Validate.table(f'Ifs {kind} inputs', x, Ifs.inputs[kind]['dims'], Ifs.inputs[kind]['fields'], {'time': observed, 'level': template.levels})
 
 	@staticmethod
 	@retry

@@ -11,7 +11,10 @@ import pandas as pd
 
 from datetime import timedelta, datetime, timezone
 from graphcast import graphcast, checkpoint
+from archive_forecast.core import provider
 from archive_forecast.core.decorator import retry
+from archive_forecast.core.validation import Validate
+from archive_forecast.providers.graphcast_gfs import template
 from archive_forecast.providers.graphcast_gfs.model import Graphcast
 
 from archive_forecast.core.decorator import log
@@ -24,26 +27,52 @@ home_path = os.path.join(os.path.expanduser('~'), 'archive_forecast', 'gfs')
 os.makedirs(home_path, exist_ok=True)
 
 
-class Gfs:
+class Gfs(provider.Provider):
+	template = template
 	timestep = 6
 	observed_timesteps = 2
+	inputs = {
+		'single_level': {
+			'dims': ['time', 'lat', 'lon', 'batch'],
+			'fields': ['geopotential_at_surface', 'mean_sea_level_pressure', 'land_sea_mask', '2m_temperature', '10m_u_component_of_wind', '10m_v_component_of_wind'],
+		},
+		'pressure_levels': {
+			'dims': ['time', 'lat', 'lon', 'level', 'batch'],
+			'fields': ['geopotential', 'temperature', 'specific_humidity', 'vertical_velocity', 'u_component_of_wind', 'v_component_of_wind'],
+		},
+	}
+	@staticmethod
+	@log
+	def read(request):
+		logger.info('Gfs._get_single_level download begin')
+		single_level = Gfs._get_single_level(request.t0, Gfs.timestep, Gfs.observed_timesteps)
+		logger.info('Gfs._get_single_level download complete')
+		Gfs._validate('single_level', single_level, request.t0)
+		logger.info('Gfs._get_pressure_levels download begin')
+		pressure_levels = Gfs._get_pressure_levels(request.t0, Gfs.timestep, Gfs.observed_timesteps)
+		logger.info('Gfs._get_pressure_levels download complete')
+		Gfs._validate('pressure_levels', pressure_levels, request.t0)
+		return single_level, pressure_levels
 
 	@staticmethod
 	@log
-	def forecast(t0, predictions, model_path):
+	def model(data, request):
+		single_level, pressure_levels = data
 		logger.info('model load begin')
-		with open(os.path.join(model_path, 'model.npz'), 'rb') as f:
+		with open(os.path.join(request.assets_path, 'model.npz'), 'rb') as f:
 			model = checkpoint.load(f, graphcast.CheckPoint)
 			logger.info('model load complete')
+		return Graphcast.predict(model, single_level, pressure_levels, request.t0, Gfs.timestep, request.predictions, request.assets_path)
 
-		logger.info('Gfs._get_single_level download begin')
-		single_level = Gfs._get_single_level(t0, Gfs.timestep, Gfs.observed_timesteps)
-		logger.info('Gfs._get_single_level download complete')
-		logger.info('Gfs._get_pressure_levels download begin')
-		pressure_levels = Gfs._get_pressure_levels(t0, Gfs.timestep, Gfs.observed_timesteps)
-		logger.info('Gfs._get_pressure_levels download complete')
+	@staticmethod
+	@log
+	def map(data, request):
+		return data.squeeze(['batch'])
 
-		return Graphcast.predict(model, single_level, pressure_levels, t0, Gfs.timestep, predictions, model_path)
+	@staticmethod
+	def _validate(kind, x, t0):
+		observed = [t0 - timedelta(hours=(Gfs.observed_timesteps - t) * Gfs.timestep) for t in range(Gfs.observed_timesteps)]
+		Validate.table(f'Gfs {kind} inputs', x, Gfs.inputs[kind]['dims'], Gfs.inputs[kind]['fields'], {'time': observed, 'level': template.levels})
 
 	@staticmethod
 	@retry
