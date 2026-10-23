@@ -1,6 +1,6 @@
 # Copyright (c) 2025 RTI International / TVA / INFISYS
 
-# IFS WeatherNext bundle: dist/weathernext_ifs -> dist/weathernext_ifs.zip (weathernext.zip needs git on PATH)
+# IFS WeatherNext bundle: dist/weathernext_ifs -> dist/weathernext_ifs.zip (model.zip needs git on PATH)
 
 set -e
 

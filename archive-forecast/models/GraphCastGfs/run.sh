@@ -2,7 +2,7 @@
 # Copyright (c) 2025 INFISYS INC
 
 # [config_path]
-# ./graphcast_gfs.sh "/root/_git/FEWS-Archive/archive-forecast/configurations/gfs_posix_config.xml"
+# ./run.sh "/root/_git/FEWS-Archive/archive-forecast/configurations/config_posix.xml"
 
 set -e
 

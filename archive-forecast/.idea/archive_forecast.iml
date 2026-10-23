@@ -5,9 +5,13 @@
       <sourceFolder url="file://$MODULE_DIR$/build/Python" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/build/Python/Lib" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/build/Python/Lib/site-packages" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/env/Python" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/env/Python/Lib" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/env/Python/Lib/site-packages" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/env" />
     </content>
-    <orderEntry type="jdk" jdkName="build" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="C:\_GIT\FEWS-Archive\archive-forecast\env\Python\python.exe" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

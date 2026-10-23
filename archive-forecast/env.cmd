@@ -15,10 +15,10 @@ del env\Python\python*.zip /f /q || goto ERROR
 env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --upgrade pip || goto ERROR
 env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools wheel || goto ERROR
 env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: -r requirements_env.txt || goto ERROR
-env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation models\GraphCastOperationalIfs\weathernext.zip || goto ERROR
-env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation models\GraphCastOperationalGfs\graphcast.zip || goto ERROR
+env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation models\WeatherNextIfs\model.zip || goto ERROR
+env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation models\GraphCastGfs\model.zip || goto ERROR
 env\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation -e . || goto ERROR
-env\Python\python.exe -m pip freeze --exclude-editable > frozen_requirements.txt || goto ERROR
+env\Python\python.exe -m pip freeze --exclude-editable > frozen_requirements_env.txt || goto ERROR
 
 if exist archive_forecast.egg-info rmdir archive_forecast.egg-info /s /q
 

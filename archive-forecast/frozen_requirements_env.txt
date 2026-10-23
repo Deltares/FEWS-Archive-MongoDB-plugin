@@ -29,7 +29,7 @@ fonttools==4.67.0
 fsspec==2026.9.0
 gdm-xarray-jax @ git+https://github.com/google-deepmind/xarray_jax.git@0291d0c8e91ca04b00f5f01ea29a53c0e575eeee
 google-crc32c==1.9.0
-graphcast @ file:///C:/_GIT/FEWS-Archive/archive-forecast/models/GraphCastOperationalGfs/graphcast.zip#sha256=fa45960d11ea7497de662f352008ab078bb9e332f9e83156686a8fe679cfa1ce
+graphcast @ file:///C:/_GIT/FEWS-Archive/archive-forecast/models/GraphCastGfs/model.zip#sha256=fa45960d11ea7497de662f352008ab078bb9e332f9e83156686a8fe679cfa1ce
 graphviz==0.21
 h5netcdf==1.8.1
 idna==3.20
@@ -82,7 +82,7 @@ trimesh==5.1.1
 typing_extensions==4.16.0
 tzdata==2026.5
 urllib3==2.8.0
-weathernext @ file:///C:/_GIT/FEWS-Archive/archive-forecast/models/GraphCastOperationalIfs/weathernext.zip#sha256=daacc5e3462ab6620564aa40e84d3be16ad75c465c87d794df48c0b9fa9e6c76
+weathernext @ file:///C:/_GIT/FEWS-Archive/archive-forecast/models/WeatherNextIfs/model.zip#sha256=daacc5e3462ab6620564aa40e84d3be16ad75c465c87d794df48c0b9fa9e6c76
 wheel==0.48.0
 wrapt==2.5.1
 xarray==2026.2.0

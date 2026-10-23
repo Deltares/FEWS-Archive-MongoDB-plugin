@@ -1,7 +1,7 @@
 :: Copyright (c) 2025 INFISYS INC
 
 :: [config_path]
-:: weathernext_ifs.cmd "c:\_GIT\FEWS-Archive\archive-forecast\configurations\ifs_win_config.xml"
+:: run.cmd "c:\_GIT\FEWS-Archive\archive-forecast\configurations\ifs_win_config.xml"
 
 @echo off
 

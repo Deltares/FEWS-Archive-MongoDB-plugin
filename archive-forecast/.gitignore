@@ -8,5 +8,5 @@ __pycache__
 *.7z
 *.xml
 !configurations/*.xml
-build
+env
 dist
