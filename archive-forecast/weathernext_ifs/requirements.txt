@@ -1,0 +1,27 @@
+numpy
+pandas
+scipy
+netcdf4
+zarr
+xmltodict
+requests
+ecmwf-datastores-client
+pysolar
+jax[cpu]
+xarray
+chex
+colabtools
+dask
+dinosaur-dycore
+dm-haiku
+dm-tree
+gdm-xarray-jax @ git+https://github.com/google-deepmind/xarray_jax.git@v0.1.1
+fiddle
+h5netcdf
+jraph
+matplotlib
+pyproj
+rtree
+trimesh
+typing_extensions
+xarray_tensorstore
