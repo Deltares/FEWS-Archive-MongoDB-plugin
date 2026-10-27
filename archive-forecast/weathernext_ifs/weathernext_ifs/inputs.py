@@ -66,7 +66,7 @@ def _put_data_cache(name, request, filename):
 			with zipfile.ZipFile(filename) as z:
 				z.extractall(d)
 				data = xr.merge([xr.load_dataset(os.path.join(d, n)) for n in z.namelist()], compat='no_conflicts')
-		data.to_netcdf(filename, format='NETCDF4')
+		data.to_netcdf(filename, format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in data.data_vars})
 
 
 def _get_single_level(t0, timestep, observed_timesteps):

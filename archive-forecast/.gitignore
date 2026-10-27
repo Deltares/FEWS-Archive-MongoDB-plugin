@@ -1,5 +1,5 @@
-.idea/sonarlint
-.idea/workspace.xml
+idea/sonarlint
+idea/workspace.xml
 __pycache__
 *.nc
 *.exe
@@ -7,5 +7,4 @@ __pycache__
 *.log
 *.7z
 *.xml
-env
-dist
+build

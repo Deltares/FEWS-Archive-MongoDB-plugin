@@ -1,4 +1,4 @@
-:: Copyright (c) 2025 RTI International / TVA / INFISYS
+:: Copyright (c) 2026 INFISYS INC
 @setlocal
 @set "PROMPT=>" >nul
 
@@ -26,8 +26,8 @@ rmdir graphcast_gfs.egg-info /s /q
 rmdir build\bdist.win-amd64 /s /q
 rmdir build\lib /s /q
 
-if exist weights.zip del weights.zip /f /q
-pushd weights && ( ..\..\install\7za a ..\weights.zip -r -snl || goto ERROR ) & popd
+if exist graphcast_gfs_weights.zip del graphcast_gfs_weights.zip /f /q
+pushd weights && ( ..\..\install\7za a ..\graphcast_gfs_weights.zip -r -snl || goto ERROR ) & popd
 
 if exist graphcast_gfs.zip del graphcast_gfs.zip /f /q
 pushd build && ( ..\..\install\7za a ..\graphcast_gfs.zip -r -snl || goto ERROR ) & popd
@@ -36,6 +36,7 @@ build\Python\python.exe -m pip uninstall --root-user-action ignore -y -r build\r
 if exist graphcast_gfs_min.zip del graphcast_gfs_min.zip /f /q
 pushd build && ( ..\..\install\7za a ..\graphcast_gfs_min.zip -r -snl || goto ERROR ) & popd
 
+build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools wheel || goto ERROR
 build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: -r build\requirements.txt || goto ERROR
 
 @echo SUCCESS

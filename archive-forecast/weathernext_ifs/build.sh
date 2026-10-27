@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright (c) 2026 INFISYS INC
 
 set -e
@@ -21,8 +22,8 @@ rm -rf weathernext_ifs.egg-info
 rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
 
-rm -f weights.zip
-cd weights && 7z a -r -snl ../weights.zip && cd ..
+rm -f graphcast_gfs_weights.zip
+cd weights && 7z a -r -snl ../graphcast_gfs_weights.zip && cd ..
 
 rm -f weathernext_ifs.zip
 cd build && 7z a -r -snl ../weathernext_ifs.zip && cd ..
@@ -31,6 +32,7 @@ build/python/bin/python -m pip uninstall --root-user-action ignore -y -r build/r
 rm -f weathernext_ifs_min.zip
 cd build && 7z a -r -snl ../weathernext_ifs_min.zip && cd ..
 
+build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools wheel
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: -r build/requirements.txt
 
 echo SUCCESS

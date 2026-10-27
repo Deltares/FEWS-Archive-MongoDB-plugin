@@ -81,13 +81,13 @@ def _get_single_level(t0, timestep, observed_timesteps):
 		data['orog'] = data['orog'] * _geopotential_meters_to_geopotential
 
 		request = ['&var_LAND=on', '&var_PRMSL=on']
-		data = xr.merge([data, _query(name, request).drop_vars(['step', 'surface', 'valid_time', 'meanSea'])])
+		data = xr.merge([data, _query(name, request).drop_vars(['step', 'surface', 'valid_time', 'meanSea'])], compat='no_conflicts')
 
 		request = ['&var_TMP=on', '&lev_2_m_above_ground=on']
-		data = xr.merge([data, _query(name, request).drop_vars(['step', 'valid_time', 'heightAboveGround'])])
+		data = xr.merge([data, _query(name, request).drop_vars(['step', 'valid_time', 'heightAboveGround'])], compat='no_conflicts')
 
 		request = ['&var_UGRD=on', '&var_VGRD=on', '&lev_10_m_above_ground=on']
-		data = xr.merge([data, _query(name, request).drop_vars(['step', 'valid_time', 'heightAboveGround'])])
+		data = xr.merge([data, _query(name, request).drop_vars(['step', 'valid_time', 'heightAboveGround'])], compat='no_conflicts')
 
 		data = data.expand_dims('time')
 		data['time'] = pd.to_datetime(data['time'].values)

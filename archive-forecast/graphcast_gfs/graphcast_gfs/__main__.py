@@ -1,4 +1,4 @@
-#  Copyright (c) 2025 INFISYS / TVA
+#  Copyright (c) 2026 INFISYS INC
 from graphcast_gfs.pipeline import main
 
 if __name__ == "__main__":

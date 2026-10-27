@@ -6,10 +6,9 @@ import html
 import logging
 import argparse
 import traceback
-
-from graphcast_gfs import weights, inputs, outputs, forecast
 import xmltodict
 
+from graphcast_gfs import weights, inputs, outputs, forecast
 from graphcast_gfs.decorator import log
 from datetime import datetime, timedelta
 

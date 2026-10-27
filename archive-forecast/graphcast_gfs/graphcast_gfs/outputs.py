@@ -8,7 +8,6 @@ import pandas as pd
 
 from graphcast_gfs.decorator import log
 
-
 _output_metadata = {
 	'variables': {
 		'lat': {
@@ -116,13 +115,13 @@ def write(model_forecast, output_folder, output_file, levels, fields, corners, d
 	model_forecast = _zero_negative_precipitation(model_forecast)
 	model_forecast = _metadata(model_forecast)
 	model_forecast = _update_datetime(model_forecast)
-	single_level_results, pressure_levels_results = _split(model_forecast)
+	single_level, pressure_levels = _split(model_forecast)
 
 	os.makedirs(output_folder, exist_ok=True)
 	output_file_parts = output_file.split('.')
 
-	_save(single_level_results, f"{'.'.join(output_file_parts[:-1])}.SingleLevel.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}")
-	_save(pressure_levels_results, f"{'.'.join(output_file_parts[:-1])}.PressureLevels.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}")
+	_save(single_level, f"{'.'.join(output_file_parts[:-1])}.SingleLevel.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}")
+	_save(pressure_levels, f"{'.'.join(output_file_parts[:-1])}.PressureLevels.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}")
 
 
 @log
@@ -140,7 +139,7 @@ def _zero_negative_precipitation(x):
 def _save(x, file):
 	output_format = file.split('.')[-1]
 	if output_format in ['nc', 'netcdf']:
-		x.to_netcdf(file, format='NETCDF4')
+		x.to_netcdf(file, format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in x.data_vars})
 	elif output_format == 'zarr':
 		x.to_zarr(file, mode='w')
 	elif output_format == 'json':

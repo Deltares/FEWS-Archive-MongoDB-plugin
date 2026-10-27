@@ -139,7 +139,7 @@ def _zero_negative_precipitation(x):
 def _save(x, file):
 	output_format = file.split('.')[-1]
 	if output_format in ['nc', 'netcdf']:
-		x.to_netcdf(file, format='NETCDF4')
+		x.to_netcdf(file, format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in x.data_vars})
 	elif output_format == 'zarr':
 		x.to_zarr(file, mode='w')
 	elif output_format == 'json':
