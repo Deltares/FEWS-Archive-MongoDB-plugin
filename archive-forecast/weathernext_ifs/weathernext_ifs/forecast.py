@@ -42,7 +42,7 @@ def predict(model, single_level, pressure_levels, t0, timestep, predictions, dif
 		logger.info(f'prediction observed_values [t0: {t0} -> predictions {px - p + 1}-{px}] merge complete')
 
 		if dump_input:
-			xr.Dataset.from_dataframe(observed_values).to_netcdf('inputs.nc', format='NETCDF4')
+			xr.Dataset.from_dataframe(observed_values).to_netcdf('inputs.nc', format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in observed_values.columns})
 
 		logger.info(f'observed_inputs [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_progress begin')
 		observed_inputs = _add_progress(observed_values)
