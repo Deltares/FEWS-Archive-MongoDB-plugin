@@ -11,8 +11,4 @@
     <orderEntry type="jdk" jdkName="C:\_GIT\FEWS-Archive\archive-forecast\weathernext_3\build\Python\python.exe" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
-  <component name="PackageRequirementsSettings" />
-  <component name="PyDocumentationSettings" />
-  <component name="ReSTService" />
-  <component name="TestRunnerService" />
 </module>

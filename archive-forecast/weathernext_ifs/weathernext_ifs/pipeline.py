@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 
 _parser = argparse.ArgumentParser()
 _parser.add_argument('--config_path', '-c', dest='config_path', type=str, help='The fully qualified path to the configuration file', required=True)
-_parser.add_argument('--weights_path', '-m', dest='weights_path', type=str, help='The fully qualified path to the weights folder', required=True)
+_parser.add_argument('--weights_path', '-w', dest='weights_path', type=str, help='The fully qualified path to the weights folder', required=True)
 
 _timestep = 6
 _observed_timesteps = 2

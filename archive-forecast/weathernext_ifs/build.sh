@@ -22,8 +22,8 @@ rm -rf weathernext_ifs.egg-info
 rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
 
-rm -f graphcast_gfs_weights.zip
-cd weights && 7z a -r -snl ../graphcast_gfs_weights.zip && cd ..
+rm -f weathernext_ifs_weights.zip
+cd weights && 7z a -r -snl ../weathernext_ifs_weights.zip && cd ..
 
 rm -f weathernext_ifs.zip
 cd build && 7z a -r -snl ../weathernext_ifs.zip && cd ..

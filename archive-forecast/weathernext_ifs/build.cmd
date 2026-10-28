@@ -27,8 +27,8 @@ rmdir weathernext_ifs.egg-info /s /q
 rmdir build\bdist.win-amd64 /s /q
 rmdir build\lib /s /q
 
-if exist graphcast_gfs_weights.zip del graphcast_gfs_weights.zip /f /q
-pushd weights && ( ..\..\install\7za a ..\graphcast_gfs_weights.zip -r -snl || goto ERROR ) & popd
+if exist weathernext_ifs_weights.zip del weathernext_ifs_weights.zip /f /q
+pushd weights && ( ..\..\install\7za a ..\weathernext_ifs_weights.zip -r -snl || goto ERROR ) & popd
 
 if exist weathernext_ifs.zip del weathernext_ifs.zip /f /q
 pushd build && ( ..\..\install\7za a ..\weathernext_ifs.zip -r -snl || goto ERROR ) & popd
