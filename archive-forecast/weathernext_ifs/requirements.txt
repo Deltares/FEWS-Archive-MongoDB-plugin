@@ -5,7 +5,7 @@ netcdf4
 zarr
 xmltodict
 requests
-ecmwf-datastores-client
+cfgrib
 pysolar
 jax[cpu]
 xarray
