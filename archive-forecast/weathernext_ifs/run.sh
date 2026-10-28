@@ -16,6 +16,5 @@ fi
 
 export XLA_PYTHON_CLIENT_PREALLOCATE=false
 export XLA_PYTHON_CLIENT_ALLOCATOR=platform
-export ECMWF_DATASTORES_RC_FILE="$d/.cdsapirc"
 
 "$d/python/bin/python" -m weathernext_ifs --config_path "$1" --weights_path "$2"

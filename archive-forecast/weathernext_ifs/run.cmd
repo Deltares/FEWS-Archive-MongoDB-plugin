@@ -14,7 +14,6 @@ if not exist "%~dp0.installed" (
 
 set XLA_PYTHON_CLIENT_PREALLOCATE=false
 set XLA_PYTHON_CLIENT_ALLOCATOR=platform
-set "ECMWF_DATASTORES_RC_FILE=%~dp0.cdsapirc"
 
 "%~dp0Python\python.exe" -m weathernext_ifs --config_path "%~1" --weights_path "%~2"
 exit /b %errorlevel%
