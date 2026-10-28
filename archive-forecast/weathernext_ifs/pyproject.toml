@@ -18,10 +18,16 @@ dependencies = [
   "numpy",
   "pandas",
   "xarray",
+  "cfgrib",
+  "requests",
+  "urllib3",
   "scipy",
   "netcdf4",
   "zarr",
-  "xmltodict"
+  "xmltodict",
+  "pysolar",
+  "jax",
+  "dm-haiku"
 ]
 
 [tool.setuptools.packages.find]

@@ -182,6 +182,4 @@ def _resample(x, downscale, downscale_method):
 
 @log
 def _split(x):
-	splits = {tuple(x[v].dims): [] for v in x.data_vars}
-	[splits[tuple(x[v].dims)].append(v) for v in x.data_vars]
-	return x[splits[('time', 'lat', 'lon')]], x[splits[('time', 'lat', 'lon', 'level')]]
+	return x[[v for v in x.data_vars if 'level' not in x[v].dims]], x[[v for v in x.data_vars if 'level' in x[v].dims]]

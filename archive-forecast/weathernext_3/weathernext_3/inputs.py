@@ -47,14 +47,8 @@ def read(t0, timestep, predictions, levels, fields, corners, billing_project):
 
 	run = f'{_runs_path}/{t0 - timedelta(hours=timestep):%Y%m%d_%H}hr_01_preds'
 
-	_logger.info('_get_single_level download begin')
 	single_level = _get_single_level(run, t0, end, single_level_fields, corners, billing_project) if single_level_fields else None
-	_logger.info('_get_single_level download complete')
-
-	_logger.info('_get_pressure_levels download begin')
 	pressure_levels = _get_pressure_levels(run, t0, end, pressure_level_fields, levels, corners, billing_project) if pressure_level_fields else None
-	_logger.info('_get_pressure_levels download complete')
-
 	return single_level, pressure_levels
 
 
@@ -94,6 +88,7 @@ def _put_data_cache(name, request, billing_project, filename):
 	data.load().to_netcdf(filename, format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in data.data_vars})
 
 
+@log
 def _get_single_level(run, t0, end, fields, corners, billing_project):
 	request = {
 		'grid': '0p1',
@@ -107,12 +102,13 @@ def _get_single_level(run, t0, end, fields, corners, billing_project):
 	data = data.assign_coords(time=('step', data['init_time'].values + data['lead_time'].values + data['lead_subtime'].values))
 	data = data.swap_dims({'step': 'time'}).sel(time=slice(t0, end))
 	data = data.rename({'lat_0p1': 'lat', 'lon_0p1': 'lon', 'sample': 'member'})
-	data = data.rename({v: f for f, v in _single_level_fields.items() if v in data.data_vars and v != f})
+	data = data.rename({_single_level_fields[f]: f for f in fields})
 	data.attrs['init_time'] = f"{pd.Timestamp(data['init_time'].values):%Y-%m-%dT%H:%M:%S}"
 	data = data.drop_vars(['lead_time', 'lead_subtime', 'datetime', 'init_time'], errors='ignore')
 	return data[fields].transpose('member', 'time', 'lat', 'lon')
 
 
+@log
 def _get_pressure_levels(run, t0, end, fields, levels, corners, billing_project):
 	request = {
 		'grid': '0p25',
@@ -125,7 +121,7 @@ def _get_pressure_levels(run, t0, end, fields, levels, corners, billing_project)
 	data = data.assign_coords(time=('lead_time', data['init_time'].values + data['lead_time'].values))
 	data = data.swap_dims({'lead_time': 'time'}).sel(time=slice(t0, end), level=levels)
 	data = data.rename({'lat_0p25': 'lat', 'lon_0p25': 'lon', 'sample': 'member'})
-	data = data.rename({v: f for f, v in _pressure_level_fields.items() if v in data.data_vars and v != f})
+	data = data.rename({_pressure_level_fields[f]: f for f in fields})
 	data.attrs['init_time'] = f"{pd.Timestamp(data['init_time'].values):%Y-%m-%dT%H:%M:%S}"
 	data = data.drop_vars(['lead_time', 'datetime', 'init_time'], errors='ignore')
 	return data[fields].transpose('member', 'time', 'lat', 'lon', 'level')

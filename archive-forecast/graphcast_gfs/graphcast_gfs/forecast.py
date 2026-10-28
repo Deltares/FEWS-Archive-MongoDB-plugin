@@ -31,45 +31,23 @@ def predict(model, single_level, pressure_levels, t0, timestep, predictions, dif
 	px = 0
 	for p in predictions:
 		px += p
+		logger.info(f'[t0: {t0} -> predictions {px - p + 1}-{px}]')
 
-		logger.info(f'single_level [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_solar_radiation begin')
 		single_level = _add_solar_radiation(single_level)
-		logger.info(f'single_level [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_solar_radiation complete')
-
-		logger.info(f'prediction observed_values [t0: {t0} -> predictions {px - p + 1}-{px}] merge begin')
 		observed_values = pd.merge(single_level, pressure_levels, left_index=True, right_index=True, how='inner', on=None, validate='one_to_many')
-		logger.info(f'prediction observed_values [t0: {t0} -> predictions {px - p + 1}-{px}] merge complete')
 
 		if dump_input:
 			xr.Dataset.from_dataframe(observed_values).to_netcdf('inputs.nc', format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in observed_values.columns})
 
-		logger.info(f'observed_inputs [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_progress begin')
 		observed_inputs = _add_progress(observed_values)
-		logger.info(f'observed_inputs [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_progress complete')
-
-		logger.info(f'observed_inputs [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates begin')
 		observed_inputs = _modify_coordinates(observed_inputs.to_xarray())
-		logger.info(f'observed_inputs [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates complete')
 
-		logger.info(f'prediction_targets [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._get_targets begin')
 		prediction_targets = _get_targets(observed_values, t0, timestep, p)
-		logger.info(f'prediction_targets [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._get_targets complete')
-
-		logger.info(f'prediction_targets [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates begin')
 		prediction_targets = _modify_coordinates(prediction_targets.to_xarray())
-		logger.info(f'prediction_targets [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates complete')
 
-		logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_progress begin')
 		prediction_forcings = _add_progress(prediction_targets.to_dataframe()[[]])
-		logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_progress complete')
-
-		logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_solar_radiation begin')
 		prediction_forcings = _add_solar_radiation(prediction_forcings)
-		logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._add_solar_radiation complete')
-
-		logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates begin')
 		prediction_forcings = _modify_coordinates(prediction_forcings.to_xarray())
-		logger.info(f'prediction_forcings [t0: {t0} -> predictions {px - p + 1}-{px}] Prediction._modify_coordinates complete')
 
 		state = {}
 
@@ -104,6 +82,7 @@ def _get_next_pressure_levels(pressure_levels, previous_two_timesteps, chunked_p
 	return pd.concat([existing_pressure_levels, predicted_pressure_levels])
 
 
+@log
 def _add_progress(data):
 	day_progress = []
 	for dt in data.index.get_level_values('time').unique():
@@ -133,6 +112,7 @@ def _get_solar_radiation_parallel(args):
 	return [{'time': dt, 'lon': lon, 'lat': lat, 'toa_incident_solar_radiation': _get_solar_radiation(lon, lat, dt)} for lon in longitudes]
 
 
+@log
 def _add_solar_radiation(data):
 	if 'toa_incident_solar_radiation' not in data.columns:
 		data['toa_incident_solar_radiation'] = np.nan
@@ -174,6 +154,7 @@ def _put_solar_radiation_cache(date):
 	solar_radiation_cache.to_netcdf(os.path.join(home_path, f'solar_radiation_cache_{date:%Y%m%d%H%M}.nc'), format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in solar_radiation_cache.data_vars})
 
 
+@log
 def _modify_coordinates(data):
 	coordinates = {
 		'2m_temperature': {'batch', 'lon', 'lat', 'time'},
@@ -200,6 +181,7 @@ def _modify_coordinates(data):
 	return data.drop_vars('batch')
 
 
+@log
 def _get_targets(observed_values, t0, timestep, predictions):
 	lat, lon, level, batch = (sorted(observed_values.index.get_level_values(d).unique().tolist()) for d in ['lat', 'lon', 'level', 'batch'])
 	time = [t0 + timedelta(hours=step * timestep) for step in range(predictions)]

@@ -23,14 +23,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 @log
 def read(t0, timestep, observed_timesteps):
-	logger.info('_get_single_level download begin')
 	single_level = _get_single_level(t0, timestep, observed_timesteps)
-	logger.info('_get_single_level download complete')
-
-	logger.info('_get_pressure_levels download begin')
 	pressure_levels = _get_pressure_levels(t0, timestep, observed_timesteps)
-	logger.info('_get_pressure_levels download complete')
-
 	return single_level, pressure_levels
 
 
@@ -68,6 +62,7 @@ def _put_data_cache(name, request, filename):
 		f.write(response.content)
 
 
+@log
 def _get_single_level(t0, timestep, observed_timesteps):
 	single_levels = []
 	start_time = t0 - timedelta(hours=observed_timesteps * timestep)
@@ -97,6 +92,7 @@ def _get_single_level(t0, timestep, observed_timesteps):
 	return single_level
 
 
+@log
 def _get_pressure_levels(t0, timestep, observed_timesteps):
 	pressure_levels = []
 	start_time = t0 - timedelta(hours=observed_timesteps * timestep)
