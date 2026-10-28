@@ -85,9 +85,9 @@ def _query(name, request, billing_project):
 
 
 def _put_data_cache(name, request, billing_project, filename):
-	store = GCSStore(_bucket, prefix=name, client_options={'default_headers': {'x-goog-user-project': billing_project}}, retry_config={'max_retries': 5, 'backoff': {'init_backoff': timedelta(seconds=1), 'base': 2}})
+	store = GCSStore(_bucket, prefix=name, client_options={'default_headers': {'x-goog-user-project': billing_project}, 'allow_invalid_certificates': True}, retry_config={'max_retries': 5, 'backoff': {'init_backoff': timedelta(seconds=1), 'base': 2}})
 	obstore.head(store, 'success')
-	store = GCSStore(_bucket, prefix=f'{name}/predictions.zarr', client_options={'default_headers': {'x-goog-user-project': billing_project}}, retry_config={'max_retries': 5, 'backoff': {'init_backoff': timedelta(seconds=1), 'base': 2}})
+	store = GCSStore(_bucket, prefix=f'{name}/predictions.zarr', client_options={'default_headers': {'x-goog-user-project': billing_project}, 'allow_invalid_certificates': True}, retry_config={'max_retries': 5, 'backoff': {'init_backoff': timedelta(seconds=1), 'base': 2}})
 	data = xr.open_zarr(zarr.storage.ObjectStore(store, read_only=True), chunks={})
 	init = pd.Timestamp(data['init_time'].values)
 	data = data[request['variables']].sel({f"lat_{request['grid']}": slice(*request['lat']), f"lon_{request['grid']}": slice(*request['lon']), 'lead_time': slice(pd.Timestamp(request['start']) - init, pd.Timestamp(request['end']) - init + timedelta(hours=5))})
