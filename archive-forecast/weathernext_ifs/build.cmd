@@ -21,7 +21,6 @@ build\Python\python.exe -m pip install --no-warn-script-location --root-user-act
 build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation . || goto ERROR
 
 copy run.cmd build\ /Y || goto ERROR
-copy .cdsapirc build\ /Y || goto ERROR
 
 rmdir weathernext_ifs.egg-info /s /q
 rmdir build\bdist.win-amd64 /s /q

@@ -16,7 +16,6 @@ build/python/bin/python -m pip install --no-warn-script-location --root-user-act
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation .
 
 \cp -f run.sh build/
-\cp -f .cdsapirc build/
 
 rm -rf weathernext_ifs.egg-info
 rm -rf build/bdist.linux-x86_64
