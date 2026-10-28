@@ -22,6 +22,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 @log
 def read(t0, timestep, observed_timesteps):
+	_clean_cache()
 	single_level = _get_single_level(t0, timestep, observed_timesteps)
 	pressure_levels = _get_pressure_levels(t0, timestep, observed_timesteps)
 	return single_level, pressure_levels
@@ -31,8 +32,9 @@ def read(t0, timestep, observed_timesteps):
 def _query(name, request):
 	query = json.dumps({name: request})
 	filename = os.path.join(home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.grib2")
+
 	logger.info(f'_query begin [{query} -> {filename}]')
-	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(home_path, f)), tz=timezone.utc): f for f in os.listdir(home_path)}
+
 	if os.path.exists(filename):
 		try:
 			data = xr.load_dataset(filename)
@@ -43,11 +45,15 @@ def _query(name, request):
 		_put_data_cache(name, request, filename)
 		data = xr.load_dataset(filename)
 
-	[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
-
 	logger.info('_query complete')
 
 	return data
+
+
+@log
+def _clean_cache():
+	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(home_path, f)), tz=timezone.utc): f for f in os.listdir(home_path)}
+	[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
 
 
 def _get_index(name):
@@ -75,11 +81,12 @@ def _get_single_level(t0, timestep, observed_timesteps):
 	start_time = t0 - timedelta(hours=observed_timesteps * timestep)
 	for t in range(observed_timesteps):
 		observed = start_time + timedelta(hours=t * timestep)
-		logger.info(f'_get_single_level {observed} download begin')
-		name = f'https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com/{observed:%Y%m%d}/{observed:%H}z/ifs/0p25/oper/{observed:%Y%m%d%H}0000-0h-oper-fc.grib2'
-		index = _get_index(name)
+		url = f'https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com/{observed:%Y%m%d}/{observed:%H}z/ifs/0p25/oper/{observed:%Y%m%d%H}0000-0h-oper-fc.grib2'
+		index = _get_index(url)
 
-		data = xr.merge([_query(name, index[('sfc', parameter)]).reset_coords(drop=True) for parameter in ['z', 'lsm', 'msl', '2t', '10u', '10v']], compat='no_conflicts').expand_dims(time=[pd.Timestamp(observed).as_unit('ns')])
+		logger.info(f'_get_single_level {observed} download begin')
+
+		data = xr.merge([_query(url, index[('sfc', parameter)]).reset_coords(drop=True) for parameter in ['z', 'lsm', 'msl', '2t', '10u', '10v']], compat='no_conflicts').expand_dims(time=[pd.Timestamp(observed).as_unit('ns')])
 		data = data.assign_coords(longitude=data['longitude'] % 360)
 
 		single_levels.append(data.to_dataframe())
@@ -101,11 +108,12 @@ def _get_pressure_levels(t0, timestep, observed_timesteps):
 	start_time = t0 - timedelta(hours=observed_timesteps * timestep)
 	for t in range(observed_timesteps):
 		observed = start_time + timedelta(hours=t * timestep)
-		logger.info(f'_get_pressure_levels {observed} download begin')
-		name = f'https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com/{observed:%Y%m%d}/{observed:%H}z/ifs/0p25/oper/{observed:%Y%m%d%H}0000-0h-oper-fc.grib2'
-		index = _get_index(name)
+		url = f'https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com/{observed:%Y%m%d}/{observed:%H}z/ifs/0p25/oper/{observed:%Y%m%d%H}0000-0h-oper-fc.grib2'
+		index = _get_index(url)
 
-		data = xr.merge([xr.concat([_query(name, index[('pl', parameter, level)]) for level in ['1000', '925', '850', '700', '600', '500', '400', '300', '250', '200', '150', '100', '50']], dim='isobaricInhPa') for parameter in ['u', 'v', 'z', 'q', 't', 'w']], compat='no_conflicts').reset_coords(drop=True).expand_dims(time=[pd.Timestamp(observed).as_unit('ns')])
+		logger.info(f'_get_pressure_levels {observed} download begin')
+
+		data = xr.merge([xr.concat([_query(url, index[('pl', parameter, level)]) for level in ['1000', '925', '850', '700', '600', '500', '400', '300', '250', '200', '150', '100', '50']], dim='isobaricInhPa') for parameter in ['u', 'v', 'z', 'q', 't', 'w']], compat='no_conflicts').reset_coords(drop=True).expand_dims(time=[pd.Timestamp(observed).as_unit('ns')])
 		data = data.assign_coords(longitude=data['longitude'] % 360)
 
 		pressure_levels.append(data.to_dataframe())
