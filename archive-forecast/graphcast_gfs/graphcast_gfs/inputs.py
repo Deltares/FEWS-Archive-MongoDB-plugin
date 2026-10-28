@@ -14,23 +14,21 @@ from requests import adapters
 from datetime import timedelta, datetime, timezone
 from graphcast_gfs.decorator import retry, log
 
-logger = logging.getLogger('graphcast_gfs')
-
 _geopotential_meters_to_geopotential = 9.80665
-
-home_path = os.path.join(os.path.expanduser('~'), 'graphcast_gfs')
-os.makedirs(home_path, exist_ok=True)
+_logger = logging.getLogger('graphcast_gfs')
+_home_path = os.path.join(os.path.expanduser('~'), 'graphcast_gfs')
+os.makedirs(_home_path, exist_ok=True)
 
 
 @log
 def read(t0, timestep, observed_timesteps):
-	logger.info('_get_single_level download begin')
+	_logger.info('_get_single_level download begin')
 	single_level = _get_single_level(t0, timestep, observed_timesteps)
-	logger.info('_get_single_level download complete')
+	_logger.info('_get_single_level download complete')
 
-	logger.info('_get_pressure_levels download begin')
+	_logger.info('_get_pressure_levels download begin')
 	pressure_levels = _get_pressure_levels(t0, timestep, observed_timesteps)
-	logger.info('_get_pressure_levels download complete')
+	_logger.info('_get_pressure_levels download complete')
 
 	return single_level, pressure_levels
 
@@ -38,9 +36,9 @@ def read(t0, timestep, observed_timesteps):
 @retry
 def _query(name, request):
 	query = json.dumps({name: request})
-	filename = os.path.join(home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.grib2")
-	logger.info(f'_query begin [{query} -> {filename}]')
-	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(home_path, f)), tz=timezone.utc): f for f in os.listdir(home_path)}
+	filename = os.path.join(_home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.grib2")
+	_logger.info(f'_query begin [{query} -> {filename}]')
+	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(_home_path, f)), tz=timezone.utc): f for f in os.listdir(_home_path)}
 	if os.path.exists(filename):
 		try:
 			data = xr.load_dataset(filename)
@@ -51,12 +49,9 @@ def _query(name, request):
 		_put_data_cache(name, request, filename)
 		data = xr.load_dataset(filename)
 
-	if not data['time'].size:
-		raise ImportError("Empty response dataset")
+	[os.remove(os.path.join(_home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
 
-	[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
-
-	logger.info('_query complete')
+	_logger.info('_query complete')
 
 	return data
 
@@ -78,7 +73,7 @@ def _get_single_level(t0, timestep, observed_timesteps):
 		observed = start_time + timedelta(hours=t * timestep)
 		name = f'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl?dir=/gfs.{observed:%Y%m%d}/{observed:%H}/atmos&file=gfs.t{observed:%H}z.pgrb2.0p25.f000'
 
-		logger.info(f'_get_single_level {observed} download begin')
+		_logger.info(f'_get_single_level {observed} download begin')
 
 		request = ['&var_HGT=on', '&lev_surface=on']
 		data = _query(name, request).drop_vars(['step', 'surface', 'valid_time'])
@@ -98,7 +93,7 @@ def _get_single_level(t0, timestep, observed_timesteps):
 
 		single_levels.append(data.to_dataframe())
 
-		logger.info(f'_get_single_level {observed} download complete')
+		_logger.info(f'_get_single_level {observed} download complete')
 
 	single_level = pd.concat(single_levels)
 	single_level = single_level.rename(columns={'orog': 'geopotential_at_surface', 'prmsl': 'mean_sea_level_pressure', 'lsm': 'land_sea_mask', 't2m': '2m_temperature', 'u10': '10m_u_component_of_wind', 'v10': '10m_v_component_of_wind'})
@@ -115,7 +110,7 @@ def _get_pressure_levels(t0, timestep, observed_timesteps):
 	for t in range(observed_timesteps):
 		observed = start_time + timedelta(hours=t * timestep)
 
-		logger.info(f'_get_pressure_levels {observed} download begin')
+		_logger.info(f'_get_pressure_levels {observed} download begin')
 
 		name = f'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl?dir=/gfs.{observed:%Y%m%d}/{observed:%H}/atmos&file=gfs.t{observed:%H}z.pgrb2.0p25.f000'
 		request = [
@@ -134,7 +129,7 @@ def _get_pressure_levels(t0, timestep, observed_timesteps):
 
 		pressure_levels.append(data.to_dataframe())
 
-		logger.info(f'_get_pressure_levels {observed} download complete')
+		_logger.info(f'_get_pressure_levels {observed} download complete')
 
 	pressure_level = pd.concat(pressure_levels)
 	pressure_level = pressure_level.rename(columns={'gh': 'geopotential', 't': 'temperature', 'q': 'specific_humidity', 'w': 'vertical_velocity', 'u': 'u_component_of_wind', 'v': 'v_component_of_wind'})

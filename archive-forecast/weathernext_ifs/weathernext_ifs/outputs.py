@@ -108,7 +108,6 @@ _output_metadata = {
 
 @log
 def write(model_forecast, output_folder, output_file, levels, fields, corners, downscale, downscale_method, t0):
-	model_forecast = _ensure_lat_lon(model_forecast)
 	model_forecast = _trim(model_forecast, levels, fields)
 	model_forecast = _clip(model_forecast, corners)
 	model_forecast = _resample(model_forecast, downscale, downscale_method)
@@ -161,25 +160,17 @@ def _metadata(x):
 
 
 @log
-def _ensure_lat_lon(x):
-	x['lon'] = np.where(x.lon >= 0, x.lon, x.lon + 360)
-	return x
-
-
-@log
 def _trim(x, levels, fields):
 	return x[fields].sel(level=levels).squeeze(['batch'])
 
 
 @log
 def _clip(x, corners):
-	min_lon = min([c[0] for c in corners])
-	min_lon = min_lon + 360 if min_lon < 0 else min_lon
-
-	max_lon = max([c[0] for c in corners])
-	max_lon = max_lon + 360 if max_lon < 0 else max_lon
-
-	return x.where((x.lon >= min_lon) & (x.lon <= max_lon) & (x.lat >= min([c[1] for c in corners])) & (x.lat <= max([c[1] for c in corners])), drop=True)
+	return x.where(
+		(x.lon >= min([c[0] % 360 for c in corners])) &
+		(x.lon <= max([c[0] % 360 for c in corners])) &
+		(x.lat >= min([c[1] for c in corners])) &
+		(x.lat <= max([c[1] for c in corners])), drop=True)
 
 
 @log

@@ -14,21 +14,20 @@ from requests import adapters
 from datetime import timedelta, datetime, timezone
 from weathernext_ifs.decorator import retry, log
 
-logger = logging.getLogger('weathernext_ifs')
-
-home_path = os.path.join(os.path.expanduser('~'), 'weathernext_ifs')
-os.makedirs(home_path, exist_ok=True)
+_logger = logging.getLogger('weathernext_ifs')
+_home_path = os.path.join(os.path.expanduser('~'), 'weathernext_ifs')
+os.makedirs(_home_path, exist_ok=True)
 
 
 @log
 def read(t0, timestep, observed_timesteps):
-	logger.info('_get_single_level download begin')
+	_logger.info('_get_single_level download begin')
 	single_level = _get_single_level(t0, timestep, observed_timesteps)
-	logger.info('_get_single_level download complete')
+	_logger.info('_get_single_level download complete')
 
-	logger.info('_get_pressure_levels download begin')
+	_logger.info('_get_pressure_levels download begin')
 	pressure_levels = _get_pressure_levels(t0, timestep, observed_timesteps)
-	logger.info('_get_pressure_levels download complete')
+	_logger.info('_get_pressure_levels download complete')
 
 	return single_level, pressure_levels
 
@@ -36,9 +35,9 @@ def read(t0, timestep, observed_timesteps):
 @retry
 def _query(name, request):
 	query = json.dumps({name: request})
-	filename = os.path.join(home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.grib2")
-	logger.info(f'_query begin [{query} -> {filename}]')
-	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(home_path, f)), tz=timezone.utc): f for f in os.listdir(home_path)}
+	filename = os.path.join(_home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.grib2")
+	_logger.info(f'_query begin [{query} -> {filename}]')
+	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(_home_path, f)), tz=timezone.utc): f for f in os.listdir(_home_path)}
 	if os.path.exists(filename):
 		try:
 			data = xr.load_dataset(filename)
@@ -49,12 +48,9 @@ def _query(name, request):
 		_put_data_cache(name, request, filename)
 		data = xr.load_dataset(filename)
 
-	if not data['time'].size:
-		raise ImportError("Empty response dataset")
+	[os.remove(os.path.join(_home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
 
-	[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
-
-	logger.info('_query complete')
+	_logger.info('_query complete')
 
 	return data
 
@@ -83,7 +79,7 @@ def _get_single_level(t0, timestep, observed_timesteps):
 	start_time = t0 - timedelta(hours=observed_timesteps * timestep)
 	for t in range(observed_timesteps):
 		observed = start_time + timedelta(hours=t * timestep)
-		logger.info(f'_get_single_level {observed} download begin')
+		_logger.info(f'_get_single_level {observed} download begin')
 		name = f'https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com/{observed:%Y%m%d}/{observed:%H}z/ifs/0p25/oper/{observed:%Y%m%d%H}0000-0h-oper-fc.grib2'
 		index = _get_index(name)
 
@@ -100,7 +96,7 @@ def _get_single_level(t0, timestep, observed_timesteps):
 
 		single_levels.append(data.to_dataframe())
 
-		logger.info(f'_get_single_level {observed} download complete')
+		_logger.info(f'_get_single_level {observed} download complete')
 
 	single_level = pd.concat(single_levels)
 	single_level = single_level.rename(columns={'z': 'geopotential_at_surface', 'msl': 'mean_sea_level_pressure', 'lsm': 'land_sea_mask', 't2m': '2m_temperature', 'u10': '10m_u_component_of_wind', 'v10': '10m_v_component_of_wind'})
@@ -116,7 +112,7 @@ def _get_pressure_levels(t0, timestep, observed_timesteps):
 	start_time = t0 - timedelta(hours=observed_timesteps * timestep)
 	for t in range(observed_timesteps):
 		observed = start_time + timedelta(hours=t * timestep)
-		logger.info(f'_get_pressure_levels {observed} download begin')
+		_logger.info(f'_get_pressure_levels {observed} download begin')
 		name = f'https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com/{observed:%Y%m%d}/{observed:%H}z/ifs/0p25/oper/{observed:%Y%m%d%H}0000-0h-oper-fc.grib2'
 		index = _get_index(name)
 
@@ -128,7 +124,7 @@ def _get_pressure_levels(t0, timestep, observed_timesteps):
 
 		pressure_levels.append(data.to_dataframe())
 
-		logger.info(f'_get_pressure_levels {observed} download complete')
+		_logger.info(f'_get_pressure_levels {observed} download complete')
 
 	pressure_level = pd.concat(pressure_levels)
 	pressure_level = pressure_level.rename(columns={'u': 'u_component_of_wind', 'v': 'v_component_of_wind', 'z': 'geopotential', 'q': 'specific_humidity', 't': 'temperature', 'w': 'vertical_velocity'})
