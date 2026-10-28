@@ -2,15 +2,15 @@
 
 import json
 import os
-from ecmwf.datastores import Client
+import requests
 import hashlib
 import logging
-import zipfile
-import tempfile
+import urllib3
 
 import xarray as xr
 import pandas as pd
 
+from requests import adapters
 from datetime import timedelta, datetime, timezone
 from weathernext_ifs.decorator import retry, log
 
@@ -36,7 +36,7 @@ def read(t0, timestep, observed_timesteps):
 @retry
 def _query(name, request):
 	query = json.dumps({name: request})
-	filename = os.path.join(home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.nc")
+	filename = os.path.join(home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.grib2")
 	logger.info(f'_query begin [{query} -> {filename}]')
 	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(home_path, f)), tz=timezone.utc): f for f in os.listdir(home_path)}
 	if os.path.exists(filename):
@@ -49,7 +49,7 @@ def _query(name, request):
 		_put_data_cache(name, request, filename)
 		data = xr.load_dataset(filename)
 
-	if not data['valid_time'].size:
+	if not data['time'].size:
 		raise ImportError("Empty response dataset")
 
 	[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
@@ -59,14 +59,23 @@ def _query(name, request):
 	return data
 
 
+def _get_index(name):
+	with requests.Session() as session:
+		session.mount('https://', adapters.HTTPAdapter(max_retries=urllib3.util.retry.Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
+		response = session.get(name.replace('.grib2', '.index'))
+	if response.status_code != 200:
+		raise ImportError(response.text)
+	return {tuple(i[k] for k in ['levtype', 'param', 'levelist'] if k in i): i for i in [json.loads(line) for line in response.text.splitlines()]}
+
+
 def _put_data_cache(name, request, filename):
-	Client().retrieve(name, request, filename)
-	if zipfile.is_zipfile(filename):
-		with tempfile.TemporaryDirectory() as d:
-			with zipfile.ZipFile(filename) as z:
-				z.extractall(d)
-				data = xr.merge([xr.load_dataset(os.path.join(d, n)) for n in z.namelist()], compat='no_conflicts')
-		data.to_netcdf(filename, format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in data.data_vars})
+	with requests.Session() as session:
+		session.mount('https://', adapters.HTTPAdapter(max_retries=urllib3.util.retry.Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
+		response = session.get(name, headers={'Range': f"bytes={request['_offset']}-{request['_offset'] + request['_length'] - 1}"})
+	if response.status_code != 206:
+		raise ImportError(response.text)
+	with open(filename, 'wb') as f:
+		f.write(response.content)
 
 
 def _get_single_level(t0, timestep, observed_timesteps):
@@ -74,23 +83,19 @@ def _get_single_level(t0, timestep, observed_timesteps):
 	start_time = t0 - timedelta(hours=observed_timesteps * timestep)
 	for t in range(observed_timesteps):
 		observed = start_time + timedelta(hours=t * timestep)
-
 		logger.info(f'_get_single_level {observed} download begin')
+		name = f'https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com/{observed:%Y%m%d}/{observed:%H}z/ifs/0p25/oper/{observed:%Y%m%d%H}0000-0h-oper-fc.grib2'
+		index = _get_index(name)
 
-		name = 'reanalysis-era5-single-levels'
-		request = {
-			'product_type': 'reanalysis',
-			'variable': ['10m_u_component_of_wind', '10m_v_component_of_wind', '2m_temperature', 'geopotential', 'land_sea_mask', 'mean_sea_level_pressure', 'toa_incident_solar_radiation'],
-			'grid': '0.25/0.25',
-			'year': [observed.year],
-			'month': [observed.month],
-			'day': [observed.day],
-			'time': [observed.strftime('%H:%M')],
-			'data_format': 'netcdf',
-			'download_format': 'unarchived'}
-		data = _query(name, request)
-		data = data.drop_vars(set(data.variables) - {'valid_time', 'latitude', 'longitude', 'lsm', 'msl', 't2m', 'time', 'tisr', 'u10', 'v10', 'z'}).rename({'valid_time': 'time'})
-		data = data.rename({'u10': '10m_u_component_of_wind', 'v10': '10m_v_component_of_wind', 't2m': '2m_temperature', 'z': 'geopotential_at_surface', 'lsm': 'land_sea_mask', 'msl': 'mean_sea_level_pressure', 'tisr': 'toa_incident_solar_radiation'})
+		data = _query(name, index[('sfc', 'z')]).drop_vars(['step', 'surface', 'valid_time'])
+		data = xr.merge([data, _query(name, index[('sfc', 'lsm')]).drop_vars(['step', 'surface', 'valid_time'])], compat='no_conflicts')
+		data = xr.merge([data, _query(name, index[('sfc', 'msl')]).drop_vars(['step', 'valid_time', 'meanSea'])], compat='no_conflicts')
+		data = xr.merge([data, _query(name, index[('sfc', '2t')]).drop_vars(['step', 'valid_time', 'heightAboveGround'])], compat='no_conflicts')
+		data = xr.merge([data, _query(name, index[('sfc', '10u')]).drop_vars(['step', 'valid_time', 'heightAboveGround'])], compat='no_conflicts')
+		data = xr.merge([data, _query(name, index[('sfc', '10v')]).drop_vars(['step', 'valid_time', 'heightAboveGround'])], compat='no_conflicts')
+
+		data = data.assign_coords(longitude=data['longitude'] % 360)
+		data = data.expand_dims('time')
 		data['time'] = pd.to_datetime(data['time'].values)
 
 		single_levels.append(data.to_dataframe())
@@ -98,6 +103,7 @@ def _get_single_level(t0, timestep, observed_timesteps):
 		logger.info(f'_get_single_level {observed} download complete')
 
 	single_level = pd.concat(single_levels)
+	single_level = single_level.rename(columns={'z': 'geopotential_at_surface', 'msl': 'mean_sea_level_pressure', 'lsm': 'land_sea_mask', 't2m': '2m_temperature', 'u10': '10m_u_component_of_wind', 'v10': '10m_v_component_of_wind'})
 	single_level = single_level.rename_axis(index={'latitude': 'lat', 'longitude': 'lon'})
 	single_level = single_level.reorder_levels(['time', 'lat', 'lon']).sort_index()
 	single_level['batch'] = 0
@@ -110,24 +116,14 @@ def _get_pressure_levels(t0, timestep, observed_timesteps):
 	start_time = t0 - timedelta(hours=observed_timesteps * timestep)
 	for t in range(observed_timesteps):
 		observed = start_time + timedelta(hours=t * timestep)
-
 		logger.info(f'_get_pressure_levels {observed} download begin')
+		name = f'https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com/{observed:%Y%m%d}/{observed:%H}z/ifs/0p25/oper/{observed:%Y%m%d%H}0000-0h-oper-fc.grib2'
+		index = _get_index(name)
 
-		name = 'reanalysis-era5-pressure-levels'
-		request = {
-			'product_type': 'reanalysis',
-			'variable': ['u_component_of_wind', 'v_component_of_wind', 'geopotential', 'specific_humidity', 'temperature', 'vertical_velocity'],
-			'grid': '0.25/0.25',
-			'year': [observed.year],
-			'month': [observed.month],
-			'day': [observed.day],
-			'time': [observed.strftime('%H:%M')],
-			'pressure_level': [1000, 925, 850, 700, 600, 500, 400, 300, 250, 200, 150, 100, 50],
-			'data_format': 'netcdf',
-			'download_format': 'unarchived'}
-		data = _query(name, request)
-		data = data.drop_vars(set(data.variables) - {'valid_time', 'latitude', 'longitude', 'pressure_level', 'q', 't', 'u', 'v', 'w', 'z'}).rename({'valid_time': 'time'})
-		data = data.rename({'u': 'u_component_of_wind', 'v': 'v_component_of_wind', 'z': 'geopotential', 'q': 'specific_humidity', 't': 'temperature', 'w': 'vertical_velocity'})
+		data = xr.merge([xr.concat([_query(name, index[('pl', parameter, level)]) for level in ['1000', '925', '850', '700', '600', '500', '400', '300', '250', '200', '150', '100', '50']], dim='isobaricInhPa') for parameter in ['u', 'v', 'z', 'q', 't', 'w']], compat='no_conflicts').drop_vars(['step', 'valid_time'])
+
+		data = data.assign_coords(longitude=data['longitude'] % 360)
+		data = data.expand_dims('time')
 		data['time'] = pd.to_datetime(data['time'].values)
 
 		pressure_levels.append(data.to_dataframe())
@@ -135,7 +131,8 @@ def _get_pressure_levels(t0, timestep, observed_timesteps):
 		logger.info(f'_get_pressure_levels {observed} download complete')
 
 	pressure_level = pd.concat(pressure_levels)
-	pressure_level = pressure_level.rename_axis(index={'latitude': 'lat', 'longitude': 'lon', 'pressure_level': 'level'})
+	pressure_level = pressure_level.rename(columns={'u': 'u_component_of_wind', 'v': 'v_component_of_wind', 'z': 'geopotential', 'q': 'specific_humidity', 't': 'temperature', 'w': 'vertical_velocity'})
+	pressure_level = pressure_level.rename_axis(index={'latitude': 'lat', 'longitude': 'lon', 'isobaricInhPa': 'level'})
 	pressure_level = pressure_level.reorder_levels(['time', 'lat', 'lon', 'level']).sort_index()
 	pressure_level['batch'] = 0
 	pressure_level = pressure_level.set_index('batch', append=True)

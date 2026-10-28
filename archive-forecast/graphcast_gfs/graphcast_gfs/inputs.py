@@ -5,10 +5,12 @@ import os
 import requests
 import hashlib
 import logging
+import urllib3
 
 import xarray as xr
 import pandas as pd
 
+from requests import adapters
 from datetime import timedelta, datetime, timezone
 from graphcast_gfs.decorator import retry, log
 
@@ -60,7 +62,9 @@ def _query(name, request):
 
 
 def _put_data_cache(name, request, filename):
-	response = requests.get(f'{name}{"".join(request)}', verify=False)
+	with requests.Session() as session:
+		session.mount('https://', adapters.HTTPAdapter(max_retries=urllib3.util.retry.Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
+		response = session.get(f'{name}{"".join(request)}', verify=False)
 	if response.status_code != 200:
 		raise ImportError(response.text)
 	with open(filename, 'wb') as f:

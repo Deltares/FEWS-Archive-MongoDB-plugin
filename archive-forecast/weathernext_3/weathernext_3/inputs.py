@@ -172,4 +172,4 @@ def _lon(corners):
 
 
 def _store(prefix, billing_project):
-	return GCSStore(_bucket, prefix=prefix, client_options={'default_headers': {'x-goog-user-project': billing_project}})
+	return GCSStore(_bucket, prefix=prefix, client_options={'default_headers': {'x-goog-user-project': billing_project}}, retry_config={'max_retries': 5, 'backoff': {'init_backoff': timedelta(seconds=1), 'base': 2}})
