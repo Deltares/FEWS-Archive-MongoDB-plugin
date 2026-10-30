@@ -56,19 +56,19 @@ def _clean_cache():
 	[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
 
 
-def _get_index(name):
+def _get_index(url):
 	with requests.Session() as session:
 		session.mount('https://', adapters.HTTPAdapter(max_retries=urllib3.util.retry.Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
-		response = session.get(name.replace('.grib2', '.index'), verify=False)
+		response = session.get(url.replace('.grib2', '.index'), verify=False)
 	if response.status_code != 200:
 		raise ImportError(response.text)
 	return {tuple(i[k] for k in ['levtype', 'param', 'levelist'] if k in i): i for i in [json.loads(line) for line in response.text.splitlines()]}
 
 
-def _put_data_cache(name, request, filename):
+def _put_data_cache(url, request, filename):
 	with requests.Session() as session:
 		session.mount('https://', adapters.HTTPAdapter(max_retries=urllib3.util.retry.Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
-		response = session.get(name, headers={'Range': f"bytes={request['_offset']}-{request['_offset'] + request['_length'] - 1}"}, verify=False)
+		response = session.get(url, headers={'Range': f"bytes={request['_offset']}-{request['_offset'] + request['_length'] - 1}"}, verify=False)
 	if response.status_code != 206:
 		raise ImportError(response.text)
 	with open(filename, 'wb') as f:

@@ -18,7 +18,6 @@ dependencies = [
   "pandas",
   "xarray",
   "netcdf4",
-  "zarr",
   "requests",
   "urllib3",
   "google-auth",

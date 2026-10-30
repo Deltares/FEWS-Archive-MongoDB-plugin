@@ -1,11 +1,10 @@
 #  Copyright (c) 2026 INFISYS INC
 
 import os
-import json
+
+import xarray as xr
 
 from weathernext_3.decorator import log
-
-_precipitation_fields = ['total_precipitation_1hr', 'imerg_tp_1hr', 'experimental_tp_1hr']
 
 _output_metadata = {
 	'variables': {
@@ -18,18 +17,6 @@ _output_metadata = {
 			'units': 'degrees_east',
 			'long_name': 'longitude',
 			'standard_name': 'longitude'
-		},
-		'level': {
-			'units': 'hPa',
-			'long_name': 'isobaric surface pressure',
-			'positive': 'down',
-			'stored_direction': 'decreasing',
-			'standard_name': 'air_pressure'
-		},
-		'member': {
-			'units': '1',
-			'long_name': 'ensemble member',
-			'standard_name': 'realization'
 		},
 		'2m_temperature': {
 			'units': 'K',
@@ -72,42 +59,6 @@ _output_metadata = {
 			'long_name': 'pressure reduced to MSL @ mean sea level',
 			'abbreviation': 'PRMSL',
 			'netcdf_statistical_interval_type': 'instantaneous'
-		},
-		'temperature': {
-			'units': 'K',
-			'long_name': 'temperature @ isobaric surface',
-			'abbreviation': 'TMP',
-			'netcdf_statistical_interval_type': 'instantaneous'
-		},
-		'geopotential': {
-			'units': 'm2.s-2',
-			'long_name': 'geopotential @ isobaric surface',
-			'abbreviation': 'GP',
-			'netcdf_statistical_interval_type': 'instantaneous'
-		},
-		'specific_humidity': {
-			'units': 'kg/kg',
-			'long_name': 'specific humidity @ isobaric surface',
-			'abbreviation': 'SPFH',
-			'netcdf_statistical_interval_type': 'instantaneous'
-		},
-		'vertical_velocity': {
-			'units': 'Pa/s',
-			'long_name': 'vertical velocity (pressure) @ isobaric surface',
-			'abbreviation': 'VVEL',
-			'netcdf_statistical_interval_type': 'instantaneous'
-		},
-		'u_component_of_wind': {
-			'units': 'm/s',
-			'long_name': 'u-component of wind @ isobaric surface',
-			'abbreviation': 'UGRD',
-			'netcdf_statistical_interval_type': 'instantaneous'
-		},
-		'v_component_of_wind': {
-			'units': 'm/s',
-			'long_name': 'v-component of wind @ isobaric surface',
-			'abbreviation': 'VGRD',
-			'netcdf_statistical_interval_type': 'instantaneous'
 		}
 	},
 	'global': {
@@ -123,44 +74,28 @@ _output_metadata = {
 
 
 @log
-def write(single_level, pressure_levels, output_folder, output_file, t0):
+def write(single_level, output_folder, output_file, t0):
+	single_level = _zero_negative_precipitation(single_level)
+	single_level = _metadata(single_level)
+	single_level = _flatten(single_level)
+
 	os.makedirs(output_folder, exist_ok=True)
 	output_file_parts = output_file.split('.')
 
-	for product, members in [('SingleLevel', single_level), ('PressureLevels', pressure_levels)]:
-		if members is None:
-			continue
-		members = _zero_negative_precipitation(members)
-		mean = _mean(members)
-		_save(_metadata(mean), f"{'.'.join(output_file_parts[:-1])}.{product}.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}")
-		_save(_metadata(members), f"{'.'.join(output_file_parts[:-1])}.{product}.Members.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}")
+	single_level.to_netcdf(f"{'.'.join(output_file_parts[:-1])}.SingleLevel.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}", format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in single_level.data_vars})
 
 
 @log
 def _zero_negative_precipitation(x):
-	for f in _precipitation_fields:
+	for f in ['total_precipitation_1hr', 'imerg_tp_1hr', 'experimental_tp_1hr']:
 		if f in x:
 			x[f] = x[f].where(x[f] >= 0, 0)
 	return x
 
 
 @log
-def _mean(x):
-	return x.mean('member', keep_attrs=True)
-
-
-@log
-def _save(x, file):
-	output_format = file.split('.')[-1]
-	if output_format in ['nc', 'netcdf']:
-		x.to_netcdf(file, format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in x.data_vars})
-	elif output_format == 'zarr':
-		x.to_zarr(file, mode='w')
-	elif output_format == 'json':
-		with open(file, 'w') as w:
-			json.dump(x.to_dict(), w, default=str)
-	elif output_format in ['txt', 'csv']:
-		x.to_dataframe().to_csv(file)
+def _flatten(x):
+	return xr.Dataset({f'{f}_{s}': x[f].sel(statistic=s, drop=True).assign_attrs(long_name=f"{x[f].attrs['long_name']} (ensemble {s})") for f in x.data_vars for s in x['statistic'].values.tolist()}, attrs=x.attrs)
 
 
 @log

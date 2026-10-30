@@ -4,22 +4,26 @@ import os
 import json
 import hashlib
 import logging
+import urllib3
+import requests
 
-import zarr
-import obstore
+import google.auth
+import numpy as np
 import xarray as xr
 import pandas as pd
 
-from obstore.store import GCSStore
+from requests import adapters
+from google.auth.transport.requests import Request
 from datetime import timedelta, datetime, timezone
 from weathernext_3.decorator import retry, log
 
 _logger = logging.getLogger('weathernext_3')
 _home_path = os.path.join(os.path.expanduser('~'), 'weathernext_3')
 os.makedirs(_home_path, exist_ok=True)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-_bucket = 'weathernext3_spatial'
-_runs_path = 'weathernext_3_0_0/zarr/2026_to_present'
+_resolution = 0.1
+_statistics = ['mean', 'p10', 'p25', 'p50', 'p75', 'p90']
 
 _single_level_fields = {
 	'2m_temperature': 'temperature_2m',
@@ -30,98 +34,73 @@ _single_level_fields = {
 	'imerg_tp_1hr': 'imerg_tp_1hr',
 	'experimental_tp_1hr': 'experimental_tp_1hr'}
 
-_pressure_level_fields = {
-	'u_component_of_wind': 'u_component_of_wind',
-	'v_component_of_wind': 'v_component_of_wind',
-	'geopotential': 'geopotential',
-	'specific_humidity': 'specific_humidity',
-	'temperature': 'temperature',
-	'vertical_velocity': 'vertical_velocity'}
-
 
 @log
-def read(t0, timestep, predictions, levels, fields, corners, billing_project):
-	end = t0 + timedelta(hours=(sum(predictions) - 1) * timestep)
-	single_level_fields = [f for f in fields if f in _single_level_fields]
-	pressure_level_fields = [f for f in fields if f in _pressure_level_fields]
-
-	run = f'{_runs_path}/{t0 - timedelta(hours=timestep):%Y%m%d_%H}hr_01_preds'
-
-	single_level = _get_single_level(run, t0, end, single_level_fields, corners, billing_project) if single_level_fields else None
-	pressure_levels = _get_pressure_levels(run, t0, end, pressure_level_fields, levels, corners, billing_project) if pressure_level_fields else None
-	return single_level, pressure_levels
+def read(t0, timestep, predictions, fields, corners, billing_project):
+	_clean_cache()
+	init = pd.Timestamp(t0 - timedelta(hours=timestep)).floor('6h')
+	times = [t0 + timedelta(hours=p * timestep) for p in range(sum(predictions))]
+	return _get_single_level(init, times, fields, corners, billing_project)
 
 
 @retry
-def _query(name, request, billing_project):
-	query = json.dumps({name: request})
-	filename = os.path.join(_home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.nc")
+def _query(url, request, billing_project):
+	query = json.dumps({url: request})
+	filename = os.path.join(_home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.npy")
+
 	_logger.info(f'_query begin [{query} -> {filename}]')
-	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(_home_path, f)), tz=timezone.utc): f for f in os.listdir(_home_path)}
+
 	if os.path.exists(filename):
 		try:
-			data = xr.load_dataset(filename)
+			data = np.load(filename)
 		except:
-			_put_data_cache(name, request, billing_project, filename)
-			data = xr.load_dataset(filename)
+			_put_data_cache(url, request, billing_project, filename)
+			data = np.load(filename)
 	else:
-		_put_data_cache(name, request, billing_project, filename)
-		data = xr.load_dataset(filename)
-
-	if not data['lead_time'].size:
-		raise ImportError("Empty response dataset")
-
-	[os.remove(os.path.join(_home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
+		_put_data_cache(url, request, billing_project, filename)
+		data = np.load(filename)
 
 	_logger.info('_query complete')
 
 	return data
 
 
-def _put_data_cache(name, request, billing_project, filename):
-	store = GCSStore(_bucket, prefix=name, client_options={'default_headers': {'x-goog-user-project': billing_project}, 'allow_invalid_certificates': True}, retry_config={'max_retries': 5, 'backoff': {'init_backoff': timedelta(seconds=1), 'base': 2}})
-	obstore.head(store, 'success')
-	store = GCSStore(_bucket, prefix=f'{name}/predictions.zarr', client_options={'default_headers': {'x-goog-user-project': billing_project}, 'allow_invalid_certificates': True}, retry_config={'max_retries': 5, 'backoff': {'init_backoff': timedelta(seconds=1), 'base': 2}})
-	data = xr.open_zarr(zarr.storage.ObjectStore(store, read_only=True), chunks={})
-	init = pd.Timestamp(data['init_time'].values)
-	data = data[request['variables']].sel({f"lat_{request['grid']}": slice(*request['lat']), f"lon_{request['grid']}": slice(*request['lon']), 'lead_time': slice(pd.Timestamp(request['start']) - init, pd.Timestamp(request['end']) - init + timedelta(hours=5))})
-	data.load().to_netcdf(filename, format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in data.data_vars})
+@log
+def _clean_cache():
+	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(_home_path, f)), tz=timezone.utc): f for f in os.listdir(_home_path)}
+	[os.remove(os.path.join(_home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
+
+
+def _put_data_cache(url, request, billing_project, filename):
+	credentials, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform'], quota_project_id=billing_project)
+	with requests.Session() as session:
+		session.mount('https://', adapters.HTTPAdapter(max_retries=urllib3.util.retry.Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=None)))
+		credentials.refresh(Request(session))
+		credentials.apply(session.headers)
+		response = session.post(f'{url}:getPixels', json=request, verify=False)
+	if response.status_code != 200:
+		raise ImportError(response.text)
+	with open(filename, 'wb') as f:
+		f.write(response.content)
 
 
 @log
-def _get_single_level(run, t0, end, fields, corners, billing_project):
+def _get_single_level(init, times, fields, corners, billing_project):
+	x = [int(np.ceil((min(c[0] for c in corners) + 180) / _resolution)), int(np.floor((max(c[0] for c in corners) + 180) / _resolution))]
+	y = [int(np.ceil((90 - max(c[1] for c in corners)) / _resolution)), int(np.floor((90 - min(c[1] for c in corners)) / _resolution))]
 	request = {
-		'grid': '0p1',
-		'variables': [_single_level_fields[f] for f in fields],
-		'lat': [min([c[1] for c in corners]), max([c[1] for c in corners])],
-		'lon': [min([c[0] % 360 for c in corners]), max([c[0] % 360 for c in corners])],
-		'start': f'{t0:%Y-%m-%dT%H:%M:%S}',
-		'end': f'{end:%Y-%m-%dT%H:%M:%S}'}
-	data = _query(run, request, billing_project)
-	data = data.stack(step=('lead_time', 'lead_subtime'), create_index=False)
-	data = data.assign_coords(time=('step', data['init_time'].values + data['lead_time'].values + data['lead_subtime'].values))
-	data = data.swap_dims({'step': 'time'}).sel(time=slice(t0, end))
-	data = data.rename({'lat_0p1': 'lat', 'lon_0p1': 'lon', 'sample': 'member'})
-	data = data.rename({_single_level_fields[f]: f for f in fields})
-	data.attrs['init_time'] = f"{pd.Timestamp(data['init_time'].values):%Y-%m-%dT%H:%M:%S}"
-	data = data.drop_vars(['lead_time', 'lead_subtime', 'datetime', 'init_time'], errors='ignore')
-	return data[fields].transpose('member', 'time', 'lat', 'lon')
-
-
-@log
-def _get_pressure_levels(run, t0, end, fields, levels, corners, billing_project):
-	request = {
-		'grid': '0p25',
-		'variables': [_pressure_level_fields[f] for f in fields],
-		'lat': [min([c[1] for c in corners]), max([c[1] for c in corners])],
-		'lon': [min([c[0] % 360 for c in corners]), max([c[0] % 360 for c in corners])],
-		'start': f'{t0:%Y-%m-%dT%H:%M:%S}',
-		'end': f'{end:%Y-%m-%dT%H:%M:%S}'}
-	data = _query(run, request, billing_project)
-	data = data.assign_coords(time=('lead_time', data['init_time'].values + data['lead_time'].values))
-	data = data.swap_dims({'lead_time': 'time'}).sel(time=slice(t0, end), level=levels)
-	data = data.rename({'lat_0p25': 'lat', 'lon_0p25': 'lon', 'sample': 'member'})
-	data = data.rename({_pressure_level_fields[f]: f for f in fields})
-	data.attrs['init_time'] = f"{pd.Timestamp(data['init_time'].values):%Y-%m-%dT%H:%M:%S}"
-	data = data.drop_vars(['lead_time', 'datetime', 'init_time'], errors='ignore')
-	return data[fields].transpose('member', 'time', 'lat', 'lon', 'level')
+		'fileFormat': 'NPY',
+		'bandIds': [f'{_single_level_fields[f]}_{s}' for f in fields for s in _statistics],
+		'grid': {
+			'crsCode': 'EPSG:4326',
+			'dimensions': {'width': x[1] - x[0] + 1, 'height': y[1] - y[0] + 1},
+			'affineTransform': {'scaleX': _resolution, 'shearX': 0, 'translateX': (x[0] - 0.5) * _resolution - 180, 'shearY': 0, 'scaleY': -_resolution, 'translateY': 90 - (y[0] - 0.5) * _resolution}}}
+	pixels = [_query(f'https://earthengine.googleapis.com/v1/projects/gcp-public-data-weathernext/assets/weathernext_3_0_0_0p1deg/{init:%Y%m%d%H%M}_{t:%Y%m%d%H%M}', request, billing_project) for t in times]
+	data = xr.Dataset(
+		{f: (('statistic', 'time', 'lat', 'lon'), np.stack([np.stack([p[f'{_single_level_fields[f]}_{s}'] for p in pixels]) for s in _statistics])) for f in fields},
+		coords={
+			'statistic': _statistics,
+			'time': pd.DatetimeIndex(times).as_unit('ns'),
+			'lat': np.round(90 - np.arange(y[0], y[1] + 1) * _resolution, 1),
+			'lon': np.round((np.arange(x[0], x[1] + 1) * _resolution - 180) % 360, 1)})
+	return data.sortby('lat').astype('float64')

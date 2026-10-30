@@ -23,7 +23,6 @@ dependencies = [
   "urllib3",
   "scipy",
   "netcdf4",
-  "zarr",
   "xmltodict",
   "pysolar",
   "jax",

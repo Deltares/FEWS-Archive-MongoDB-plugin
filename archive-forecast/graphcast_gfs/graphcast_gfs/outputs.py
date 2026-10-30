@@ -1,7 +1,6 @@
 #  Copyright (c) 2026 INFISYS INC
 
 import os
-import json
 
 import numpy as np
 import pandas as pd
@@ -119,8 +118,8 @@ def write(model_forecast, output_folder, output_file, levels, fields, corners, d
 	os.makedirs(output_folder, exist_ok=True)
 	output_file_parts = output_file.split('.')
 
-	_save(single_level, f"{'.'.join(output_file_parts[:-1])}.SingleLevel.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}")
-	_save(pressure_levels, f"{'.'.join(output_file_parts[:-1])}.PressureLevels.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}")
+	single_level.to_netcdf(f"{'.'.join(output_file_parts[:-1])}.SingleLevel.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}", format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in single_level.data_vars})
+	pressure_levels.to_netcdf(f"{'.'.join(output_file_parts[:-1])}.PressureLevels.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}", format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in pressure_levels.data_vars})
 
 
 @log
@@ -132,20 +131,6 @@ def _update_datetime(x):
 def _zero_negative_precipitation(x):
 	x['total_precipitation_6hr'] = x['total_precipitation_6hr'].where(x['total_precipitation_6hr'] >= 0, 0)
 	return x
-
-
-@log
-def _save(x, file):
-	output_format = file.split('.')[-1]
-	if output_format in ['nc', 'netcdf']:
-		x.to_netcdf(file, format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in x.data_vars})
-	elif output_format == 'zarr':
-		x.to_zarr(file, mode='w')
-	elif output_format == 'json':
-		with open(file, 'w') as w:
-			json.dump(x.to_dict(), w, default=str)
-	elif output_format in ['txt', 'csv']:
-		x.to_dataframe().to_csv(file)
 
 
 @log

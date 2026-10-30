@@ -1,11 +1,11 @@
 #  Copyright (c) 2026 INFISYS INC
 
-import json
 import os
-import requests
+import json
 import hashlib
 import logging
 import urllib3
+import requests
 
 import xarray as xr
 import pandas as pd
@@ -57,10 +57,10 @@ def _clean_cache():
 	[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
 
 
-def _put_cache(name, request, filename):
+def _put_cache(url, request, filename):
 	with requests.Session() as session:
 		session.mount('https://', adapters.HTTPAdapter(max_retries=urllib3.util.retry.Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
-		response = session.get(f'{name}{"".join(request)}', verify=False)
+		response = session.get(f'{url}{"".join(request)}', verify=False)
 	if response.status_code != 200:
 		raise ImportError(response.text)
 	with open(filename, 'wb') as f:
