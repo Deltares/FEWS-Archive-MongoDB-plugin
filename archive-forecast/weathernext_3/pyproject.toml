@@ -14,12 +14,14 @@ authors = [
   { name = "INFISYS INC" }
 ]
 dependencies = [
+  "numpy",
   "pandas",
   "xarray",
   "netcdf4",
   "zarr",
-  "dask",
-  "obstore",
+  "requests",
+  "urllib3",
+  "google-auth",
   "xmltodict"
 ]
 
