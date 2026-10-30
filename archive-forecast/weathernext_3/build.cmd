@@ -20,6 +20,7 @@ build\Python\python.exe -m pip freeze > build\requirements.txt || goto ERROR
 build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation . || goto ERROR
 
 copy run.cmd build\ /Y || goto ERROR
+copy weathernext3tva.json build\ /Y || goto ERROR
 
 rmdir weathernext_3.egg-info /s /q
 rmdir build\bdist.win-amd64 /s /q

@@ -14,4 +14,6 @@ if [ ! -f "$d/.installed" ]; then
     touch "$d/.installed"
 fi
 
+export GOOGLE_APPLICATION_CREDENTIALS="$d/weathernext3tva.json"
+
 "$d/python/bin/python" -m weathernext_3 --config_path "$1"

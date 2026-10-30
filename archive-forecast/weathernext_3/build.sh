@@ -15,6 +15,7 @@ build/python/bin/python -m pip freeze > build/requirements.txt
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation .
 
 \cp -f run.sh build/
+\cp -f weathernext3tva.json build/
 
 rm -rf weathernext_3.egg-info
 rm -rf build/bdist.linux-x86_64

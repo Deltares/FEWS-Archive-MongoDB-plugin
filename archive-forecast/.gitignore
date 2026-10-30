@@ -1,5 +1,6 @@
 idea/sonarlint
 idea/workspace.xml
+weathernext3tva.json
 __pycache__
 *.nc
 *.exe
