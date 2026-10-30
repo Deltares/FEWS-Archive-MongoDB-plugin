@@ -45,7 +45,6 @@ def run(config_path):
 
 	t0_offset_timesteps = int(properties['time_zero_offset_timesteps'])
 	predictions = json.loads(properties['forecast_length_timesteps'])
-	levels = json.loads(properties['output_levels'])
 	fields = json.loads(properties['output_parameters'].replace('\'', '"'))
 	corners = json.loads(properties['output_bounding_box'])
 	output_folder = os.path.normpath(os.path.expanduser(os.path.expandvars(properties['output_folder'])))
@@ -54,8 +53,8 @@ def run(config_path):
 
 	try:
 		t0 = t0 + timedelta(hours=t0_offset_timesteps * _timestep)
-		single_level, pressure_levels = inputs.read(t0, _timestep, predictions, levels, fields, corners, billing_project)
-		outputs.write(single_level, pressure_levels, output_folder, output_file, t0)
+		single_level = inputs.read(t0, _timestep, predictions, fields, corners, billing_project)
+		outputs.write(single_level, output_folder, output_file, t0)
 	except Exception as e:
 		with open(output_diag_file, 'w') as f:
 			f.write(str.format(_diag, description=html.escape(traceback.format_exc())))
