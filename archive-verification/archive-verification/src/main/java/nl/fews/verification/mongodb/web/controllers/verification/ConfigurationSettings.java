@@ -42,16 +42,16 @@ public class ConfigurationSettings {
 			@Argument String bimPath,
 			@Argument String databaseConnectionString,
 			@Argument String smtpServer,
+			@Argument int smtpPort,
+			@Argument String smtpUser,
+			@Argument String smtpPass,
 			@Argument String tabularConnectionString,
-			@Argument String drdlYamlServiceRestart,
 			@Argument boolean execute,
 			@Argument String reprocessCubes,
 			@Argument String taskInterval,
 			@Argument String fewsArchiveDbAesPassword,
 			@Argument String fewsArchiveDbUsername,
-			@Argument String drdlYamlConfigPath,
 			@Argument String fewsArchiveDbConnection,
-			@Argument String drdlYamlServiceRestartSuccess,
 			@Argument int dataStaleAfterSeconds,
 			@Argument int cubeParallelPartitions,
 			@Argument int cubeThreads,
@@ -73,16 +73,16 @@ public class ConfigurationSettings {
 				.append("bimPath", bimPath)
 				.append("databaseConnectionString", databaseConnectionString)
 				.append("smtpServer", smtpServer)
+				.append("smtpPort", smtpPort)
+				.append("smtpUser", smtpUser)
+				.append("smtpPass", smtpPass)
 				.append("tabularConnectionString", tabularConnectionString)
-				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
 				.append("execute", execute)
 				.append("reprocessCubes", reprocessCubes)
 				.append("taskInterval", taskInterval)
 				.append("fewsArchiveDbAesPassword", fewsArchiveDbAesPassword)
 				.append("fewsArchiveDbUsername", fewsArchiveDbUsername)
-				.append("drdlYamlConfigPath", drdlYamlConfigPath)
 				.append("fewsArchiveDbConnection", fewsArchiveDbConnection)
-				.append("drdlYamlServiceRestartSuccess", drdlYamlServiceRestartSuccess)
 				.append("dataStaleAfterSeconds", dataStaleAfterSeconds)
 				.append("cubeParallelPartitions", cubeParallelPartitions)
 				.append("cubeThreads", cubeThreads)
@@ -109,16 +109,16 @@ public class ConfigurationSettings {
 			@Argument String bimPath,
 			@Argument String databaseConnectionString,
 			@Argument String smtpServer,
+			@Argument int smtpPort,
+			@Argument String smtpUser,
+			@Argument String smtpPass,
 			@Argument String tabularConnectionString,
-			@Argument String drdlYamlServiceRestart,
 			@Argument boolean execute,
 			@Argument String reprocessCubes,
 			@Argument String taskInterval,
 			@Argument String fewsArchiveDbAesPassword,
 			@Argument String fewsArchiveDbUsername,
-			@Argument String drdlYamlConfigPath,
 			@Argument String fewsArchiveDbConnection,
-			@Argument String drdlYamlServiceRestartSuccess,
 			@Argument int dataStaleAfterSeconds,
 			@Argument int cubeParallelPartitions,
 			@Argument int cubeThreads,
@@ -140,16 +140,16 @@ public class ConfigurationSettings {
 				.append("bimPath", bimPath)
 				.append("databaseConnectionString", databaseConnectionString)
 				.append("smtpServer", smtpServer)
+				.append("smtpPort", smtpPort)
+				.append("smtpUser", smtpUser)
+				.append("smtpPass", smtpPass)
 				.append("tabularConnectionString", tabularConnectionString)
-				.append("drdlYamlServiceRestart", drdlYamlServiceRestart)
 				.append("execute", execute)
 				.append("reprocessCubes", reprocessCubes)
 				.append("taskInterval", taskInterval)
 				.append("fewsArchiveDbAesPassword", fewsArchiveDbAesPassword)
 				.append("fewsArchiveDbUsername", fewsArchiveDbUsername)
-				.append("drdlYamlConfigPath", drdlYamlConfigPath)
 				.append("fewsArchiveDbConnection", fewsArchiveDbConnection)
-				.append("drdlYamlServiceRestartSuccess", drdlYamlServiceRestartSuccess)
 				.append("dataStaleAfterSeconds", dataStaleAfterSeconds)
 				.append("cubeParallelPartitions", cubeParallelPartitions)
 				.append("cubeThreads", cubeThreads)

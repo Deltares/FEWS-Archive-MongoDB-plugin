@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import {ref, onMounted} from 'vue'
 
 const message = ref(null)
 const stack = ref(null)
@@ -18,11 +18,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.error-bg{
+.error-bg {
   background: url('/images/Bee-doo.jpg') top left / cover no-repeat fixed;
   height: 100%;
 }
-pre{
+pre {
   white-space: pre;
 }
 </style>

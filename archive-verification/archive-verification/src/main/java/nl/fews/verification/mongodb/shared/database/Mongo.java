@@ -36,7 +36,7 @@ public final class Mongo {
 	}
 
 	private static synchronized MongoClient create(String database){
-		String connectionString = database.equals(Settings.get("verificationDb")) ? Settings.get("mongoVerificationDbConnection") : database.equals(Settings.get("archiveDb")) ? Settings.get("mongoArchiveDbConnection") : "";
+		String connectionString = database.equals(Settings.get("verificationDb")) || database.equals("local") ? Settings.get("mongoVerificationDbConnection") : database.equals(Settings.get("archiveDb")) ? Settings.get("mongoArchiveDbConnection") : "";
 		if (!Mongo.mongoClient.containsKey(database) || !Mongo.connectionString.containsKey(database) || !Mongo.connectionString.get(database).equals(connectionString)) {
 			Mongo.mongoClient.put(database, MongoClients.create(connectionString));
 			if(!Mongo.connectionString.containsKey(database) || !Mongo.connectionString.get(database).equals(connectionString)){
@@ -62,7 +62,7 @@ public final class Mongo {
 	public static ListCollectionsIterable<Document> listCollections(String database){
 		for (int i = 1; i <= NUM_RETRIES; i++) {
 			try{
-				return create(Settings.get("archiveDb")).getDatabase(database).listCollections();
+				return create(database).getDatabase(database).listCollections();
 			}
 			catch (Exception ex){
 				if(i == NUM_RETRIES)
@@ -87,7 +87,7 @@ public final class Mongo {
 	public static void dropCollection(String database, String collection){
 		for (int i = 1; i <= NUM_RETRIES; i++) {
 			try{
-				create(Settings.get("archiveDb")).getDatabase(database).getCollection(collection).drop(new DropCollectionOptions());
+				create(database).getDatabase(database).getCollection(collection).drop(new DropCollectionOptions());
 				return;
 			}
 			catch (Exception ex){
@@ -113,7 +113,7 @@ public final class Mongo {
 	public static void createView(String database, String view, String collection, List<Document> document){
 		for (int i = 1; i <= NUM_RETRIES; i++) {
 			try{
-				create(Settings.get("archiveDb")).getDatabase(database).createView(view, collection, document);
+				create(database).getDatabase(database).createView(view, collection, document);
 				return;
 			}
 			catch (Exception ex){

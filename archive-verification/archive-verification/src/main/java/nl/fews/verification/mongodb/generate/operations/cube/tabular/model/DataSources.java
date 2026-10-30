@@ -23,12 +23,12 @@ public final class DataSources implements IModel {
 		var database = Settings.get("databaseConnectionString", String.class);
 		var username = Settings.get("fewsVerificationDbUsername", String.class);
 		var password = Settings.get("fewsVerificationDbAesPassword", String.class);
-		var db = Arrays.stream(database.split(";")).filter(s -> s.contains("=")).map(s -> s.split("=")).collect(Collectors.toMap(s -> s[0], s -> s[1]));
+		var db = Arrays.stream(database.split(";")).filter(s -> s.contains("=")).map(s -> s.split("=", 2)).collect(Collectors.toMap(s -> s[0], s -> s[1]));
 
 		var options = dataSource.get("connectionDetails", Document.class).get("address", Document.class).get("options", Document.class);
 		options.append("driver", db.get("driver").replace("{", "").replace("}", ""));
-		options.append("server", db.get("server"));
-		options.append("port", db.get("port"));
+		options.append("uri", db.get("uri"));
+		options.append("database", db.get("database"));
 
 		var credential = dataSource.get("credential", Document.class);
 		credential.append("path", database);

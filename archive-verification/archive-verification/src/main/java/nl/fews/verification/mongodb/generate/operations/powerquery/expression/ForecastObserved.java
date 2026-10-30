@@ -44,7 +44,7 @@ public final class ForecastObserved implements IExecute, IPredecessor {
 			var month = m.format(format);
 			var t = template.replace("{databaseConnectionString}", databaseConnectionString);
 			t = t.replace("{database}", database);
-			t = t.replace("{study}", study);
+			t = t.replace("{study}", String.format("view.dw.%s", study));
 			t = t.replace("{month}", month);
 
 			Mongo.insertOne("output.PowerQuery", new Document("Study", study).append("Name", name).append("Month", month).append("Expression", Arrays.stream(t.replace("\r", "").split("\n")).toList()));

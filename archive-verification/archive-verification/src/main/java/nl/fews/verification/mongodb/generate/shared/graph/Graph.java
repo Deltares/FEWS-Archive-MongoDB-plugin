@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"unchecked"})
-public class Graph {
+public final class Graph {
 
 	private Graph(){}
 

@@ -22,7 +22,7 @@ jobs:
     - uses: actions/setup-java@v5
       with:
         java-version: 17
-        distribution: corretto
+        distribution: temurin
     - run: mvn -B package --file archive-verification/archive-verification/pom.xml -DskipTests
     - run: mvn -B package --file archive-database/archive-database/pom.xml -DskipTests
     - uses: github/codeql-action/analyze@v4

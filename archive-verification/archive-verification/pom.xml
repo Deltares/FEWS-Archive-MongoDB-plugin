@@ -5,11 +5,11 @@
     <artifactId>verification</artifactId>
     <name>fews-verification</name>
     <packaging>war</packaging>
-    <version>1.0</version>
+    <version>1.5</version>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.6</version>
+        <version>4.1.1</version>
     </parent>
     <dependencies>
         <dependency>
@@ -42,6 +42,14 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-data-mongodb</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.graphql-java</groupId>
             <artifactId>graphql-java-extended-scalars</artifactId>
             <version>24.0</version>
@@ -49,22 +57,15 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20250517</version>
+            <version>20260814</version>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
-            <version>5.6.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-core</artifactId>
-            <version>5.6.1</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>2.5</version>
         </dependency>
         <dependency>
             <groupId>org.reflections</groupId>
@@ -74,22 +75,15 @@
         <dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-core</artifactId>
-            <version>1.5.2</version>
+            <version>1.5.3</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.20.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <groupId>tools.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
-            <version>2.20.0</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>6.0.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -103,7 +97,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.15.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -122,17 +116,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.5.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.4</version>
+                <version>3.5.6</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.5.1</version>
                 <configuration>
                     <archive>
                         <manifestEntries>
@@ -144,7 +138,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>3.6.3</version>
                 <executions>
                     <execution>
                         <id>install node modules</id>
@@ -157,6 +151,21 @@
                             <workingDirectory>${project.basedir}/src/main/vue</workingDirectory>
                             <arguments>
                                 <argument>install</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>lint vue app</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <workingDirectory>${project.basedir}/src/main/vue</workingDirectory>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>lint</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -175,6 +184,21 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>test vue app</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipTests}</skip>
+                            <executable>npm</executable>
+                            <workingDirectory>${project.basedir}/src/main/vue</workingDirectory>
+                            <arguments>
+                                <argument>test</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
@@ -184,8 +208,11 @@
     </build>
     <properties>
         <maven.build.timestamp.format>yyyy.MM.dd'T'HH.mm.ss'Z'</maven.build.timestamp.format>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <skipTests>false</skipTests>
+        <mongodb.version>5.10.0</mongodb.version>
+        <jackson-bom.version>3.2.2</jackson-bom.version>
+        <junit-jupiter.version>6.1.3</junit-jupiter.version>
     </properties>
 </project>

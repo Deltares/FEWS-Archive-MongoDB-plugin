@@ -1,0 +1,35 @@
+#  Copyright (c) 2026 INFISYS INC
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "graphcast_gfs"
+version = "0.6"
+description = "FEWS Graphcast GFS"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [
+  { name = "INFISYS INC" }
+]
+dependencies = [
+  "numpy",
+  "pandas",
+  "xarray",
+  "cfgrib",
+  "requests",
+  "urllib3",
+  "scipy",
+  "netcdf4",
+  "xmltodict",
+  "pysolar",
+  "jax",
+  "dm-haiku"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["graphcast_gfs", "graphcast_gfs.*"]
+exclude = []
