@@ -75,9 +75,10 @@ def _put_data_cache(url, request, billing_project, filename):
 	credentials, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform'], quota_project_id=billing_project)
 	with requests.Session() as session:
 		session.mount('https://', adapters.HTTPAdapter(max_retries=urllib3.util.retry.Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=None)))
+		session.verify = False
 		credentials.refresh(Request(session))
 		credentials.apply(session.headers)
-		response = session.post(f'{url}:getPixels', json=request, verify=False)
+		response = session.post(f'{url}:getPixels', json=request)
 	if response.status_code != 200:
 		raise ImportError(response.text)
 	with open(filename, 'wb') as f:
