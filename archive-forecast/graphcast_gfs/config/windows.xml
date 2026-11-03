@@ -8,7 +8,7 @@
 	<workDir>c:\_GIT\FEWS-Archive\archive-forecast\</workDir>
 	<outputDiagnosticFile>c:\_GIT\FEWS-Archive\archive-forecast\diag.xml</outputDiagnosticFile>
 	<properties>
-		<string key="forecast_length_timesteps" value="[8,8,8,8,8,8,8]"/>
+		<string key="forecast_length_timesteps" value="[14,14,14,14]"/>
         <string key="time_zero_offset_timesteps" value="1"/>
 		<string key="output_levels" value="[1000, 925, 850, 700, 600, 500, 400, 300, 250, 200, 150, 100, 50]"/>
 		<string key="output_parameters" value="['u_component_of_wind','v_component_of_wind','geopotential','specific_humidity','temperature','vertical_velocity','10m_u_component_of_wind','10m_v_component_of_wind','2m_temperature','mean_sea_level_pressure','total_precipitation_6hr']"/>
