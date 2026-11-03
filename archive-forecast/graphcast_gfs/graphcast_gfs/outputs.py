@@ -106,9 +106,7 @@ _output_metadata = {
 
 
 @log
-def write(model_forecast, output_folder, output_file, levels, fields, corners, downscale, downscale_method, t0):
-	model_forecast = _trim(model_forecast, levels, fields)
-	model_forecast = _clip(model_forecast, corners)
+def write(model_forecast, output_folder, output_file, downscale, downscale_method, t0):
 	model_forecast = _resample(model_forecast, downscale, downscale_method)
 	model_forecast = _zero_negative_precipitation(model_forecast)
 	model_forecast = _metadata(model_forecast)
@@ -142,20 +140,6 @@ def _metadata(x):
 	for k, v in _output_metadata['global'].items():
 		x.attrs[k] = v
 	return x
-
-
-@log
-def _trim(x, levels, fields):
-	return x[fields].sel(level=levels).squeeze(['batch'])
-
-
-@log
-def _clip(x, corners):
-	return x.where(
-		(x.lon >= min([c[0] % 360 for c in corners])) &
-		(x.lon <= max([c[0] % 360 for c in corners])) &
-		(x.lat >= min([c[1] for c in corners])) &
-		(x.lat <= max([c[1] for c in corners])), drop=True)
 
 
 @log
