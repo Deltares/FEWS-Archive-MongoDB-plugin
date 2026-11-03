@@ -14,10 +14,11 @@ from requests import adapters
 from datetime import timedelta, datetime, timezone
 from graphcast_gfs.decorator import retry, log
 
-geopotential_meters_to_geopotential = 9.80665
-logger = logging.getLogger('graphcast_gfs')
-home_path = os.path.join(os.path.expanduser('~'), 'graphcast_gfs')
-os.makedirs(home_path, exist_ok=True)
+_geopotential_meters_to_geopotential = 9.80665
+_logger = logging.getLogger('graphcast_gfs')
+_home_path = os.path.join(os.path.expanduser('~'), 'graphcast_gfs')
+
+os.makedirs(_home_path, exist_ok=True)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -32,9 +33,9 @@ def read(t0, timestep, observed_timesteps):
 @retry
 def _query(name, request):
 	query = json.dumps({name: request})
-	filename = os.path.join(home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.grib2")
+	filename = os.path.join(_home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.grib2")
 
-	logger.info(f'_query begin [{query} -> {filename}]')
+	_logger.info(f'_query begin [{query} -> {filename}]')
 
 	if os.path.exists(filename):
 		try:
@@ -46,15 +47,15 @@ def _query(name, request):
 		_put_cache(name, request, filename)
 		data = xr.load_dataset(filename)
 
-	logger.info('_query complete')
+	_logger.info('_query complete')
 
 	return data
 
 
 @log
 def _clean_cache():
-	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(home_path, f)), tz=timezone.utc): f for f in os.listdir(home_path)}
-	[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
+	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(_home_path, f)), tz=timezone.utc): f for f in os.listdir(_home_path)}
+	[os.remove(os.path.join(_home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
 
 
 def _put_cache(url, request, filename):
@@ -75,7 +76,7 @@ def _get_single_level(t0, timestep, observed_timesteps):
 		observed = start_time + timedelta(hours=t * timestep)
 		url = f'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl?dir=/gfs.{observed:%Y%m%d}/{observed:%H}/atmos&file=gfs.t{observed:%H}z.pgrb2.0p25.f000'
 
-		logger.info(f'_get_single_level {observed} download begin')
+		_logger.info(f'_get_single_level {observed} download begin')
 
 		data = xr.merge([_query(url, request).reset_coords(drop=True) for request in [
 			['&var_HGT=on', '&lev_surface=on'],
@@ -83,10 +84,10 @@ def _get_single_level(t0, timestep, observed_timesteps):
 			['&var_TMP=on', '&lev_2_m_above_ground=on'],
 			['&var_UGRD=on', '&var_VGRD=on', '&lev_10_m_above_ground=on']]], compat='no_conflicts').expand_dims(time=[pd.Timestamp(observed).as_unit('ns')])
 
-		data['orog'] = data['orog'] * geopotential_meters_to_geopotential
+		data['orog'] = data['orog'] * _geopotential_meters_to_geopotential
 		single_levels.append(data.to_dataframe())
 
-		logger.info(f'_get_single_level {observed} download complete')
+		_logger.info(f'_get_single_level {observed} download complete')
 
 	single_level = pd.concat(single_levels)
 	single_level = single_level.rename(columns={'orog': 'geopotential_at_surface', 'prmsl': 'mean_sea_level_pressure', 'lsm': 'land_sea_mask', 't2m': '2m_temperature', 'u10': '10m_u_component_of_wind', 'v10': '10m_v_component_of_wind'})
@@ -105,7 +106,7 @@ def _get_pressure_levels(t0, timestep, observed_timesteps):
 		observed = start_time + timedelta(hours=t * timestep)
 		url = f'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl?dir=/gfs.{observed:%Y%m%d}/{observed:%H}/atmos&file=gfs.t{observed:%H}z.pgrb2.0p25.f000'
 
-		logger.info(f'_get_pressure_levels {observed} download begin')
+		_logger.info(f'_get_pressure_levels {observed} download begin')
 
 		request = [
 			'&var_UGRD=on',
@@ -116,11 +117,11 @@ def _get_pressure_levels(t0, timestep, observed_timesteps):
 			'&var_VVEL=on',
 			'&lev_1000_mb=on', '&lev_925_mb=on', '&lev_850_mb=on', '&lev_700_mb=on', '&lev_600_mb=on', '&lev_500_mb=on', '&lev_400_mb=on', '&lev_300_mb=on', '&lev_250_mb=on', '&lev_200_mb=on', '&lev_150_mb=on', '&lev_100_mb=on', '&lev_50_mb=on']
 		data = _query(url, request).reset_coords(drop=True).expand_dims(time=[pd.Timestamp(observed).as_unit('ns')])
-		data['gh'] = data['gh'] * geopotential_meters_to_geopotential
+		data['gh'] = data['gh'] * _geopotential_meters_to_geopotential
 
 		pressure_levels.append(data.to_dataframe())
 
-		logger.info(f'_get_pressure_levels {observed} download complete')
+		_logger.info(f'_get_pressure_levels {observed} download complete')
 
 	pressure_level = pd.concat(pressure_levels)
 	pressure_level = pressure_level.rename(columns={'gh': 'geopotential', 't': 'temperature', 'q': 'specific_humidity', 'w': 'vertical_velocity', 'u': 'u_component_of_wind', 'v': 'v_component_of_wind'})

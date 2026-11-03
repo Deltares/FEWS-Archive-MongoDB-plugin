@@ -17,12 +17,11 @@ from graphcast import autoregressive, casting, data_utils, graphcast, normalizat
 
 from graphcast_gfs.decorator import log
 
-logger = logging.getLogger('graphcast_gfs')
-
+_logger = logging.getLogger('graphcast_gfs')
+_home_path = os.path.join(os.path.expanduser('~'), 'graphcast_gfs')
 _prediction_fields = ['u_component_of_wind', 'v_component_of_wind', 'geopotential', 'specific_humidity', 'temperature', 'vertical_velocity', '10m_u_component_of_wind', '10m_v_component_of_wind', '2m_temperature', 'mean_sea_level_pressure', 'total_precipitation_6hr']
 
-home_path = os.path.join(os.path.expanduser('~'), 'graphcast_gfs')
-os.makedirs(home_path, exist_ok=True)
+os.makedirs(_home_path, exist_ok=True)
 
 
 @log
@@ -31,7 +30,7 @@ def predict(model, single_level, pressure_levels, t0, timestep, predictions, dif
 	px = 0
 	for p in predictions:
 		px += p
-		logger.info(f'[t0: {t0} -> predictions {px - p + 1}-{px}]')
+		_logger.info(f'[t0: {t0} -> predictions {px - p + 1}-{px}]')
 
 		single_level = _add_solar_radiation(single_level)
 		observed_values = pd.merge(single_level, pressure_levels, left_index=True, right_index=True, how='inner', on=None, validate='one_to_many')
@@ -52,10 +51,10 @@ def predict(model, single_level, pressure_levels, t0, timestep, predictions, dif
 		state = {}
 
 		then = datetime.now()
-		logger.info(f'graphcast_gfs [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction begin')
+		_logger.info(f'graphcast_gfs [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction begin')
 		run_forward_jit = jax.jit(lambda rng, inputs, targets_template, forcings: _run_forward.apply(model.params, state, rng, model, stddev_by_level, mean_by_level, diffs_stddev_by_level, inputs, targets_template, forcings)[0])
 		chunked_prediction = rollout.chunked_prediction(run_forward_jit, rng=jax.random.PRNGKey(0), inputs=observed_inputs, targets_template=prediction_targets, forcings=prediction_forcings)
-		logger.info(f'graphcast_gfs [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction finished in {datetime.now() - then}')
+		_logger.info(f'graphcast_gfs [t0: {t0} -> predictions {px - p + 1}-{px}] rollout.chunked_prediction finished in {datetime.now() - then}')
 		chunked_predictions.append(chunked_prediction)
 
 		t0 = t0 + timedelta(hours=p*timestep)
@@ -128,21 +127,21 @@ def _add_solar_radiation(data):
 
 def _get_solar_radiation_cache(dates):
 	cache = {}
-	cache_dates = {pd.to_datetime(f.replace('solar_radiation_cache_', '').replace('.nc', '')): f for f in os.listdir(home_path) if f.startswith('solar_radiation_cache_') and f.endswith('.nc')}
+	cache_dates = {pd.to_datetime(f.replace('solar_radiation_cache_', '').replace('.nc', '')): f for f in os.listdir(_home_path) if f.startswith('solar_radiation_cache_') and f.endswith('.nc')}
 	for date in dates:
 		if date in cache_dates:
 			try:
-				ds = xr.load_dataset(os.path.join(home_path, cache_dates[date]))
+				ds = xr.load_dataset(os.path.join(_home_path, cache_dates[date]))
 			except:
 				_put_solar_radiation_cache(date)
-				ds = xr.load_dataset(os.path.join(home_path, cache_dates[date]))
+				ds = xr.load_dataset(os.path.join(_home_path, cache_dates[date]))
 		else:
 			_put_solar_radiation_cache(date)
-			ds = xr.load_dataset(os.path.join(home_path, f'solar_radiation_cache_{date:%Y%m%d%H%M}.nc'))
+			ds = xr.load_dataset(os.path.join(_home_path, f'solar_radiation_cache_{date:%Y%m%d%H%M}.nc'))
 
 		cache[date] = ds.assign_coords(time=pd.to_datetime(ds.coords['time'].values)).to_dataframe()
 
-	[os.remove(os.path.join(home_path, cache_dates[d])) for d in cache_dates if d < min(dates) - timedelta(days=7)]
+	[os.remove(os.path.join(_home_path, cache_dates[d])) for d in cache_dates if d < min(dates) - timedelta(days=7)]
 	return pd.concat(cache.values())
 
 
@@ -151,7 +150,7 @@ def _put_solar_radiation_cache(date):
 	with mp.Pool(mp.cpu_count()) as p:
 		results = p.map(_get_solar_radiation_parallel, [(date, lat) for lat in latitudes])
 	solar_radiation_cache = pd.DataFrame([c for dt in results for c in dt]).set_index(keys=['time', 'lat', 'lon']).to_xarray()
-	solar_radiation_cache.to_netcdf(os.path.join(home_path, f'solar_radiation_cache_{date:%Y%m%d%H%M}.nc'), format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in solar_radiation_cache.data_vars})
+	solar_radiation_cache.to_netcdf(os.path.join(_home_path, f'solar_radiation_cache_{date:%Y%m%d%H%M}.nc'), format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in solar_radiation_cache.data_vars})
 
 
 @log
