@@ -2,8 +2,6 @@
 
 import os
 
-import xarray as xr
-
 from weathernext_3.decorator import log
 
 _output_metadata = {
@@ -18,19 +16,19 @@ _output_metadata = {
 			'long_name': 'longitude',
 			'standard_name': 'longitude'
 		},
-		'2m_temperature': {
+		'temperature_2m': {
 			'units': 'K',
 			'long_name': 'temperature @ 2 meters above ground',
 			'abbreviation': 'TMP',
 			'netcdf_statistical_interval_type': 'instantaneous'
 		},
-		'10m_u_component_of_wind': {
+		'u_component_of_wind_10m': {
 			'units': 'm/s',
 			'long_name': 'u-component of wind @ 10 m above ground',
 			'abbreviation': 'UGRD',
 			'netcdf_statistical_interval_type': 'instantaneous'
 		},
-		'10m_v_component_of_wind': {
+		'v_component_of_wind_10m': {
 			'units': 'm/s',
 			'long_name': 'v-component of wind @ 10 m above ground',
 			'abbreviation': 'VGRD',
@@ -71,13 +69,16 @@ _output_metadata = {
 		'feature_type': 'GRID'
 	}
 }
+_statistics = ['mean', 'p10', 'p25', 'p50', 'p75', 'p90']
+_output_metadata['variables'] = {
+	**{r: _output_metadata['variables'].pop(r) for r in ['lat', 'lon']},
+	**{f'{f}_{s}': {**m, 'long_name': f"{m['long_name']} (ensemble {s})"} for f, m in _output_metadata['variables'].items() for s in _statistics}}
 
 
 @log
 def write(single_level, output_folder, output_file, t0):
 	single_level = _zero_negative_precipitation(single_level)
 	single_level = _metadata(single_level)
-	single_level = _flatten(single_level)
 
 	os.makedirs(output_folder, exist_ok=True)
 	output_file_parts = output_file.split('.')
@@ -87,15 +88,10 @@ def write(single_level, output_folder, output_file, t0):
 
 @log
 def _zero_negative_precipitation(x):
-	for f in ['total_precipitation_1hr', 'imerg_tp_1hr', 'experimental_tp_1hr']:
-		if f in x:
-			x[f] = x[f].where(x[f] >= 0, 0)
+	for r in [f'{f}_{s}' for f in ['total_precipitation_1hr', 'imerg_tp_1hr', 'experimental_tp_1hr'] for s in _statistics]:
+		if r in x:
+			x[r] = x[r].where(x[r] >= 0, 0)
 	return x
-
-
-@log
-def _flatten(x):
-	return xr.Dataset({f'{f}_{s}': x[f].sel(statistic=s, drop=True).assign_attrs(long_name=f"{x[f].attrs['long_name']} (ensemble {s})") for f in x.data_vars for s in x['statistic'].values.tolist()}, attrs=x.attrs)
 
 
 @log
