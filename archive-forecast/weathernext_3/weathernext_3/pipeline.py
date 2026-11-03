@@ -53,8 +53,8 @@ def run(config_path):
 
 	try:
 		t0 = t0 + timedelta(hours=t0_offset_timesteps * _timestep)
-		single_level = inputs.read(t0, _timestep, predictions, fields, corners, billing_project)
-		outputs.write(single_level, output_folder, output_file, t0)
+		single_level, percentiles = inputs.read(t0, _timestep, predictions, fields, corners, billing_project)
+		outputs.write(single_level, percentiles, output_folder, output_file, t0)
 	except Exception as e:
 		with open(output_diag_file, 'w') as f:
 			f.write(str.format(_diag, description=html.escape(traceback.format_exc())))

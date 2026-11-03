@@ -22,7 +22,7 @@ _logger = logging.getLogger('weathernext_3')
 _home_path = os.path.join(os.path.expanduser('~'), 'weathernext_3')
 _workers = 16
 _resolution = 0.1
-_statistics = ['mean', 'p10', 'p25', 'p50', 'p75', 'p90']
+_percentiles = [10, 25, 50, 75, 90]
 
 os.makedirs(_home_path, exist_ok=True)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -33,7 +33,7 @@ def read(t0, timestep, predictions, fields, corners, billing_project):
 	_clean_cache()
 	init = pd.Timestamp(t0 - timedelta(hours=timestep)).floor('6h')
 	times = [t0 + timedelta(hours=p * timestep) for p in range(sum(predictions))]
-	return _get_single_level(init, times, fields, corners, billing_project)
+	return _get_forecast(init, times, fields, corners, billing_project)
 
 
 @retry
@@ -84,10 +84,10 @@ def _put_data_cache(session, url, request, filename):
 
 
 @log
-def _get_single_level(init, times, fields, corners, billing_project):
+def _get_forecast(init, times, fields, corners, billing_project):
 	x = [int(np.ceil((min(c[0] for c in corners) + 180) / _resolution)), int(np.floor((max(c[0] for c in corners) + 180) / _resolution))]
 	y = [int(np.ceil((90 - max(c[1] for c in corners)) / _resolution)), int(np.floor((90 - min(c[1] for c in corners)) / _resolution))]
-	bands = [f'{f}_{s}' for f in fields for s in _statistics]
+	bands = [f'{f}_{s}' for f in fields for s in ['mean'] + [f'p{p}' for p in _percentiles]]
 	request = {
 		'fileFormat': 'NPY',
 		'bandIds': bands,
@@ -99,11 +99,15 @@ def _get_single_level(init, times, fields, corners, billing_project):
 	with _get_session(billing_project) as session, ThreadPoolExecutor(max_workers=_workers) as executor:
 		pixels = list(executor.map(lambda t: _query(session, f'https://earthengine.googleapis.com/v1/projects/gcp-public-data-weathernext/assets/weathernext_3_0_0_0p1deg/{init:%Y%m%d%H%M}_{t:%Y%m%d%H%M}', request), times))
 
-	data = xr.Dataset(
-		{b: (('time', 'lat', 'lon'), np.stack([p[b] for p in pixels])) for b in bands},
-		coords={
-			'time': pd.DatetimeIndex(times).as_unit('ns'),
-			'lat': np.round(90 - np.arange(y[0], y[1] + 1) * _resolution, 1),
-			'lon': np.round((np.arange(x[0], x[1] + 1) * _resolution - 180) % 360, 1)})
+	coords = {
+		'time': pd.DatetimeIndex(times).as_unit('ns'),
+		'lat': np.round(90 - np.arange(y[0], y[1] + 1) * _resolution, 1),
+		'lon': np.round((np.arange(x[0], x[1] + 1) * _resolution - 180) % 360, 1)}
+	single_level = xr.Dataset(
+		{f: (('time', 'lat', 'lon'), np.stack([p[f'{f}_mean'] for p in pixels])) for f in fields},
+		coords=coords)
+	percentiles = xr.Dataset(
+		{f: (('time', 'lat', 'lon', 'percentile'), np.stack([np.stack([p[f'{f}_p{q}'] for p in pixels]) for q in _percentiles], axis=-1)) for f in fields},
+		coords=coords | {'percentile': np.array(_percentiles, dtype='float64')})
 
-	return data.sortby('lat').astype('float64')
+	return single_level.sortby('lat').astype('float64'), percentiles.sortby('lat').astype('float64')

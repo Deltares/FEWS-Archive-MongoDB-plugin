@@ -16,6 +16,10 @@ _output_metadata = {
 			'long_name': 'longitude',
 			'standard_name': 'longitude'
 		},
+		'percentile': {
+			'units': 'percent',
+			'long_name': 'ensemble percentile'
+		},
 		'temperature_2m': {
 			'units': 'K',
 			'long_name': 'temperature @ 2 meters above ground',
@@ -69,28 +73,27 @@ _output_metadata = {
 		'feature_type': 'GRID'
 	}
 }
-_statistics = ['mean', 'p10', 'p25', 'p50', 'p75', 'p90']
-_output_metadata['variables'] = {
-	**{r: _output_metadata['variables'].pop(r) for r in ['lat', 'lon']},
-	**{f'{f}_{s}': {**m, 'long_name': f"{m['long_name']} (ensemble {s})"} for f, m in _output_metadata['variables'].items() for s in _statistics}}
 
 
 @log
-def write(single_level, output_folder, output_file, t0):
+def write(single_level, percentiles, output_folder, output_file, t0):
 	single_level = _zero_negative_precipitation(single_level)
 	single_level = _metadata(single_level)
+	percentiles = _zero_negative_precipitation(percentiles)
+	percentiles = _metadata(percentiles)
 
 	os.makedirs(output_folder, exist_ok=True)
 	output_file_parts = output_file.split('.')
 
 	single_level.to_netcdf(f"{'.'.join(output_file_parts[:-1])}.SingleLevel.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}", format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in single_level.data_vars})
+	percentiles.to_netcdf(f"{'.'.join(output_file_parts[:-1])}.Percentiles.{t0:%Y%m%d%H%M}.{output_file_parts[-1]}", format='NETCDF4', encoding={v: {'zlib': True, 'complevel': 4} for v in percentiles.data_vars})
 
 
 @log
 def _zero_negative_precipitation(x):
-	for r in [f'{f}_{s}' for f in ['total_precipitation_1hr', 'imerg_tp_1hr', 'experimental_tp_1hr'] for s in _statistics]:
-		if r in x:
-			x[r] = x[r].where(x[r] >= 0, 0)
+	for f in ['total_precipitation_1hr', 'imerg_tp_1hr', 'experimental_tp_1hr']:
+		if f in x:
+			x[f] = x[f].where(x[f] >= 0, 0)
 	return x
 
 
