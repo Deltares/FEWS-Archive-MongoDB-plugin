@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Run xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.wldelft.nl/fews/PI" xsi:schemaLocation="http://www.wldelft.nl/fews/PI https://fewsdocs.deltares.nl/schemas/version1.0/pi-schemas/pi_run.xsd" version="1.5">
 	<timeZone>0.0</timeZone>
-	<startDateTime date="2026-10-30" time="06:00:00"/>
-	<endDateTime date="2026-10-30" time="06:00:00"/>
-	<time0 date="2026-10-30" time="06:00:00"/>
-	<lastObservationDateTime date="2026-10-30" time="06:00:00"/>
+	<startDateTime date="2026-11-03" time="06:00:00"/>
+	<endDateTime date="2026-11-03" time="06:00:00"/>
+	<time0 date="2026-11-03" time="06:00:00"/>
+	<lastObservationDateTime date="2026-11-03" time="06:00:00"/>
 	<workDir>c:\_GIT\FEWS-Archive\archive-forecast\</workDir>
 	<outputDiagnosticFile>c:\_GIT\FEWS-Archive\archive-forecast\diag.xml</outputDiagnosticFile>
 	<properties>
-		<string key="forecast_length_timesteps" value="[6]"/>
+		<string key="forecast_length_timesteps" value="[336]"/>
         <string key="time_zero_offset_timesteps" value="1"/>
 		<string key="output_parameters" value="['u_component_of_wind_10m','v_component_of_wind_10m','temperature_2m','mean_sea_level_pressure','total_precipitation_1hr','imerg_tp_1hr','experimental_tp_1hr']"/>
 		<string key="output_bounding_box" value="[[-89.47578320629594, 38.141490214811284],[-81.05468251757173, 33.40034413045149]]"/>

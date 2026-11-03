@@ -60,8 +60,8 @@ def run(config_path, weights_path):
 		t0 = t0 + timedelta(hours=t0_offset_timesteps * _timestep)
 		model_weights, diffs_stddev_by_level, mean_by_level, stddev_by_level = weights.read(weights_path)
 		single_level, pressure_levels = inputs.read(t0, _timestep, _observed_timesteps)
-		model_forecast = forecast.predict(model_weights, single_level, pressure_levels, t0, _timestep, predictions, diffs_stddev_by_level, mean_by_level, stddev_by_level)
-		outputs.write(model_forecast, output_folder, output_file, levels, fields, corners, downscale, downscale_method, t0)
+		model_forecast = forecast.predict(model_weights, single_level, pressure_levels, t0, _timestep, predictions, diffs_stddev_by_level, mean_by_level, stddev_by_level, levels, fields, corners)
+		outputs.write(model_forecast, output_folder, output_file, downscale, downscale_method, t0)
 	except Exception as e:
 		with open(output_diag_file, 'w') as f:
 			f.write(str.format(_diag, description=html.escape(traceback.format_exc())))
