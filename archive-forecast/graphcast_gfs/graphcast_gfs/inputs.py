@@ -16,7 +16,7 @@ from graphcast_gfs.decorator import retry, log
 
 _geopotential_meters_to_geopotential = 9.80665
 _logger = logging.getLogger('graphcast_gfs')
-_home_path = os.path.join(os.path.expanduser('~'), 'graphcast_gfs')
+_home_path = os.path.join(os.path.expanduser('~'), '.graphcast_gfs')
 
 os.makedirs(_home_path, exist_ok=True)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -85,17 +85,14 @@ def _get_single_level(t0, timestep, observed_timesteps):
 			['&var_UGRD=on', '&var_VGRD=on', '&lev_10_m_above_ground=on']]], compat='no_conflicts').expand_dims(time=[pd.Timestamp(observed).as_unit('ns')])
 
 		data['orog'] = data['orog'] * _geopotential_meters_to_geopotential
-		single_levels.append(data.to_dataframe())
+		single_levels.append(data)
 
 		_logger.info(f'_get_single_level {observed} download complete')
 
-	single_level = pd.concat(single_levels)
-	single_level = single_level.rename(columns={'orog': 'geopotential_at_surface', 'prmsl': 'mean_sea_level_pressure', 'lsm': 'land_sea_mask', 't2m': '2m_temperature', 'u10': '10m_u_component_of_wind', 'v10': '10m_v_component_of_wind'})
-	single_level = single_level.rename_axis(index={'latitude': 'lat', 'longitude': 'lon'})
-	single_level = single_level.reorder_levels(['time', 'lat', 'lon']).sort_index()
-	single_level['batch'] = 0
-	single_level = single_level.set_index('batch', append=True)
-	return single_level
+	single_level = xr.concat(single_levels, dim='time')
+	single_level = single_level.rename({'orog': 'geopotential_at_surface', 'prmsl': 'mean_sea_level_pressure', 'lsm': 'land_sea_mask', 't2m': '2m_temperature', 'u10': '10m_u_component_of_wind', 'v10': '10m_v_component_of_wind', 'latitude': 'lat', 'longitude': 'lon'})
+	single_level = single_level.sortby(['lat', 'lon'])
+	return xr.Dataset({v: (single_level[v].dims, single_level[v].values) for v in single_level.data_vars}, coords={c: single_level[c].values for c in single_level.dims})
 
 
 @log
@@ -119,14 +116,11 @@ def _get_pressure_levels(t0, timestep, observed_timesteps):
 		data = _query(url, request).reset_coords(drop=True).expand_dims(time=[pd.Timestamp(observed).as_unit('ns')])
 		data['gh'] = data['gh'] * _geopotential_meters_to_geopotential
 
-		pressure_levels.append(data.to_dataframe())
+		pressure_levels.append(data)
 
 		_logger.info(f'_get_pressure_levels {observed} download complete')
 
-	pressure_level = pd.concat(pressure_levels)
-	pressure_level = pressure_level.rename(columns={'gh': 'geopotential', 't': 'temperature', 'q': 'specific_humidity', 'w': 'vertical_velocity', 'u': 'u_component_of_wind', 'v': 'v_component_of_wind'})
-	pressure_level = pressure_level.rename_axis(index={'latitude': 'lat', 'longitude': 'lon', 'isobaricInhPa': 'level'})
-	pressure_level = pressure_level.reorder_levels(['time', 'lat', 'lon', 'level']).sort_index()
-	pressure_level['batch'] = 0
-	pressure_level = pressure_level.set_index('batch', append=True)
-	return pressure_level
+	pressure_level = xr.concat(pressure_levels, dim='time')
+	pressure_level = pressure_level.rename({'gh': 'geopotential', 't': 'temperature', 'q': 'specific_humidity', 'w': 'vertical_velocity', 'u': 'u_component_of_wind', 'v': 'v_component_of_wind', 'latitude': 'lat', 'longitude': 'lon', 'isobaricInhPa': 'level'})
+	pressure_level = pressure_level.sortby(['lat', 'lon', 'level'])
+	return xr.Dataset({v: (pressure_level[v].dims, pressure_level[v].values) for v in pressure_level.data_vars}, coords={c: pressure_level[c].values for c in pressure_level.dims})
