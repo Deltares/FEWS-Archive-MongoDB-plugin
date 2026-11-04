@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/archive_forecast.iml" filepath="$PROJECT_DIR$/.idea/archive_forecast.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/graphcast_gfs.iml" filepath="$PROJECT_DIR$/.idea/graphcast_gfs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/weathernext_3.iml" filepath="$PROJECT_DIR$/.idea/weathernext_3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/weathernext_ifs.iml" filepath="$PROJECT_DIR$/.idea/weathernext_ifs.iml" />
+    </modules>
+  </component>
+</project>
