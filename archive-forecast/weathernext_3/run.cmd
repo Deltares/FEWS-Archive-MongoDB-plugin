@@ -12,7 +12,6 @@ if not exist "%~dp0.installed" (
 )
 
 set "GOOGLE_APPLICATION_CREDENTIALS=%~dp0weathernext3tva.json"
-set "GOOGLE_CLOUD_PROJECT=weathernext3tva"
 
 "%~dp0Python\python.exe" -m weathernext_3 --config_path "%~1"
 exit /b %errorlevel%
