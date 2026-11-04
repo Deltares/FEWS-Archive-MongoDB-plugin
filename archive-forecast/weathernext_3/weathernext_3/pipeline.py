@@ -44,16 +44,15 @@ def run(config_path):
 	t0 = datetime.strptime(f"{config['time0']['@date']}T{config['time0']['@time']}", "%Y-%m-%dT%H:%M:%S")
 
 	t0_offset_timesteps = int(properties['time_zero_offset_timesteps'])
-	predictions = json.loads(properties['forecast_length_timesteps'])
+	predictions = int(properties['forecast_length_timesteps'])
 	fields = json.loads(properties['output_parameters'].replace('\'', '"'))
 	corners = json.loads(properties['output_bounding_box'])
 	output_folder = os.path.normpath(os.path.expanduser(os.path.expandvars(properties['output_folder'])))
 	output_file = os.path.join(output_folder, properties['output_filename'])
-	billing_project = properties['billing_project']
 
 	try:
 		t0 = t0 + timedelta(hours=t0_offset_timesteps * _timestep)
-		single_level, percentiles = inputs.read(t0, _timestep, predictions, fields, corners, billing_project)
+		single_level, percentiles = inputs.read(t0, _timestep, predictions, fields, corners)
 		outputs.write(single_level, percentiles, output_folder, output_file, t0)
 	except Exception as e:
 		with open(output_diag_file, 'w') as f:
