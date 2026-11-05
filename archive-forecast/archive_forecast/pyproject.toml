@@ -20,10 +20,23 @@ dependencies = [
   "xarray",
   "netcdf4",
   "pysolar",
+  "scipy",
   "xmltodict",
   "requests",
   "urllib3"
 ]
+
+[dependency-groups]
+dev = ["pytest", "pytest-cov"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "--import-mode=importlib"
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

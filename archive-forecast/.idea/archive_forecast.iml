@@ -6,9 +6,13 @@
       <sourceFolder url="file://$MODULE_DIR$/archive_forecast/build/Python/Lib" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/archive_forecast/build/Python/Lib/site-packages" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/archive_forecast/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/archive_forecast/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/archive_forecast/build" />
     </content>
     <orderEntry type="jdk" jdkName="C:\_GIT\FEWS-Archive\archive-forecast\archive_forecast\build\Python\python.exe" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="py.test" />
   </component>
 </module>

@@ -15,5 +15,6 @@ build/python/bin/python -m pip install --no-warn-script-location --root-user-act
 rm -rf src/archive_forecast.egg-info
 rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
+build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --only-binary=:all: --group dev
 
 echo SUCCESS

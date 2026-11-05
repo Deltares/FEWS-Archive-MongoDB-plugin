@@ -27,7 +27,3 @@ def run(config_path):
 	with diag.diagnostics(config.output_diag_file):
 		single_level, percentiles = inputs.read(config.t0, _timestep, config.predictions, fields, config.corners)
 		outputs.write(single_level, percentiles, config.output_file, config.t0)
-
-
-if __name__ == '__main__':
-	main()

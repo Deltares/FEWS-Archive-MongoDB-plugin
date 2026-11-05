@@ -43,6 +43,7 @@ build\Python\python.exe -m pip install --no-warn-script-location --root-user-act
 if exist ..\archive_forecast\src\archive_forecast.egg-info rmdir ..\archive_forecast\src\archive_forecast.egg-info /s /q
 build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --no-deps -e . || goto ERROR
 if exist src\weathernext_3.egg-info rmdir src\weathernext_3.egg-info /s /q
+build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --only-binary=:all: --group dev || goto ERROR
 
 @echo SUCCESS
 @goto END

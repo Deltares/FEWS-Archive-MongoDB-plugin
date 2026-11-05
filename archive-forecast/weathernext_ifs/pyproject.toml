@@ -24,12 +24,22 @@ dependencies = [
   "scipy",
   "netcdf4",
   "xmltodict",
-  "urllib3",
   "pysolar",
   "jax",
   "dm-haiku",
   "archive_forecast"
 ]
+
+[dependency-groups]
+dev = ["pytest", "pytest-cov"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

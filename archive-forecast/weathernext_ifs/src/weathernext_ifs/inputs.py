@@ -8,6 +8,7 @@ import pandas as pd
 
 from datetime import timedelta
 from archive_forecast import cache, web
+from archive_forecast.graphcast import utils
 from archive_forecast.log import log
 from archive_forecast.retry import retry
 
@@ -18,9 +19,18 @@ _home_path = cache.folder('weathernext_ifs')
 @log
 def read(t0, timestep, observed_timesteps):
 	cache.clean(_home_path)
-	single_level = _get_single_level(t0, timestep, observed_timesteps)
-	pressure_levels = _get_pressure_levels(t0, timestep, observed_timesteps)
-	return single_level, pressure_levels
+	start_time = t0 - timedelta(hours=observed_timesteps * timestep)
+	observed = [_get_observed(start_time + timedelta(hours=t * timestep)) for t in range(observed_timesteps)]
+
+	single_level = xr.concat([o[0] for o in observed], dim='time')
+	single_level = single_level.rename({'z': 'geopotential_at_surface', 'msl': 'mean_sea_level_pressure', 'lsm': 'land_sea_mask', 't2m': '2m_temperature', 'u10': '10m_u_component_of_wind', 'v10': '10m_v_component_of_wind', 'latitude': 'lat', 'longitude': 'lon'})
+	single_level = single_level.sortby(['lat', 'lon'])
+
+	pressure_levels = xr.concat([o[1] for o in observed], dim='time')
+	pressure_levels = pressure_levels.rename({'u': 'u_component_of_wind', 'v': 'v_component_of_wind', 'z': 'geopotential', 'q': 'specific_humidity', 't': 'temperature', 'w': 'vertical_velocity', 'latitude': 'lat', 'longitude': 'lon', 'isobaricInhPa': 'level'})
+	pressure_levels = pressure_levels.sortby(['lat', 'lon', 'level'])
+
+	return utils.strip(single_level), utils.strip(pressure_levels)
 
 
 @retry
@@ -58,48 +68,19 @@ def _put_data_cache(url, request, filename):
 
 
 @log
-def _get_single_level(t0, timestep, observed_timesteps):
-	single_levels = []
-	start_time = t0 - timedelta(hours=observed_timesteps * timestep)
-	for t in range(observed_timesteps):
-		observed = start_time + timedelta(hours=t * timestep)
-		url = f'https://storage.googleapis.com/ecmwf-open-data/{observed:%Y%m%d}/{observed:%H}z/ifs/0p25/oper/{observed:%Y%m%d%H}0000-0h-oper-fc.grib2'
-		index = _get_index(url)
+def _get_observed(observed):
+	url = f'https://storage.googleapis.com/ecmwf-open-data/{observed:%Y%m%d}/{observed:%H}z/ifs/0p25/oper/{observed:%Y%m%d%H}0000-0h-oper-fc.grib2'
+	index = _get_index(url)
+	time = [pd.Timestamp(observed).as_unit('ns')]
 
-		_logger.info(f'_get_single_level {observed} download begin')
+	_logger.info(f'_get_observed {observed} download begin')
 
-		data = xr.merge([_query(url, index[('sfc', parameter)]).reset_coords(drop=True) for parameter in ['z', 'lsm', 'msl', '2t', '10u', '10v']], compat='no_conflicts').expand_dims(time=[pd.Timestamp(observed).as_unit('ns')])
-		data = data.assign_coords(longitude=data['longitude'] % 360)
+	single_level = xr.merge([_query(url, index[('sfc', parameter)]).reset_coords(drop=True) for parameter in ['z', 'lsm', 'msl', '2t', '10u', '10v']], compat='no_conflicts').expand_dims(time=time)
+	single_level = single_level.assign_coords(longitude=single_level['longitude'] % 360)
 
-		single_levels.append(data)
+	pressure_levels = xr.merge([xr.concat([_query(url, index[('pl', parameter, level)]) for level in ['1000', '925', '850', '700', '600', '500', '400', '300', '250', '200', '150', '100', '50']], dim='isobaricInhPa') for parameter in ['u', 'v', 'z', 'q', 't', 'w']], compat='no_conflicts').reset_coords(drop=True).expand_dims(time=time)
+	pressure_levels = pressure_levels.assign_coords(longitude=pressure_levels['longitude'] % 360)
 
-		_logger.info(f'_get_single_level {observed} download complete')
+	_logger.info(f'_get_observed {observed} download complete')
 
-	single_level = xr.concat(single_levels, dim='time')
-	single_level = single_level.rename({'z': 'geopotential_at_surface', 'msl': 'mean_sea_level_pressure', 'lsm': 'land_sea_mask', 't2m': '2m_temperature', 'u10': '10m_u_component_of_wind', 'v10': '10m_v_component_of_wind', 'latitude': 'lat', 'longitude': 'lon'})
-	single_level = single_level.sortby(['lat', 'lon'])
-	return xr.Dataset({v: (single_level[v].dims, single_level[v].values) for v in single_level.data_vars}, coords={c: single_level[c].values for c in single_level.dims})
-
-
-@log
-def _get_pressure_levels(t0, timestep, observed_timesteps):
-	pressure_levels = []
-	start_time = t0 - timedelta(hours=observed_timesteps * timestep)
-	for t in range(observed_timesteps):
-		observed = start_time + timedelta(hours=t * timestep)
-		url = f'https://storage.googleapis.com/ecmwf-open-data/{observed:%Y%m%d}/{observed:%H}z/ifs/0p25/oper/{observed:%Y%m%d%H}0000-0h-oper-fc.grib2'
-		index = _get_index(url)
-
-		_logger.info(f'_get_pressure_levels {observed} download begin')
-
-		data = xr.merge([xr.concat([_query(url, index[('pl', parameter, level)]) for level in ['1000', '925', '850', '700', '600', '500', '400', '300', '250', '200', '150', '100', '50']], dim='isobaricInhPa') for parameter in ['u', 'v', 'z', 'q', 't', 'w']], compat='no_conflicts').reset_coords(drop=True).expand_dims(time=[pd.Timestamp(observed).as_unit('ns')])
-		data = data.assign_coords(longitude=data['longitude'] % 360)
-
-		pressure_levels.append(data)
-
-		_logger.info(f'_get_pressure_levels {observed} download complete')
-
-	pressure_level = xr.concat(pressure_levels, dim='time')
-	pressure_level = pressure_level.rename({'u': 'u_component_of_wind', 'v': 'v_component_of_wind', 'z': 'geopotential', 'q': 'specific_humidity', 't': 'temperature', 'w': 'vertical_velocity', 'latitude': 'lat', 'longitude': 'lon', 'isobaricInhPa': 'level'})
-	pressure_level = pressure_level.sortby(['lat', 'lon', 'level'])
-	return xr.Dataset({v: (pressure_level[v].dims, pressure_level[v].values) for v in pressure_level.data_vars}, coords={c: pressure_level[c].values for c in pressure_level.dims})
+	return single_level, pressure_levels

@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="test all" type="CompoundRunConfigurationType">
+    <toRun name="test archive_forecast" type="tests" />
+    <toRun name="test graphcast_gfs" type="tests" />
+    <toRun name="test weathernext_3" type="tests" />
+    <toRun name="test weathernext_ifs" type="tests" />
+    <method v="2" />
+  </configuration>
+</component>

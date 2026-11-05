@@ -6,10 +6,14 @@
       <sourceFolder url="file://$MODULE_DIR$/graphcast_gfs/build/Python/Lib" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/graphcast_gfs/build/Python/Lib/site-packages" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/graphcast_gfs/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/graphcast_gfs/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/graphcast_gfs/build" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="archive_forecast" exported="" />
     <orderEntry type="jdk" jdkName="C:\_GIT\FEWS-Archive\archive-forecast\graphcast_gfs\build\Python\python.exe" jdkType="Python SDK" />
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="py.test" />
   </component>
 </module>

@@ -20,6 +20,7 @@ build\Python\python.exe -m pip install --no-warn-script-location --root-user-act
 if exist src\archive_forecast.egg-info rmdir src\archive_forecast.egg-info /s /q
 if exist build\bdist.win-amd64 rmdir build\bdist.win-amd64 /s /q
 if exist build\lib rmdir build\lib /s /q
+build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --only-binary=:all: --group dev || goto ERROR
 
 @echo SUCCESS
 @goto END

@@ -3,6 +3,7 @@ pandas
 xarray
 netcdf4
 pysolar
+scipy
 xmltodict
 requests
 urllib3

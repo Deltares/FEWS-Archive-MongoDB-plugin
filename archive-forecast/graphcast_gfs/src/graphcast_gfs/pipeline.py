@@ -33,7 +33,3 @@ def run(config_path, weights_path):
 		single_level, pressure_levels = inputs.read(config.t0, _timestep, _observed_timesteps)
 		model_forecast = forecast.predict(model_weights, single_level, pressure_levels, config.t0, _timestep, config.predictions, diffs_stddev_by_level, mean_by_level, stddev_by_level, config.corners)
 		outputs.write(model_forecast, config.output_file, downscale, downscale_method, config.t0)
-
-
-if __name__ == '__main__':
-	main()

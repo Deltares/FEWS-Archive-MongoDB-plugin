@@ -1,4 +1,4 @@
-idea/sonarlint
+.idea/sonarlint
 weathernext3tva.json
 __pycache__
 *.nc
@@ -7,3 +7,5 @@ __pycache__
 *.log
 *.7z
 build
+.coverage
+htmlcov
