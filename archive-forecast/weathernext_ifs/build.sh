@@ -9,7 +9,7 @@ mkdir -p build
 tar -xzf ../install/cpython*.tar.gz -C build
 
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --upgrade pip
-build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools wheel
+build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: -r requirements.txt
 build/python/bin/python -m pip freeze > build/requirements.txt
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: model/model.zip
@@ -35,13 +35,15 @@ build/python/bin/python -m pip uninstall --root-user-action ignore -y -r build/r
 rm -f weathernext_ifs_min.zip
 cd build && 7z a -r -snl ../weathernext_ifs_min.zip && cd ..
 
-build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools wheel
+build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: -r build/requirements.txt
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --no-deps -e ../archive_forecast
-rm -rf ../archive_forecast/src/archive_forecast.egg-info
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --no-deps -e .
+build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: --group dev
+
 rm -rf src/weathernext_ifs.egg-info
-build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --only-binary=:all: --group dev
+rm -rf ../archive_forecast/src/archive_forecast.egg-info
+
 build/python/bin/python -m pytest --cov --cov-report=term-missing
 
 echo SUCCESS

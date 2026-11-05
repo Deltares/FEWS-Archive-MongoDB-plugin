@@ -1,13 +1,14 @@
 #  Copyright (c) 2026 INFISYS INC
 
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "weathernext_3"
 version = "0.6"
 description = "FEWS WeatherNext 3"
+readme = "README.md"
 requires-python = ">=3.13"
 license = "MIT"
 authors = [
@@ -17,16 +18,14 @@ dependencies = [
   "numpy",
   "pandas",
   "xarray",
-  "netcdf4",
-  "requests",
-  "urllib3",
-  "google-auth",
-  "xmltodict",
+  "google-auth[requests]",
   "archive_forecast"
 ]
 
 [dependency-groups]
-dev = ["pytest", "pytest-cov"]
+dev = [
+  "pytest",
+  "pytest-cov"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -36,10 +35,8 @@ addopts = "--import-mode=importlib"
 branch = true
 source = ["src"]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["weathernext_3", "weathernext_3.*"]
-exclude = []
+[tool.coverage.report]
+fail_under = 75
 
 [tool.uv.sources]
 archive_forecast = { path = "../archive_forecast", editable = true }

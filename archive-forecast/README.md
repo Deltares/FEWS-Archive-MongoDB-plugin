@@ -8,3 +8,13 @@
 - https://github.com/astral-sh/python-build-standalone/releases
 - https://github.com/NOAA-EMC/graphcast
 - https://github.com/google-deepmind/weathernext
+### GIT CRLF to LF Windows
+- `echo "* text=auto eol=lf" >> .gitattributes`
+- `echo "*.cmd text eol=crlf" >> .gitattributes`
+- `git add --renormalize .`
+### PyCharm CRLF to LF Windows
+- `Editor-CodeStyle-LineSeparator-LF`
+### Security - WebProxy Self-Signed Certificate Issue Resolution
+- Conda: `conda config --set ssl_verify false`
+- GIT: `git config --global http.sslVerify false`
+- PIP: `pip config set global.trusted-host "pypi.python.org pypi.org files.pythonhosted.org"`

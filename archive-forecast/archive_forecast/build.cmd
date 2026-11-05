@@ -14,13 +14,14 @@ del build\Python\python*._pth /f /q || goto ERROR
 del build\Python\python*.zip /f /q || goto ERROR
 
 build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --upgrade pip || goto ERROR
-build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools wheel || goto ERROR
+build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools || goto ERROR
 build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: -r requirements.txt || goto ERROR
+build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: --group dev || goto ERROR
 
 if exist src\archive_forecast.egg-info rmdir src\archive_forecast.egg-info /s /q
 if exist build\bdist.win-amd64 rmdir build\bdist.win-amd64 /s /q
 if exist build\lib rmdir build\lib /s /q
-build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --only-binary=:all: --group dev || goto ERROR
+
 build\Python\python.exe -m pytest --cov --cov-report=term-missing || goto ERROR
 
 @echo SUCCESS

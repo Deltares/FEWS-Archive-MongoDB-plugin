@@ -6,3 +6,5 @@ requests
 urllib3
 google-auth
 xmltodict
+pysolar
+scipy
