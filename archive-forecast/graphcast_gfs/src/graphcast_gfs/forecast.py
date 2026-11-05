@@ -12,7 +12,7 @@ from datetime import timedelta, datetime
 from graphcast import autoregressive, casting, data_utils, graphcast, normalization, rollout
 
 from archive_forecast import solar
-from archive_forecast.decorator import log
+from archive_forecast.log import log
 
 _logger = logging.getLogger('graphcast_gfs')
 _prediction_fields = ['u_component_of_wind', 'v_component_of_wind', 'geopotential', 'specific_humidity', 'temperature', 'vertical_velocity', '10m_u_component_of_wind', '10m_v_component_of_wind', '2m_temperature', 'mean_sea_level_pressure', 'total_precipitation_6hr']

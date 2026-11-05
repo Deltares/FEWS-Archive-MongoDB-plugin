@@ -12,7 +12,8 @@ import pandas as pd
 
 from requests import adapters
 from datetime import timedelta, datetime, timezone
-from archive_forecast.decorator import retry, log
+from archive_forecast.log import log
+from archive_forecast.retry import retry
 
 _logger = logging.getLogger('weathernext_ifs')
 _home_path = os.path.join(os.path.expanduser('~'), '.weathernext_ifs')

@@ -16,7 +16,8 @@ from requests import adapters
 from google.auth.transport.requests import Request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta, datetime, timezone
-from archive_forecast.decorator import retry, log
+from archive_forecast.log import log
+from archive_forecast.retry import retry
 
 _logger = logging.getLogger('weathernext_3')
 _home_path = os.path.join(os.path.expanduser('~'), '.weathernext_3')

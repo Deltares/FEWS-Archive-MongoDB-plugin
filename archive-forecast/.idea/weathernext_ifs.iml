@@ -5,10 +5,11 @@
       <sourceFolder url="file://$MODULE_DIR$/weathernext_ifs/build/Python" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/weathernext_ifs/build/Python/Lib" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/weathernext_ifs/build/Python/Lib/site-packages" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/weathernext_ifs/src" />
+      <sourceFolder url="file://$MODULE_DIR$/weathernext_ifs/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/weathernext_ifs/build" />
     </content>
-    <orderEntry type="jdk" jdkName="C:\_GIT\FEWS-Archive\archive-forecast\weathernext_ifs\build\Python\python.exe" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="archive_forecast" exported="" />
+    <orderEntry type="jdk" jdkName="C:\_GIT\FEWS-Archive\archive-forecast\weathernext_ifs\build\Python\python.exe" jdkType="Python SDK" />
   </component>
 </module>

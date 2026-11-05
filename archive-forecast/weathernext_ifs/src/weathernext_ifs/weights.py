@@ -6,7 +6,7 @@ import xarray as xr
 
 from weathernext.weathernext1_graph import graphcast
 from weathernext.utils import checkpoint
-from archive_forecast.decorator import log
+from archive_forecast.log import log
 
 
 @log

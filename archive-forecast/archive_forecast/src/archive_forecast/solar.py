@@ -22,7 +22,7 @@ def get_solar_radiation_cache(dates):
 		if date in cache_dates:
 			try:
 				ds = xr.load_dataset(os.path.join(_home_path, cache_dates[date]))
-			except:
+			except Exception:
 				_put_solar_radiation_cache(date)
 				ds = xr.load_dataset(os.path.join(_home_path, cache_dates[date]))
 		else:

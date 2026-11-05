@@ -9,7 +9,7 @@ import traceback
 import xmltodict
 
 from weathernext_3 import inputs, outputs
-from archive_forecast.decorator import log
+from archive_forecast.log import log
 from datetime import datetime, timedelta
 
 _parser = argparse.ArgumentParser()

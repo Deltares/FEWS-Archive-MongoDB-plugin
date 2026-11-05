@@ -35,3 +35,6 @@ dependencies = [
 where = ["src"]
 include = ["graphcast_gfs", "graphcast_gfs.*"]
 exclude = []
+
+[tool.uv.sources]
+archive_forecast = { path = "../archive_forecast", editable = true }
