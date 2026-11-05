@@ -10,9 +10,9 @@ import pandas as pd
 from datetime import timedelta
 from pysolar.solar import get_altitude
 from pysolar.radiation import get_radiation_direct
+from archive_forecast import cache
 
-_home_path = os.path.join(os.path.expanduser('~'), '.archive_forecast')
-os.makedirs(_home_path, exist_ok=True)
+_home_path = cache.folder('archive_forecast')
 
 
 def get_solar_radiation_cache(dates):

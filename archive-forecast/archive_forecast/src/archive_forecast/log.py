@@ -4,6 +4,16 @@ import traceback
 import functools
 from datetime import datetime, timezone
 
+_logging_format = '{"time": "%(asctime)s", "level": "%(levelname)s", "name": "%(name)s", "message": "%(message)s"}'
+
+
+def configure(name):
+	logging.basicConfig(filename=f'{name}.log', level=logging.INFO, filemode='w+', format=_logging_format)
+	stream_handler = logging.StreamHandler()
+	stream_handler.setFormatter(logging.Formatter(_logging_format))
+	stream_handler.setLevel(logging.INFO)
+	logging.getLogger().addHandler(stream_handler)
+
 
 def log(func):
 	logger = logging.getLogger(func.__module__.split('.')[0])

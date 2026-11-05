@@ -2,36 +2,30 @@
 
 import os
 import json
-import hashlib
 import logging
-import urllib3
-import requests
 
 import google.auth
 import numpy as np
 import xarray as xr
 import pandas as pd
 
-from requests import adapters
 from google.auth.transport.requests import Request
 from concurrent.futures import ThreadPoolExecutor
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta
+from archive_forecast import cache, web
 from archive_forecast.log import log
 from archive_forecast.retry import retry
 
 _logger = logging.getLogger('weathernext_3')
-_home_path = os.path.join(os.path.expanduser('~'), '.weathernext_3')
+_home_path = cache.folder('weathernext_3')
 _workers = 16
 _resolution = 0.1
 _percentiles = [10, 25, 50, 75, 90]
 
-os.makedirs(_home_path, exist_ok=True)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 
 @log
 def read(t0, timestep, predictions, fields, corners):
-	_clean_cache()
+	cache.clean(_home_path)
 	init = pd.Timestamp(t0 - timedelta(hours=timestep)).floor('6h')
 	times = [t0 + timedelta(hours=p * timestep) for p in range(predictions)]
 	return _get_forecast(init, times, fields, corners)
@@ -39,38 +33,13 @@ def read(t0, timestep, predictions, fields, corners):
 
 @retry
 def _query(session, url, request):
-	query = json.dumps({url: request})
-	filename = os.path.join(_home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.npy")
-
-	_logger.info(f'_query begin [{query} -> {filename}]')
-
-	if os.path.exists(filename):
-		try:
-			data = np.load(filename)
-		except:
-			_put_data_cache(session, url, request, filename)
-			data = np.load(filename)
-	else:
-		_put_data_cache(session, url, request, filename)
-		data = np.load(filename)
-
-	_logger.info('_query complete')
-
-	return data
-
-
-@log
-def _clean_cache():
-	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(_home_path, f)), tz=timezone.utc): f for f in os.listdir(_home_path)}
-	[os.remove(os.path.join(_home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
+	return cache.get(_home_path, json.dumps({url: request}), 'npy', np.load, lambda filename: _put_data_cache(session, url, request, filename))
 
 
 @log
 def _get_session():
 	credentials, _ = google.auth.load_credentials_from_file(os.environ['GOOGLE_APPLICATION_CREDENTIALS'], scopes=['https://www.googleapis.com/auth/cloud-platform'])
-	session = requests.Session()
-	session.mount('https://', adapters.HTTPAdapter(pool_maxsize=_workers, max_retries=urllib3.util.retry.Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504], allowed_methods=None)))
-	session.verify = False
+	session = web.session(pool_maxsize=_workers)
 	credentials.refresh(Request(session))
 	credentials.apply(session.headers)
 	return session

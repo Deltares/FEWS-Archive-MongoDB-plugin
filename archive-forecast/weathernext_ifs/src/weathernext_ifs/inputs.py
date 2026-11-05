@@ -1,30 +1,23 @@
 #  Copyright (c) 2026 INFISYS INC
 
 import json
-import os
-import requests
-import hashlib
 import logging
-import urllib3
 
 import xarray as xr
 import pandas as pd
 
-from requests import adapters
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta
+from archive_forecast import cache, web
 from archive_forecast.log import log
 from archive_forecast.retry import retry
 
 _logger = logging.getLogger('weathernext_ifs')
-_home_path = os.path.join(os.path.expanduser('~'), '.weathernext_ifs')
-
-os.makedirs(_home_path, exist_ok=True)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+_home_path = cache.folder('weathernext_ifs')
 
 
 @log
 def read(t0, timestep, observed_timesteps):
-	_clean_cache()
+	cache.clean(_home_path)
 	single_level = _get_single_level(t0, timestep, observed_timesteps)
 	pressure_levels = _get_pressure_levels(t0, timestep, observed_timesteps)
 	return single_level, pressure_levels
@@ -32,53 +25,13 @@ def read(t0, timestep, observed_timesteps):
 
 @retry
 def _query(name, request):
-	query = json.dumps({name: request})
-	filename = os.path.join(_home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.grib2")
-
-	_logger.info(f'_query begin [{query} -> {filename}]')
-
-	if os.path.exists(filename):
-		try:
-			data = xr.load_dataset(filename)
-		except:
-			_put_data_cache(name, request, filename)
-			data = xr.load_dataset(filename)
-	else:
-		_put_data_cache(name, request, filename)
-		data = xr.load_dataset(filename)
-
-	_logger.info('_query complete')
-
-	return data
-
-
-@log
-def _clean_cache():
-	cache_dates = {datetime.fromtimestamp(os.path.getctime(os.path.join(_home_path, f)), tz=timezone.utc): f for f in os.listdir(_home_path)}
-	[os.remove(os.path.join(_home_path, cache_dates[d])) for d in cache_dates if d < datetime.now(tz=timezone.utc) - timedelta(days=7)]
+	return cache.get(_home_path, json.dumps({name: request}), 'grib2', xr.load_dataset, lambda filename: _put_data_cache(name, request, filename))
 
 
 @retry
 def _get_index(url):
 	url = url.replace('.grib2', '.index')
-	query = json.dumps({url: None})
-	filename = os.path.join(_home_path, f"{hashlib.sha3_256(query.encode()).hexdigest()}.index")
-
-	_logger.info(f'_get_index begin [{query} -> {filename}]')
-
-	if os.path.exists(filename):
-		try:
-			index = _read_index(filename)
-		except:
-			_put_index_cache(url, filename)
-			index = _read_index(filename)
-	else:
-		_put_index_cache(url, filename)
-		index = _read_index(filename)
-
-	_logger.info('_get_index complete')
-
-	return index
+	return cache.get(_home_path, json.dumps({url: None}), 'index', _read_index, lambda filename: _put_index_cache(url, filename))
 
 
 def _read_index(filename):
@@ -87,8 +40,7 @@ def _read_index(filename):
 
 
 def _put_index_cache(url, filename):
-	with requests.Session() as session:
-		session.mount('https://', adapters.HTTPAdapter(max_retries=urllib3.util.retry.Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
+	with web.session() as session:
 		response = session.get(url, verify=False)
 	if response.status_code != 200:
 		raise ImportError(response.text)
@@ -97,8 +49,7 @@ def _put_index_cache(url, filename):
 
 
 def _put_data_cache(url, request, filename):
-	with requests.Session() as session:
-		session.mount('https://', adapters.HTTPAdapter(max_retries=urllib3.util.retry.Retry(total=5, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
+	with web.session() as session:
 		response = session.get(url, headers={'Range': f"bytes={request['_offset']}-{request['_offset'] + request['_length'] - 1}"}, verify=False)
 	if response.status_code != 206:
 		raise ImportError(response.text)
