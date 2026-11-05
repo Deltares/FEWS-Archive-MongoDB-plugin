@@ -9,7 +9,7 @@ name = "archive_forecast"
 version = "0.6"
 description = "FEWS Archive Forecast Common"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 license = "MIT"
 authors = [
   { name = "INFISYS INC" }

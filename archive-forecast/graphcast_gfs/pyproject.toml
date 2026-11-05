@@ -9,7 +9,7 @@ name = "graphcast_gfs"
 version = "0.6"
 description = "FEWS Graphcast GFS"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 license = "MIT"
 authors = [
   { name = "INFISYS INC" }
