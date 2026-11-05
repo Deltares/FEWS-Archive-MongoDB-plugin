@@ -4,7 +4,7 @@ import json
 import argparse
 
 from weathernext_3 import inputs, outputs
-from archive_forecast import fews
+from archive_forecast import parameters, diag
 from archive_forecast.log import log, configure
 
 _parser = argparse.ArgumentParser()
@@ -21,12 +21,12 @@ def main():
 
 @log
 def run(config_path):
-	config = fews.read_run(config_path, _timestep)
+	config = parameters.get_parameters(config_path, _timestep)
 	fields = json.loads(config.properties['output_parameters'].replace('\'', '"'))
 
-	with fews.diagnostics(config.output_diag_file):
+	with diag.diagnostics(config.output_diag_file):
 		single_level, percentiles = inputs.read(config.t0, _timestep, config.predictions, fields, config.corners)
-		outputs.write(single_level, percentiles, config.output_folder, config.output_file, config.t0)
+		outputs.write(single_level, percentiles, config.output_file, config.t0)
 
 
 if __name__ == '__main__':
