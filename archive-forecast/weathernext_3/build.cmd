@@ -44,13 +44,15 @@ if exist ..\archive_forecast\src\archive_forecast.egg-info rmdir ..\archive_fore
 build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --no-deps -e . || goto ERROR
 if exist src\weathernext_3.egg-info rmdir src\weathernext_3.egg-info /s /q
 build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --only-binary=:all: --group dev || goto ERROR
+build\Python\python.exe -m pytest --cov --cov-report=term-missing || goto ERROR
 
 @echo SUCCESS
 @goto END
 
 :ERROR
 @echo ERROR
-@goto END
+@endlocal
+@exit /b 1
 
 :END
 @endlocal

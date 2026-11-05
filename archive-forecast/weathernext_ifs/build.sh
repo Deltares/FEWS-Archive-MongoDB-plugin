@@ -42,5 +42,6 @@ rm -rf ../archive_forecast/src/archive_forecast.egg-info
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --no-deps -e .
 rm -rf src/weathernext_ifs.egg-info
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --only-binary=:all: --group dev
+build/python/bin/python -m pytest --cov --cov-report=term-missing
 
 echo SUCCESS
