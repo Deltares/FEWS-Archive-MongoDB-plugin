@@ -17,9 +17,9 @@ build\Python\python.exe -m pip install --no-warn-script-location --root-user-act
 build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools wheel || goto ERROR
 build\Python\python.exe -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: -r requirements.txt || goto ERROR
 
-rmdir archive_forecast.egg-info /s /q
-rmdir build\bdist.win-amd64 /s /q
-rmdir build\lib /s /q
+if exist src\archive_forecast.egg-info rmdir src\archive_forecast.egg-info /s /q
+if exist build\bdist.win-amd64 rmdir build\bdist.win-amd64 /s /q
+if exist build\lib rmdir build\lib /s /q
 
 @echo SUCCESS
 @goto END

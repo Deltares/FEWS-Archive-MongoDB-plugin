@@ -10,7 +10,7 @@ version = "0.6"
 description = "FEWS Graphcast GFS"
 readme = "README.md"
 requires-python = ">=3.13"
-license = { text = "MIT" }
+license = "MIT"
 authors = [
   { name = "INFISYS INC" }
 ]
@@ -24,12 +24,14 @@ dependencies = [
   "scipy",
   "netcdf4",
   "xmltodict",
+  "urllib3",
   "pysolar",
   "jax",
-  "dm-haiku"
+  "dm-haiku",
+  "archive_forecast"
 ]
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["graphcast_gfs", "graphcast_gfs.*"]
 exclude = []

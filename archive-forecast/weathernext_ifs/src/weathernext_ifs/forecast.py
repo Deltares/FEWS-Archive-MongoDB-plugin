@@ -12,8 +12,8 @@ from datetime import timedelta, datetime
 from weathernext.utils import autoregressive, casting, data_utils, normalization, rollout
 from weathernext.weathernext1_graph import graphcast
 
-from weathernext_ifs import solar
-from weathernext_ifs.decorator import log
+from archive_forecast import solar
+from archive_forecast.decorator import log
 
 _logger = logging.getLogger('weathernext_ifs')
 _prediction_fields = ['u_component_of_wind', 'v_component_of_wind', 'geopotential', 'specific_humidity', 'temperature', 'vertical_velocity', '10m_u_component_of_wind', '10m_v_component_of_wind', '2m_temperature', 'mean_sea_level_pressure', 'total_precipitation_6hr']

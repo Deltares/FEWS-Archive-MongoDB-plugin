@@ -16,10 +16,10 @@ from requests import adapters
 from google.auth.transport.requests import Request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta, datetime, timezone
-from weathernext_3.decorator import retry, log
+from archive_forecast.decorator import retry, log
 
 _logger = logging.getLogger('weathernext_3')
-_home_path = os.path.join(os.path.expanduser('~'), 'weathernext_3')
+_home_path = os.path.join(os.path.expanduser('~'), '.weathernext_3')
 _workers = 16
 _resolution = 0.1
 _percentiles = [10, 25, 50, 75, 90]

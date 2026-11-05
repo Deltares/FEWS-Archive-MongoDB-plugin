@@ -9,7 +9,7 @@ name = "weathernext_3"
 version = "0.6"
 description = "FEWS WeatherNext 3"
 requires-python = ">=3.13"
-license = { text = "MIT" }
+license = "MIT"
 authors = [
   { name = "INFISYS INC" }
 ]
@@ -21,10 +21,11 @@ dependencies = [
   "requests",
   "urllib3",
   "google-auth",
-  "xmltodict"
+  "xmltodict",
+  "archive_forecast"
 ]
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["weathernext_3", "weathernext_3.*"]
 exclude = []

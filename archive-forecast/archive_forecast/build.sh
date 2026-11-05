@@ -12,7 +12,7 @@ build/python/bin/python -m pip install --no-warn-script-location --root-user-act
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: setuptools wheel
 build/python/bin/python -m pip install --no-warn-script-location --root-user-action ignore --no-build-isolation --only-binary=:all: -r requirements.txt
 
-rm -rf archive_forecast.egg-info
+rm -rf src/archive_forecast.egg-info
 rm -rf build/bdist.linux-x86_64
 rm -rf build/lib
 

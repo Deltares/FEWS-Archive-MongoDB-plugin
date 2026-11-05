@@ -10,15 +10,19 @@ version = "0.6"
 description = "FEWS Archive Forecast Common"
 readme = "README.md"
 requires-python = ">=3.13"
-license = { text = "MIT" }
+license = "MIT"
 authors = [
   { name = "INFISYS INC" }
 ]
 dependencies = [
-
+  "numpy",
+  "pandas",
+  "xarray",
+  "netcdf4",
+  "pysolar"
 ]
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["archive_forecast", "archive_forecast.*"]
 exclude = []

@@ -9,7 +9,7 @@ import traceback
 import xmltodict
 
 from graphcast_gfs import weights, inputs, outputs, forecast
-from graphcast_gfs.decorator import log
+from archive_forecast.decorator import log
 from datetime import datetime, timedelta
 
 _parser = argparse.ArgumentParser()

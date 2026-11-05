@@ -21,6 +21,7 @@ h5netcdf
 jraph
 matplotlib
 pyproj
+urllib3
 rtree
 trimesh
 typing_extensions

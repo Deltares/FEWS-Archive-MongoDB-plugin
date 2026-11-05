@@ -11,7 +11,7 @@ from datetime import timedelta
 from pysolar.solar import get_altitude
 from pysolar.radiation import get_radiation_direct
 
-_home_path = os.path.join(os.path.expanduser('~'), 'weathernext_ifs')
+_home_path = os.path.join(os.path.expanduser('~'), '.archive_forecast')
 os.makedirs(_home_path, exist_ok=True)
 
 

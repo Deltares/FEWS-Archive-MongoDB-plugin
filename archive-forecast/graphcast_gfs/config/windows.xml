@@ -8,7 +8,7 @@
 	<workDir>c:\_GIT\FEWS-Archive\archive-forecast\</workDir>
 	<outputDiagnosticFile>c:\_GIT\FEWS-Archive\archive-forecast\diag.xml</outputDiagnosticFile>
 	<properties>
-		<string key="forecast_length_timesteps" value="40"/>
+		<string key="forecast_length_timesteps" value="1"/>
         <string key="time_zero_offset_timesteps" value="1"/>
 		<string key="output_bounding_box" value="[[-89.47578320629594, 38.141490214811284],[-81.05468251757173, 33.40034413045149]]"/>
 		<string key="output_folder" value="c:/_GIT/FEWS-Archive/archive-forecast"/>

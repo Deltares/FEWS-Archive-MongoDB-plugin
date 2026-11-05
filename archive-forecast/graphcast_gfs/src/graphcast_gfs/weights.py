@@ -5,7 +5,7 @@ import os
 import xarray as xr
 
 from graphcast import graphcast, checkpoint
-from graphcast_gfs.decorator import log
+from archive_forecast.decorator import log
 
 
 @log

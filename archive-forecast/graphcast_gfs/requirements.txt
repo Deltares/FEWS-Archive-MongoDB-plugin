@@ -10,6 +10,7 @@ pysolar
 jax[cpu]
 xarray
 cartopy
+urllib3
 chex
 colabtools
 dask

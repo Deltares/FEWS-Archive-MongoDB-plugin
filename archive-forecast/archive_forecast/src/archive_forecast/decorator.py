@@ -5,13 +5,13 @@ import functools
 import time
 from datetime import datetime, timezone
 
-logger = logging.getLogger('weathernext_ifs')
-
 _retry_attempts = 5
 _retry_pause_seconds = 5
 
 
 def log(func):
+	logger = logging.getLogger(func.__module__.split('.')[0])
+
 	@functools.wraps(func)
 	def wrapper(*args, **kwargs):
 		then = datetime.now(timezone.utc)

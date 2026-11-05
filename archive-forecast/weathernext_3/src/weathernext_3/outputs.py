@@ -2,7 +2,7 @@
 
 import os
 
-from weathernext_3.decorator import log
+from archive_forecast.decorator import log
 
 _output_metadata = {
 	'variables': {

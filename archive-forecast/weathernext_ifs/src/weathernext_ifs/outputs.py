@@ -5,7 +5,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from weathernext_ifs.decorator import log
+from archive_forecast.decorator import log
 
 _output_metadata = {
 	'variables': {

@@ -2,6 +2,10 @@
 <module external.system.id="pyproject.toml" type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$/weathernext_3">
+      <sourceFolder url="file://$MODULE_DIR$/weathernext_3/build/Python" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/weathernext_3/build/Python/Lib" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/weathernext_3/build/Python/Lib/site-packages" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/weathernext_3/src" />
       <excludeFolder url="file://$MODULE_DIR$/weathernext_3/build" />
     </content>
     <orderEntry type="jdk" jdkName="C:\_GIT\FEWS-Archive\archive-forecast\weathernext_3\build\Python\python.exe" jdkType="Python SDK" />
