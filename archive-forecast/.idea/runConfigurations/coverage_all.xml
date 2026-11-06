@@ -1,9 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="coverage all" type="CompoundRunConfigurationType">
-    <toRun name="coverage archive_forecast" type="tests" />
-    <toRun name="coverage graphcast_gfs" type="tests" />
-    <toRun name="coverage weathernext_3" type="tests" />
-    <toRun name="coverage weathernext_ifs" type="tests" />
-    <method v="2" />
-  </configuration>
-</component>
